@@ -10,6 +10,9 @@ A lightweight Chrome / Edge extension that finds limited-time Steam **Free to Ke
 
 [Download on GitHub](https://github.com/Grim1313/steam-promo-watch/releases/latest) · [Changelog](CHANGELOG.md)
 
+<img width="800" height="500" alt="unnamed-1" src="https://github.com/user-attachments/assets/de94cee4-3e82-4f0d-a128-ea55d994251f" />
+<img width="800" height="500" alt="unnamed-2" src="https://github.com/user-attachments/assets/372597ec-c63c-4ad7-b1f6-6f66cd73424e" />
+
 ## What's new in 1.0.0
 
 - New design.

@@ -7,14 +7,24 @@ function getPopupContentPriority(entry) {
 export function getVisiblePromotions(entries, maxItems = 10) {
   return (Array.isArray(entries) ? entries : [])
     .filter((entry) => entry?.status === "active")
-    .sort((left, right) => getPopupContentPriority(left) - getPopupContentPriority(right))
+    .sort(
+      (left, right) =>
+        getPopupContentPriority(left) - getPopupContentPriority(right),
+    )
     .slice(0, maxItems);
 }
 
 export function getPromotionBasePriceLabel(entry = {}) {
-  const price = typeof entry?.basePriceFormatted === "string" ? entry.basePriceFormatted.trim() : "";
+  const price =
+    typeof entry?.basePriceFormatted === "string"
+      ? entry.basePriceFormatted.trim()
+      : "";
   const normalizedDigits = price.replace(/[^\d.,]/g, "");
-  if (!price || /\bfree\b/i.test(price) || /^0(?:[.,]00)?$/.test(normalizedDigits)) {
+  if (
+    !price ||
+    /\bfree\b/i.test(price) ||
+    /^0(?:[.,]00)?$/.test(normalizedDigits)
+  ) {
     return "";
   }
   return `Base price: ${price}`;

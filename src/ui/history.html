@@ -1,42 +1,99 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>Steam Promo Watch History</title>
-    <link rel="stylesheet" href="./theme.css">
-    <link rel="stylesheet" href="./history.css">
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="history.css" />
   </head>
   <body>
     <main class="page-shell">
       <header class="page-header">
-        <div>
-          <p class="eyebrow">Steam Promo Watch</p>
-          <h1>History</h1>
-          <p id="history-note" class="lead"></p>
+        <div class="brand">
+          <img
+            src="../../resources/icons/icon48.png"
+            alt=""
+            width="30"
+            height="30"
+          /><span>Steam Promo Watch</span>
         </div>
-        <a class="header-link" href="./options.html">Open settings</a>
+        <nav data-i18n-aria="navigation">
+          <a
+            class="header-link"
+            href="history.html"
+            aria-current="page"
+            data-i18n="historyShort"
+            >History</a
+          >
+          <a class="header-link" href="options.html" data-i18n="settings"
+            >Settings</a
+          >
+        </nav>
       </header>
-
-      <section class="panel">
-        <div id="empty-state" class="empty-state hidden">History is empty.</div>
-        <table id="history-table" class="history-table hidden">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Type</th>
-              <th>Content</th>
-              <th>Status</th>
-              <th>First seen</th>
-              <th>Last notified</th>
-            </tr>
-          </thead>
-          <tbody id="history-body"></tbody>
-        </table>
+      <div class="page-title">
+        <h1 data-i18n="historyTitle"></h1>
+        <p id="history-note" class="lead"></p>
+      </div>
+      <div
+        id="feedback"
+        class="feedback hidden"
+        role="status"
+        aria-live="polite"
+      ></div>
+      <section class="panel history-panel">
+        <div class="toolbar">
+          <label
+            ><span data-i18n="search"></span
+            ><input
+              id="search"
+              type="search"
+              data-placeholder="search" /></label
+          ><label
+            ><span data-i18n="status"></span
+            ><select id="status-filter">
+              <option value="all" data-i18n="all"></option>
+              <option value="active" data-i18n="active"></option>
+              <option value="expired" data-i18n="ended"></option>
+              <option value="claimed" data-i18n="claimed"></option>
+              <option value="hidden" data-i18n="hidden"></option>
+              <option value="ignored" data-i18n="ignored"></option>
+              <option
+                value="snoozed"
+                data-i18n="snoozed"
+              ></option></select></label
+          ><label
+            ><span data-i18n="sortBy"></span
+            ><select id="sort-by">
+              <option value="newest" data-i18n="sort_newest"></option>
+              <option value="ending" data-i18n="sort_ending"></option>
+              <option value="rating" data-i18n="sort_rating"></option>
+              <option value="title" data-i18n="sort_title"></option></select
+          ></label>
+        </div>
+        <p
+          id="empty-state"
+          data-i18n="noHistory"
+          class="empty-state hidden"
+        ></p>
+        <div class="table-scroll">
+          <table id="history-table" class="history-table">
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="sort_title"></th>
+                <th scope="col" data-i18n="status"></th>
+                <th scope="col" data-i18n="historyDates"></th>
+                <th scope="col" data-i18n="actions"></th>
+              </tr>
+            </thead>
+            <tbody id="history-body"></tbody>
+          </table>
+        </div>
+        <p id="history-count" role="status" aria-live="polite"></p>
       </section>
     </main>
-
-    <script type="module" src="./history.js"></script>
+    <script type="module" src="history.js"></script>
   </body>
-  </html>
+</html>

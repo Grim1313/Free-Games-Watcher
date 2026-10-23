@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.0
+
+### What's new
+
+- New design.
+- More reliable giveaway discovery and fewer duplicate notifications.
+- Added Russian language support and a selectable Steam store region.
+- Added claimed, snooze, hide and ignore actions, with undo and restore.
+- Added reminders before giveaways end and notifications after quiet hours.
+- Added rating, review-count, genre and platform filters, sorting and read/unread controls.
+- Added searchable history with status filters and source diagnostics.
+- Added import and export of settings and personal marks.
+
 ## 0.5.0
 
 ### What's new

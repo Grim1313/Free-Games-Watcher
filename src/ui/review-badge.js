@@ -2,7 +2,7 @@ import {
   formatCompactNumber,
   formatSteamReviewTooltip,
   getSteamReviewTone,
-  sanitizeSteamReviewSummary
+  sanitizeSteamReviewSummary,
 } from "../lib/utils.js";
 
 export function buildSteamStoreAriaLabel(title, reviewSummarySource) {
@@ -11,7 +11,7 @@ export function buildSteamStoreAriaLabel(title, reviewSummarySource) {
   return tooltip ? `${base}. ${tooltip}.` : base;
 }
 
-export function createSteamReviewBadge(reviewSummarySource) {
+export function createSteamReviewBadge(reviewSummarySource, t = null) {
   const summary = sanitizeSteamReviewSummary(reviewSummarySource);
   if (summary.reviewTotal <= 0) {
     return null;
@@ -19,7 +19,7 @@ export function createSteamReviewBadge(reviewSummarySource) {
 
   const badge = document.createElement("span");
   badge.className = `steam-review-badge steam-review-${getSteamReviewTone(summary)}`;
-  badge.title = formatSteamReviewTooltip(summary);
+  badge.title = t ? t("reviewSummary", { percent: summary.reviewPercent, count: summary.reviewTotal }) : formatSteamReviewTooltip(summary);
   badge.setAttribute("aria-hidden", "true");
 
   const percent = document.createElement("span");
@@ -28,7 +28,7 @@ export function createSteamReviewBadge(reviewSummarySource) {
 
   const total = document.createElement("span");
   total.className = "steam-review-total";
-  total.textContent = `${formatCompactNumber(summary.reviewTotal)} reviews`;
+  total.textContent = t ? t("reviewCount", { count: new Intl.NumberFormat(t.locale, { notation: "compact" }).format(summary.reviewTotal) }) : `${formatCompactNumber(summary.reviewTotal)} reviews`;
 
   badge.append(percent, total);
   return badge;

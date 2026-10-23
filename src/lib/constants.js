@@ -1,8 +1,9 @@
 export const DEBUG = false;
 
 export const APP_NAME = "Steam Promo Watch";
-export const STORAGE_SCHEMA_VERSION = 1;
+export const STORAGE_SCHEMA_VERSION = 2;
 export const CHECK_ALARM_NAME = "steam-promo-check";
+export const FOLLOWUP_ALARM_NAME = "steam-promo-followup";
 export const NOTIFICATION_PREFIX = "steam-promo-watch";
 
 export const STORAGE_KEYS = Object.freeze({
@@ -14,13 +15,17 @@ export const STORAGE_KEYS = Object.freeze({
   notifiedPromotions: "notifiedPromotions",
   dismissedPromotions: "dismissedPromotions",
   metadataCache: "metadataCache",
-  notificationLinks: "notificationLinks"
+  notificationLinks: "notificationLinks",
+  userActions: "userActions",
+  diagnostics: "diagnostics",
 });
 
-export const CHECK_INTERVAL_OPTIONS = Object.freeze([15, 30, 60, 180, 360, 720, 1440]);
+export const CHECK_INTERVAL_OPTIONS = Object.freeze([
+  15, 30, 60, 180, 360, 720, 1440,
+]);
 
 export const PROMO_TYPES = Object.freeze({
-  FREE_TO_KEEP: "free-to-keep"
+  FREE_TO_KEEP: "free-to-keep",
 });
 
 export const CONTENT_TYPES = Object.freeze({
@@ -30,13 +35,13 @@ export const CONTENT_TYPES = Object.freeze({
   DEMO: "demo",
   TOOL: "tool",
   PACKAGE: "package",
-  UNKNOWN: "unknown"
+  UNKNOWN: "unknown",
 });
 
 export const ENTRY_STATUS = Object.freeze({
   ACTIVE: "active",
   EXPIRED: "expired",
-  DISMISSED: "dismissed"
+  DISMISSED: "dismissed",
 });
 
 export const NOTIFICATION_STATUS = Object.freeze({
@@ -44,17 +49,17 @@ export const NOTIFICATION_STATUS = Object.freeze({
   PENDING: "pending",
   SENT: "sent",
   QUIET: "suppressed-quiet",
-  DISMISSED: "dismissed"
+  DISMISSED: "dismissed",
 });
 
 export const SOURCE_IDS = Object.freeze({
   STORE_SEARCH: "steam-store-search",
-  STORE_FEATURED: "steam-store-featured"
+  STORE_FEATURED: "steam-store-featured",
 });
 
 export const SOURCE_PRIORITIES = Object.freeze({
   [SOURCE_IDS.STORE_SEARCH]: 3,
-  [SOURCE_IDS.STORE_FEATURED]: 2
+  [SOURCE_IDS.STORE_FEATURED]: 2,
 });
 
 export const DEFAULT_CHECK_INTERVAL_MINUTES = 180;
@@ -68,7 +73,7 @@ export const METADATA_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const PROMOTION_DEADLINE_TTL_MS = 6 * 60 * 60 * 1000;
 export const NOTIFICATION_LINK_TTL_MS = 2 * 24 * 60 * 60 * 1000;
 export const MAX_HISTORY_ITEMS = 400;
-export const MAX_LATEST_ITEMS = 25;
+export const MAX_LATEST_ITEMS = 400;
 export const MAX_NOTIFIED_ITEMS = 500;
 export const MAX_DISMISSED_ITEMS = 200;
 export const MAX_METADATA_ITEMS = 500;

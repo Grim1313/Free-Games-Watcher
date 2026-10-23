@@ -1,17 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildRecoveredRuntimeState, INTERRUPTED_CHECK_MESSAGE } from "../src/lib/runtime-state.js";
+import {
+  buildRecoveredRuntimeState,
+  INTERRUPTED_CHECK_MESSAGE,
+} from "../src/lib/runtime-state.js";
 
 test("buildRecoveredRuntimeState clears a stale in-progress check", () => {
-  const recovered = buildRecoveredRuntimeState({
-    checkInProgress: true,
-    lastCheckStartedAt: 100,
-    lastCheckFinishedAt: 0,
-    lastCheckOutcome: "running",
-    lastErrorMessage: "",
-    unreadCount: 3
-  }, 250);
+  const recovered = buildRecoveredRuntimeState(
+    {
+      checkInProgress: true,
+      lastCheckStartedAt: 100,
+      lastCheckFinishedAt: 0,
+      lastCheckOutcome: "running",
+      lastErrorMessage: "",
+      unreadCount: 3,
+    },
+    250,
+  );
 
   assert.equal(recovered.checkInProgress, false);
   assert.equal(recovered.lastCheckOutcome, "error");
@@ -21,12 +27,15 @@ test("buildRecoveredRuntimeState clears a stale in-progress check", () => {
 });
 
 test("buildRecoveredRuntimeState keeps settled checks unchanged", () => {
-  const recovered = buildRecoveredRuntimeState({
-    checkInProgress: false,
-    lastCheckFinishedAt: 100,
-    lastCheckOutcome: "success",
-    lastErrorMessage: ""
-  }, 250);
+  const recovered = buildRecoveredRuntimeState(
+    {
+      checkInProgress: false,
+      lastCheckFinishedAt: 100,
+      lastCheckOutcome: "success",
+      lastErrorMessage: "",
+    },
+    250,
+  );
 
   assert.equal(recovered.checkInProgress, false);
   assert.equal(recovered.lastCheckOutcome, "success");

@@ -12,8 +12,8 @@ function createChromeMock() {
       },
       async setBadgeText(payload) {
         calls.push(["setBadgeText", payload]);
-      }
-    }
+      },
+    },
   };
   return calls;
 }
@@ -26,12 +26,10 @@ test("updateBadge hides badge text when badge display is disabled", async (t) =>
 
   await updateBadge(
     { unreadCount: 3, activeFreeToKeepCount: 7 },
-    { badgeEnabled: false }
+    { badgeEnabled: false },
   );
 
-  assert.deepEqual(calls, [
-    ["setBadgeText", { text: "" }]
-  ]);
+  assert.deepEqual(calls, [["setBadgeText", { text: "" }]]);
 });
 
 test("updateBadge shows unread state in red using the active Free to Keep count", async (t) => {
@@ -42,12 +40,12 @@ test("updateBadge shows unread state in red using the active Free to Keep count"
 
   await updateBadge(
     { unreadCount: 2, activeFreeToKeepCount: 5 },
-    { badgeEnabled: true }
+    { badgeEnabled: true },
   );
 
   assert.deepEqual(calls, [
     ["setBadgeBackgroundColor", { color: "#d94b3d" }],
-    ["setBadgeText", { text: "5" }]
+    ["setBadgeText", { text: "5" }],
   ]);
 });
 
@@ -59,10 +57,8 @@ test("updateBadge hides the toolbar badge when no active promotions were found",
 
   await updateBadge(
     { unreadCount: 0, activeFreeToKeepCount: 0 },
-    { badgeEnabled: true }
+    { badgeEnabled: true },
   );
 
-  assert.deepEqual(calls, [
-    ["setBadgeText", { text: "" }]
-  ]);
+  assert.deepEqual(calls, [["setBadgeText", { text: "" }]]);
 });

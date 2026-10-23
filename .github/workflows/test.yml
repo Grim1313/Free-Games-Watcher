@@ -1,0 +1,19 @@
+name: Tests
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          check-latest: true
+          package-manager-cache: false
+      - run: npm test
+      - run: npm run pack
+      - name: Verify release notes
+        shell: pwsh
+        run: ./scripts/get-release-notes.ps1

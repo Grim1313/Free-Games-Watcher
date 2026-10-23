@@ -1,0 +1,554 @@
+{
+  "extensionName": {
+    "message": "Steam Promo Watch: Free Game Alerts"
+  },
+  "extensionDescription": {
+    "message": "Find limited-time free Steam games and get giveaway alerts. No Steam login required."
+  },
+  "freeToKeep": {
+    "message": "Free to Keep"
+  },
+  "checkNow": {
+    "message": "Check now"
+  },
+  "checking": {
+    "message": "Checking…"
+  },
+  "status": {
+    "message": "Status"
+  },
+  "lastSuccess": {
+    "message": "Last successful check"
+  },
+  "nextCheck": {
+    "message": "Next check"
+  },
+  "never": {
+    "message": "Not yet"
+  },
+  "notScheduled": {
+    "message": "Not scheduled"
+  },
+  "activeCount": {
+    "message": "{count} active offers"
+  },
+  "partial": {
+    "message": "Some sources could not be fully checked. Previous results are retained."
+  },
+  "sourceError": {
+    "message": "Steam could not be checked. Saved offers may be out of date. Please try again later."
+  },
+  "paused": {
+    "message": "Tracking is paused"
+  },
+  "firstCheck": {
+    "message": "Your first check is pending. No Steam login is needed."
+  },
+  "noOffers": {
+    "message": "No active giveaways found. Checks will continue automatically."
+  },
+  "allHidden": {
+    "message": "Offers are hidden by your filters or personal marks."
+  },
+  "promotions": {
+    "message": "Active giveaways"
+  },
+  "newCount": {
+    "message": "{count} new"
+  },
+  "new": {
+    "message": "New"
+  },
+  "markAllRead": {
+    "message": "Mark all as read"
+  },
+  "markRead": {
+    "message": "Mark as read"
+  },
+  "showAll": {
+    "message": "Show all {count}"
+  },
+  "openSteam": {
+    "message": "Open on Steam"
+  },
+  "claim": {
+    "message": "Already claimed"
+  },
+  "more": {
+    "message": "More actions"
+  },
+  "hide": {
+    "message": "Hide this giveaway"
+  },
+  "ignore": {
+    "message": "Ignore this game"
+  },
+  "snooze": {
+    "message": "Remind me in 24 hours"
+  },
+  "restore": {
+    "message": "Restore"
+  },
+  "undo": {
+    "message": "Undo"
+  },
+  "actionSaved": {
+    "message": "Your mark was saved."
+  },
+  "endingSoon": {
+    "message": "Ending soon"
+  },
+  "endsAt": {
+    "message": "Ends {value}"
+  },
+  "endUnknown": {
+    "message": "End time unavailable"
+  },
+  "ended": {
+    "message": "Ended"
+  },
+  "stale": {
+    "message": "Availability needs confirmation"
+  },
+  "basePrice": {
+    "message": "Regular price: {value}"
+  },
+  "seen": {
+    "message": "Found {value}"
+  },
+  "reviewSummary": {
+    "message": "{percent}% positive · {count} reviews"
+  },
+  "notificationSummary": {
+    "message": "{count} more giveaways. Open the list to view them."
+  },
+  "history": {
+    "message": "History and all offers"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "githubVersions": {
+    "message": "Versions on GitHub"
+  },
+  "version": {
+    "message": "Version {value}"
+  },
+  "compactView": {
+    "message": "Compact cards"
+  },
+  "sortBy": {
+    "message": "Sort by"
+  },
+  "sort_ending": {
+    "message": "Ending soonest"
+  },
+  "sort_newest": {
+    "message": "Newest first"
+  },
+  "sort_rating": {
+    "message": "Highest rated"
+  },
+  "sort_title": {
+    "message": "Title"
+  },
+  "notifications": {
+    "message": "Notifications"
+  },
+  "notificationsEnabled": {
+    "message": "Enable browser notifications"
+  },
+  "badgeEnabled": {
+    "message": "Show active count on the extension icon"
+  },
+  "remindersEnabled": {
+    "message": "Remind me before a giveaway ends"
+  },
+  "reminderHours": {
+    "message": "Hours before the end"
+  },
+  "schedule": {
+    "message": "Schedule"
+  },
+  "trackFreeToKeep": {
+    "message": "Track Free to Keep giveaways"
+  },
+  "checkIntervalMinutes": {
+    "message": "Check frequency"
+  },
+  "minutes": {
+    "message": "{count} minutes"
+  },
+  "hours": {
+    "message": "{count} hours"
+  },
+  "quietHoursEnabled": {
+    "message": "Quiet hours; send a summary afterwards"
+  },
+  "quietHoursStart": {
+    "message": "Quiet hours start"
+  },
+  "quietHoursEnd": {
+    "message": "Quiet hours end"
+  },
+  "quietNote": {
+    "message": "Times use your device time zone. Sleeping devices are checked when the browser resumes."
+  },
+  "general": {
+    "message": "General"
+  },
+  "region": {
+    "message": "Steam store country code"
+  },
+  "regionNote": {
+    "message": "Two-letter code, for example US, RU, DE or GB. Choose your actual Steam store country; this does not bypass regional restrictions."
+  },
+  "language": {
+    "message": "Interface language"
+  },
+  "autoLanguage": {
+    "message": "Browser language"
+  },
+  "historyEnabled": {
+    "message": "Keep local history"
+  },
+  "historyRetentionDays": {
+    "message": "History retention, days"
+  },
+  "filters": {
+    "message": "Filters"
+  },
+  "filterNote": {
+    "message": "Filters apply to the list and notifications. Unknown metadata is excluded by genre/platform filters; review handling is configurable."
+  },
+  "ignoreDlc": {
+    "message": "Hide DLC"
+  },
+  "ignoreSoundtracks": {
+    "message": "Hide soundtracks"
+  },
+  "ignoreDemos": {
+    "message": "Hide demos"
+  },
+  "ignoreTools": {
+    "message": "Hide software"
+  },
+  "ignorePackages": {
+    "message": "Hide packages"
+  },
+  "minRating": {
+    "message": "Minimum positive reviews, %"
+  },
+  "minReviews": {
+    "message": "Minimum number of reviews"
+  },
+  "includeUnrated": {
+    "message": "Include games with no review data"
+  },
+  "genres": {
+    "message": "Genres, one per line (any match)"
+  },
+  "genresNote": {
+    "message": "Use Steam English genre names, for example Action, Adventure, RPG, Strategy, Simulation, Indie. Leave empty for all."
+  },
+  "platforms": {
+    "message": "Platforms (any match; none selected = all)"
+  },
+  "advanced": {
+    "message": "Advanced settings"
+  },
+  "blockedAppIds": {
+    "message": "Blocked Steam app/package IDs, one per line"
+  },
+  "blockedKeywords": {
+    "message": "Blocked words in titles, one per line"
+  },
+  "renotifyAfterRetention": {
+    "message": "Repeat alerts for long-running offers"
+  },
+  "notifiedRetentionDays": {
+    "message": "Repeat interval, days"
+  },
+  "saveSettings": {
+    "message": "Save settings"
+  },
+  "saved": {
+    "message": "Settings saved."
+  },
+  "unsaved": {
+    "message": "Unsaved changes"
+  },
+  "saving": {
+    "message": "Saving…"
+  },
+  "testNotification": {
+    "message": "Send test notification"
+  },
+  "testSent": {
+    "message": "Notification requested. If you cannot see it, check your browser and OS notification settings."
+  },
+  "clearHistory": {
+    "message": "Clear archive"
+  },
+  "clearConfirm": {
+    "message": "Delete the local archive? Active offers and personal marks will remain."
+  },
+  "cleared": {
+    "message": "Archive cleared."
+  },
+  "resetSettings": {
+    "message": "Reset settings"
+  },
+  "resetConfirm": {
+    "message": "Reset settings to defaults? Personal marks will remain."
+  },
+  "personalMarks": {
+    "message": "Personal marks"
+  },
+  "noMarks": {
+    "message": "No personal marks yet."
+  },
+  "claimed": {
+    "message": "Claimed"
+  },
+  "ignored": {
+    "message": "Ignored game"
+  },
+  "hidden": {
+    "message": "Hidden giveaway"
+  },
+  "snoozed": {
+    "message": "Snoozed"
+  },
+  "active": {
+    "message": "Active"
+  },
+  "backup": {
+    "message": "Backup and transfer"
+  },
+  "backupNote": {
+    "message": "Includes settings, exclusions and personal marks. The archive and notification delivery records are not included. Import replaces settings and marks."
+  },
+  "exportBackup": {
+    "message": "Export settings and marks"
+  },
+  "importBackup": {
+    "message": "Import backup"
+  },
+  "importConfirm": {
+    "message": "Replace settings and personal marks? Backup country: {region}; marks: {count}."
+  },
+  "imported": {
+    "message": "Backup imported."
+  },
+  "invalidBackup": {
+    "message": "Invalid backup file. Nothing was imported."
+  },
+  "unsupportedBackup": {
+    "message": "Unsupported backup or storage version."
+  },
+  "diagnostics": {
+    "message": "Diagnostics"
+  },
+  "diagnosticsNote": {
+    "message": "Search coverage is limited by Steam responses and a request budget. Complete means all requested search pages succeeded, not that every Steam giveaway is guaranteed to be found."
+  },
+  "copyReport": {
+    "message": "Copy diagnostic report"
+  },
+  "copied": {
+    "message": "Report copied."
+  },
+  "lastFullCheck": {
+    "message": "Last complete search check"
+  },
+  "provider": {
+    "message": "Source"
+  },
+  "result": {
+    "message": "Result"
+  },
+  "complete": {
+    "message": "Complete"
+  },
+  "limited": {
+    "message": "Limited"
+  },
+  "failed": {
+    "message": "Failed"
+  },
+  "rejected": {
+    "message": "Filtered out"
+  },
+  "technicalDetails": {
+    "message": "Technical details"
+  },
+  "search": {
+    "message": "Search titles"
+  },
+  "all": {
+    "message": "All"
+  },
+  "noHistory": {
+    "message": "No matching entries."
+  },
+  "historyNote": {
+    "message": "Local archive: up to {days} days and 400 entries. Active offers are shown even when archive recording is disabled."
+  },
+  "firstSeen": {
+    "message": "First found"
+  },
+  "lastNotified": {
+    "message": "Last notification"
+  },
+  "actions": {
+    "message": "Actions"
+  },
+  "operationFailed": {
+    "message": "The operation failed. Try again."
+  },
+  "invalidData": {
+    "message": "Please check the entered values."
+  },
+  "notFound": {
+    "message": "The offer was not found. Refresh the list."
+  },
+  "game": {
+    "message": "Game"
+  },
+  "dlc": {
+    "message": "DLC"
+  },
+  "soundtrack": {
+    "message": "Soundtrack"
+  },
+  "demo": {
+    "message": "Demo"
+  },
+  "tool": {
+    "message": "Software"
+  },
+  "package": {
+    "message": "Package"
+  },
+  "unknown": {
+    "message": "Unknown"
+  },
+  "notificationSent": {
+    "message": "Notified"
+  },
+  "notificationPending": {
+    "message": "Not sent"
+  },
+  "quietPending": {
+    "message": "Waiting until quiet hours end: {count}"
+  },
+  "unsavedConfirm": {
+    "message": "Discard unsaved settings changes?"
+  },
+  "notificationTestTitle": {
+    "message": "Test notification: Graveyard Keeper"
+  },
+  "badgeTitle": {
+    "message": "{active} active giveaways · {unread} new"
+  },
+  "quietRange": {
+    "message": "Choose different start and end times."
+  },
+  "noDiagnostics": {
+    "message": "Run a check to see source diagnostics."
+  },
+  "steam_store_search": {
+    "message": "Steam search"
+  },
+  "steam_store_featured": {
+    "message": "Steam featured offers"
+  },
+  "dlc_filter": {
+    "message": "DLC excluded"
+  },
+  "soundtrack_filter": {
+    "message": "Soundtracks excluded"
+  },
+  "demo_filter": {
+    "message": "Demos excluded"
+  },
+  "tool_filter": {
+    "message": "Software excluded"
+  },
+  "package_filter": {
+    "message": "Packages excluded"
+  },
+  "id_blocklist": {
+    "message": "Blocked Steam ID"
+  },
+  "keyword_blocklist": {
+    "message": "Blocked title keyword"
+  },
+  "not_confirmed_free_to_keep": {
+    "message": "Free to Keep not confirmed"
+  },
+  "free_to_keep_disabled": {
+    "message": "Tracking is paused"
+  },
+  "rating_unknown": {
+    "message": "No review data"
+  },
+  "reviews_filter": {
+    "message": "Too few reviews"
+  },
+  "rating_filter": {
+    "message": "Below the rating threshold"
+  },
+  "genre_filter": {
+    "message": "Genre does not match or is unknown"
+  },
+  "platform_filter": {
+    "message": "Platform does not match or is unknown"
+  },
+  "reviewCount": {
+    "message": "{count} reviews"
+  },
+  "navigation": {
+    "message": "Navigation"
+  },
+  "settingsSections": {
+    "message": "Settings sections"
+  },
+  "historyShort": {
+    "message": "History"
+  },
+  "historyTitle": {
+    "message": "Giveaway history"
+  },
+  "historyAndMarks": {
+    "message": "History & marks"
+  },
+  "historyDates": {
+    "message": "Discovery & notification"
+  },
+  "backupShort": {
+    "message": "Backup & transfer"
+  },
+  "advancedShort": {
+    "message": "Advanced"
+  },
+  "compactShort": {
+    "message": "Compact"
+  },
+  "checkStatus": {
+    "message": "Check status and schedule"
+  },
+  "appearance": {
+    "message": "Appearance"
+  },
+  "themeNote": {
+    "message": "Light and dark themes follow your system appearance."
+  },
+  "endsRelative": {
+    "message": "Ends {value}"
+  },
+  "recordCount": {
+    "message": "Records: {count}"
+  }
+}

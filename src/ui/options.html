@@ -1,126 +1,421 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>Steam Promo Watch Settings</title>
-    <link rel="stylesheet" href="./theme.css">
-    <link rel="stylesheet" href="./options.css">
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="options.css" />
   </head>
   <body>
     <main class="page-shell">
       <header class="page-header">
-        <div>
-          <p class="eyebrow">Steam Promo Watch</p>
-          <h1>Settings</h1>
+        <div class="brand">
+          <img
+            src="../../resources/icons/icon48.png"
+            alt=""
+            width="30"
+            height="30"
+          /><span>Steam Promo Watch</span>
         </div>
-        <img class="page-icon" src="../../resources/icons/icon48.png" alt="Steam Promo Watch icon" width="48" height="48">
+        <nav data-i18n-aria="navigation">
+          <a class="header-link" href="history.html" data-i18n="historyShort"
+            >History</a
+          >
+          <a
+            class="header-link"
+            href="options.html"
+            aria-current="page"
+            data-i18n="settings"
+            >Settings</a
+          >
+        </nav>
       </header>
+      <div class="settings-layout">
+        <nav class="settings-nav" data-i18n-aria="settingsSections">
+          <h1 data-i18n="settings">Settings</h1>
+          <a
+            href="#general"
+            data-section="general"
+            aria-current="location"
+            data-i18n="general"
+          ></a>
+          <a
+            href="#notifications"
+            data-section="notifications"
+            data-i18n="notifications"
+          ></a>
+          <a href="#filters" data-section="filters" data-i18n="filters"></a>
+          <a
+            href="#history-settings"
+            data-section="history-settings"
+            data-i18n="historyAndMarks"
+          ></a>
+          <a href="#backup" data-section="backup" data-i18n="backupShort"></a>
+          <a
+            href="#diagnostics"
+            data-section="diagnostics"
+            data-i18n="diagnostics"
+          ></a>
+          <a
+            href="#advanced"
+            data-section="advanced"
+            data-i18n="advancedShort"
+          ></a>
+        </nav>
+        <div class="settings-content">
+          <div
+            id="feedback"
+            class="feedback hidden"
+            role="status"
+            aria-live="polite"
+          ></div>
+          <form id="settings-form" class="settings-grid">
+            <section
+              id="general"
+              class="panel settings-section"
+              aria-labelledby="general-heading"
+            >
+              <h2 id="general-heading" data-i18n="general"></h2>
+              <div class="field-grid">
+                <label
+                  ><span data-i18n="region"></span
+                  ><input
+                    id="region"
+                    type="text"
+                    required
+                    minlength="2"
+                    maxlength="2"
+                    pattern="[A-Za-z]{2}"
+                /></label>
+                <p class="note" data-i18n="regionNote"></p>
+                <label
+                  ><span data-i18n="language"></span
+                  ><select id="language">
+                    <option value="auto" data-i18n="autoLanguage"></option>
+                    <option value="en">English</option>
+                    <option value="ru">Русский</option>
+                  </select></label
+                >
+              </div>
+              <label class="toggle"
+                ><input type="checkbox" id="trackFreeToKeep" /><span
+                  data-i18n="trackFreeToKeep"
+                ></span
+              ></label>
+              <div class="field-grid">
+                <label
+                  ><span data-i18n="checkIntervalMinutes"></span
+                  ><select id="checkIntervalMinutes">
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="60">60</option>
+                    <option value="180">180</option>
+                    <option value="360">360</option>
+                    <option value="720">720</option>
+                    <option value="1440">1440</option>
+                  </select></label
+                >
+              </div>
+              <h3 data-i18n="appearance"></h3>
+              <p class="note" data-i18n="themeNote"></p>
+              <div class="field-grid">
+                <label
+                  ><span data-i18n="sortBy"></span
+                  ><select id="sortBy">
+                    <option value="ending" data-i18n="sort_ending"></option>
+                    <option value="newest" data-i18n="sort_newest"></option>
+                    <option value="rating" data-i18n="sort_rating"></option>
+                    <option
+                      value="title"
+                      data-i18n="sort_title"
+                    ></option></select
+                ></label>
+              </div>
+              <label class="toggle"
+                ><input type="checkbox" id="compactView" /><span
+                  data-i18n="compactView"
+                ></span
+              ></label>
+            </section>
+            <section
+              id="notifications"
+              class="panel settings-section"
+              aria-labelledby="notifications-heading"
+              hidden
+            >
+              <h2 id="notifications-heading" data-i18n="notifications"></h2>
+              <label class="toggle"
+                ><input type="checkbox" id="notificationsEnabled" /><span
+                  data-i18n="notificationsEnabled"
+                ></span></label
+              ><label class="toggle"
+                ><input type="checkbox" id="badgeEnabled" /><span
+                  data-i18n="badgeEnabled"
+                ></span></label
+              ><label class="toggle"
+                ><input type="checkbox" id="remindersEnabled" /><span
+                  data-i18n="remindersEnabled"
+                ></span
+              ></label>
+              <div class="field-grid">
+                <label
+                  ><span data-i18n="reminderHours"></span
+                  ><input
+                    id="reminderHours"
+                    type="number"
+                    min="1"
+                    max="72"
+                    required
+                /></label>
+              </div>
+              <label class="toggle"
+                ><input type="checkbox" id="quietHoursEnabled" /><span
+                  data-i18n="quietHoursEnabled"
+                ></span
+              ></label>
+              <div class="field-grid two-columns">
+                <label
+                  ><span data-i18n="quietHoursStart"></span
+                  ><input id="quietHoursStart" type="time" required /></label
+                ><label
+                  ><span data-i18n="quietHoursEnd"></span
+                  ><input id="quietHoursEnd" type="time" required
+                /></label>
+              </div>
+              <p class="note" data-i18n="quietNote"></p>
+              <div class="button-row">
+                <button
+                  type="button"
+                  id="test-notification"
+                  class="secondary-button"
+                  data-i18n="testNotification"
+                ></button>
+              </div>
+            </section>
+            <section
+              id="filters"
+              class="panel settings-section"
+              aria-labelledby="filters-heading"
+              hidden
+            >
+              <h2 id="filters-heading" data-i18n="filters"></h2>
+              <p class="note" data-i18n="filterNote"></p>
+              <label class="toggle"
+                ><input type="checkbox" id="ignoreDlc" /><span
+                  data-i18n="ignoreDlc"
+                ></span></label
+              ><label class="toggle"
+                ><input type="checkbox" id="ignoreSoundtracks" /><span
+                  data-i18n="ignoreSoundtracks"
+                ></span></label
+              ><label class="toggle"
+                ><input type="checkbox" id="ignoreDemos" /><span
+                  data-i18n="ignoreDemos"
+                ></span></label
+              ><label class="toggle"
+                ><input type="checkbox" id="ignoreTools" /><span
+                  data-i18n="ignoreTools"
+                ></span></label
+              ><label class="toggle"
+                ><input type="checkbox" id="ignorePackages" /><span
+                  data-i18n="ignorePackages"
+                ></span
+              ></label>
+              <div class="field-grid two-columns">
+                <label
+                  ><span data-i18n="minRating"></span
+                  ><input
+                    id="minRating"
+                    type="number"
+                    min="0"
+                    max="100"
+                    required /></label
+                ><label
+                  ><span data-i18n="minReviews"></span
+                  ><input
+                    id="minReviews"
+                    type="number"
+                    min="0"
+                    max="10000000"
+                    required
+                /></label>
+              </div>
+              <label class="toggle"
+                ><input type="checkbox" id="includeUnrated" /><span
+                  data-i18n="includeUnrated"
+                ></span
+              ></label>
+              <div class="field-grid">
+                <label
+                  ><span data-i18n="genres"></span
+                  ><textarea id="genres" rows="3"></textarea>
+                </label>
+              </div>
+              <p class="note" data-i18n="genresNote"></p>
+              <fieldset>
+                <legend data-i18n="platforms"></legend>
+                <label class="toggle"
+                  ><input type="checkbox" id="platform-windows" />
+                  Windows</label
+                ><label class="toggle"
+                  ><input type="checkbox" id="platform-mac" /> macOS</label
+                ><label class="toggle"
+                  ><input type="checkbox" id="platform-linux" /> Linux /
+                  SteamOS</label
+                >
+              </fieldset>
+            </section>
+            <section
+              id="history-settings"
+              class="panel settings-section"
+              aria-labelledby="history-settings-heading"
+              hidden
+            >
+              <h2
+                id="history-settings-heading"
+                data-i18n="historyAndMarks"
+              ></h2>
+              <label class="toggle"
+                ><input type="checkbox" id="historyEnabled" /><span
+                  data-i18n="historyEnabled"
+                ></span
+              ></label>
+              <div class="field-grid">
+                <label
+                  ><span data-i18n="historyRetentionDays"></span
+                  ><input
+                    id="historyRetentionDays"
+                    type="number"
+                    min="1"
+                    max="365"
+                    required
+                /></label>
+              </div>
+              <h3 data-i18n="personalMarks"></h3>
+              <div id="personal-marks"></div>
+              <div class="button-row">
+                <button
+                  type="button"
+                  id="clear-history"
+                  class="secondary-button danger-button"
+                  data-i18n="clearHistory"
+                ></button>
+              </div>
+            </section>
+            <section
+              id="backup"
+              class="panel settings-section"
+              aria-labelledby="backup-heading"
+              hidden
+            >
+              <h2 id="backup-heading" data-i18n="backup"></h2>
+              <p class="note" data-i18n="backupNote"></p>
+              <div class="button-row">
+                <button
+                  type="button"
+                  id="export-backup"
+                  class="secondary-button"
+                  data-i18n="exportBackup"
+                ></button>
+              </div>
+              <label class="import-field"
+                ><span data-i18n="importBackup"></span
+                ><input
+                  id="import-backup"
+                  type="file"
+                  accept="application/json,.json"
+              /></label>
+            </section>
+            <section
+              id="diagnostics"
+              class="panel settings-section"
+              aria-labelledby="diagnostics-heading"
+              hidden
+            >
+              <h2 id="diagnostics-heading" data-i18n="diagnostics"></h2>
+              <p class="note" data-i18n="diagnosticsNote"></p>
+              <p id="diagnostics-summary"></p>
+              <ul id="source-status"></ul>
+              <details>
+                <summary data-i18n="rejected"></summary>
+                <ul id="rejected-list"></ul>
+              </details>
+              <div class="button-row">
+                <button
+                  type="button"
+                  id="check-now"
+                  class="secondary-button"
+                  data-i18n="checkNow"
+                ></button
+                ><button
+                  type="button"
+                  id="copy-report"
+                  class="secondary-button"
+                  data-i18n="copyReport"
+                ></button>
+              </div>
+              <details>
+                <summary data-i18n="technicalDetails"></summary>
+                <pre id="diagnostics-report"></pre>
+              </details>
+            </section>
+            <section
+              id="advanced"
+              class="panel settings-section"
+              aria-labelledby="advanced-heading"
+              hidden
+            >
+              <h2 id="advanced-heading" data-i18n="advanced"></h2>
 
-      <form id="settings-form" class="settings-grid">
-        <section class="panel">
-          <h2>Notifications</h2>
-          <label class="toggle"><input type="checkbox" id="notificationsEnabled"> Enable browser notifications</label>
-          <label class="toggle"><input type="checkbox" id="badgeEnabled"> Show active Free to Keep count on the extension icon (red means new unread finds)</label>
-          <label class="toggle"><input type="checkbox" id="renotifyAfterRetention"> Allow repeat notification after dedupe TTL expires</label>
-          <div class="field-grid">
-            <label>
-              <span>Dedupe retention (days)</span>
-              <input type="number" min="1" max="365" id="notifiedRetentionDays">
-            </label>
+              <label class="toggle"
+                ><input type="checkbox" id="renotifyAfterRetention" /><span
+                  data-i18n="renotifyAfterRetention"
+                ></span
+              ></label>
+              <div class="field-grid">
+                <label
+                  ><span data-i18n="notifiedRetentionDays"></span
+                  ><input
+                    id="notifiedRetentionDays"
+                    type="number"
+                    min="1"
+                    max="365"
+                    required /></label
+                ><label
+                  ><span data-i18n="blockedAppIds"></span
+                  ><textarea id="blockedAppIds" rows="3"></textarea></label
+                ><label
+                  ><span data-i18n="blockedKeywords"></span
+                  ><textarea id="blockedKeywords" rows="3"></textarea>
+                </label>
+              </div>
+              <div class="button-row">
+                <button
+                  type="button"
+                  id="reset-settings"
+                  class="secondary-button danger-button"
+                  data-i18n="resetSettings"
+                ></button>
+              </div>
+            </section>
+          </form>
+          <div class="sticky-save">
+            <p id="form-status" role="status" aria-live="polite"></p>
+            <button
+              id="save-settings"
+              type="submit"
+              form="settings-form"
+              class="primary-button"
+              data-i18n="saveSettings"
+            ></button>
           </div>
-        </section>
-
-        <section class="panel">
-          <h2>Tracked promotion types</h2>
-          <label class="toggle"><input type="checkbox" id="trackFreeToKeep"> Track Free to Keep</label>
-          <p class="note">This extension intentionally tracks only Free to Keep promotions. Temporary free / Free Weekend / Play for Free campaigns are not included.</p>
-        </section>
-
-        <section class="panel">
-          <h2>Schedule</h2>
-          <div class="field-grid">
-            <label>
-              <span>Check frequency</span>
-              <select id="checkIntervalMinutes">
-                <option value="15">15 minutes</option>
-                <option value="30">30 minutes</option>
-                <option value="60">1 hour</option>
-                <option value="180">3 hours</option>
-                <option value="360">6 hours</option>
-                <option value="720">12 hours</option>
-                <option value="1440">24 hours</option>
-              </select>
-            </label>
-          </div>
-          <label class="toggle"><input type="checkbox" id="quietHoursEnabled"> Enable quiet hours</label>
-          <div class="field-grid two-columns">
-            <label>
-              <span>Quiet start</span>
-              <input type="time" id="quietHoursStart">
-            </label>
-            <label>
-              <span>Quiet end</span>
-              <input type="time" id="quietHoursEnd">
-            </label>
-          </div>
-        </section>
-
-        <section class="panel">
-          <h2>History</h2>
-          <label class="toggle"><input type="checkbox" id="historyEnabled"> Keep local history</label>
-          <div class="field-grid">
-            <label>
-              <span>History retention (days)</span>
-              <input type="number" min="1" max="365" id="historyRetentionDays">
-            </label>
-          </div>
-        </section>
-
-        <section class="panel">
-          <h2>Filters</h2>
-          <div class="toggle-grid">
-            <label class="toggle"><input type="checkbox" id="ignoreDlc"> Ignore DLC</label>
-            <label class="toggle"><input type="checkbox" id="ignoreSoundtracks"> Ignore soundtracks</label>
-            <label class="toggle"><input type="checkbox" id="ignoreDemos"> Ignore demos</label>
-            <label class="toggle"><input type="checkbox" id="ignoreTools"> Ignore tools</label>
-            <label class="toggle"><input type="checkbox" id="ignorePackages"> Ignore packages</label>
-          </div>
-          <div class="field-grid">
-            <label>
-              <span>Blocked appId / packageId list</span>
-              <textarea id="blockedAppIds" rows="4" placeholder="One ID per line"></textarea>
-            </label>
-            <label>
-              <span>Blocked title keywords</span>
-              <textarea id="blockedKeywords" rows="4" placeholder="One keyword per line"></textarea>
-            </label>
-          </div>
-        </section>
-
-        <section id="ignored-promotions-panel" class="panel">
-          <h2>Ignored items</h2>
-          <p id="ignored-promotions-note" class="note">Ignored titles stay here until you restore them.</p>
-          <div id="ignored-promotions-empty" class="note">No ignored items.</div>
-          <div id="ignored-promotions-list" class="ignored-list hidden"></div>
-        </section>
-
-        <section class="panel panel-wide">
-          <h2>Actions</h2>
-          <div class="button-row actions-row">
-            <button type="submit" class="primary-button">Save settings</button>
-            <button type="button" id="test-notification" class="secondary-button">Send test notification</button>
-            <button type="button" id="clear-history" class="secondary-button danger-button">Clear history</button>
-            <button type="button" id="reset-settings" class="secondary-button">Reset settings</button>
-          </div>
-          <p id="form-status" class="note"></p>
-        </section>
-      </form>
-
-      <p id="app-version" class="app-version" aria-label="Extension version"></p>
+        </div>
+      </div>
+      <p id="app-version" class="app-version"></p>
     </main>
-
-    <script type="module" src="./options.js"></script>
+    <script type="module" src="options.js"></script>
   </body>
-  </html>
+</html>

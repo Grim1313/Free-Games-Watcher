@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="215" viewBox="0 0 460 215">
+  <defs><linearGradient id="sky" x2="1" y2="1"><stop stop-color="#173652"/><stop offset="1" stop-color="#4e7692"/></linearGradient></defs>
+  <path fill="url(#sky)" d="M0 0h460v215H0z"/>
+  <circle cx="352" cy="62" r="30" fill="#f3c46e"/>
+  <path d="m0 178 116-130 104 130 74-93 166 116v14H0" fill="#24483e"/>
+  <path d="m78 91 38-43 35 44-31-14-16 14-11-10z" fill="#e1eceb"/>
+  <path d="M0 166h460v49H0z" fill="#10242e"/>
+  <text x="230" y="199" text-anchor="middle" font-family="Arial,sans-serif" font-size="32" font-weight="bold" fill="white">HEADER ART</text>
+  <path d="M3 24V3h21M436 3h21v21M3 191v21h21M436 212h21v-21" fill="none" stroke="#f3c46e" stroke-width="6"/>
+</svg>

@@ -1,263 +1,305 @@
-import { getContentTypeLabel, getPromotionTypeLabel } from "../lib/filters.js";
-import { formatDateTime } from "../lib/utils.js";
-
-const form = document.querySelector("#settings-form");
-const statusLine = document.querySelector("#form-status");
-const testButton = document.querySelector("#test-notification");
-const clearHistoryButton = document.querySelector("#clear-history");
-const resetSettingsButton = document.querySelector("#reset-settings");
-const ignoredNote = document.querySelector("#ignored-promotions-note");
-const ignoredEmpty = document.querySelector("#ignored-promotions-empty");
-const ignoredList = document.querySelector("#ignored-promotions-list");
-const appVersion = document.querySelector("#app-version");
-const STATUS_VARIANTS = Object.freeze({
-  neutral: "neutral",
-  success: "success",
-  error: "error"
-});
-const STATUS_CLASS_NAMES = ["status-success", "status-error"];
-
-appVersion.textContent = `Version ${chrome.runtime.getManifest().version}`;
-
-const fieldIds = [
+import {
+  t,
+  localize,
+  send,
+  el,
+  button,
+  announce,
+  date,
+  action,
+  watch,
+  errorText,
+} from "./common.js";
+import { actionState } from "../lib/actions.js";
+import { buildSteamUrlFromStableId } from "../lib/utils.js";
+const $ = (id) => document.getElementById(id);
+const fields = [
+  "region",
+  "language",
+  "sortBy",
+  "compactView",
   "notificationsEnabled",
+  "badgeEnabled",
+  "remindersEnabled",
+  "reminderHours",
   "trackFreeToKeep",
   "checkIntervalMinutes",
   "quietHoursEnabled",
   "quietHoursStart",
   "quietHoursEnd",
-  "badgeEnabled",
   "historyEnabled",
   "historyRetentionDays",
-  "notifiedRetentionDays",
   "renotifyAfterRetention",
+  "notifiedRetentionDays",
+];
+const filters = [
   "ignoreDlc",
   "ignoreSoundtracks",
   "ignoreDemos",
   "ignoreTools",
   "ignorePackages",
+  "minRating",
+  "minReviews",
+  "includeUnrated",
+  "genres",
   "blockedAppIds",
-  "blockedKeywords"
+  "blockedKeywords",
 ];
-
-function field(id) {
-  return document.getElementById(id);
-}
-
-async function sendMessage(type, payload = {}) {
-  return chrome.runtime.sendMessage({ type, ...payload });
-}
-
-function setStatus(message, variant = STATUS_VARIANTS.neutral) {
-  statusLine.textContent = message;
-  statusLine.classList.remove(...STATUS_CLASS_NAMES);
-  if (variant === STATUS_VARIANTS.success) {
-    statusLine.classList.add("status-success");
-  } else if (variant === STATUS_VARIANTS.error) {
-    statusLine.classList.add("status-error");
-  }
-}
-
-function fillForm(settings) {
-  field("notificationsEnabled").checked = settings.notificationsEnabled;
-  field("trackFreeToKeep").checked = settings.trackFreeToKeep;
-  field("checkIntervalMinutes").value = String(settings.checkIntervalMinutes);
-  field("quietHoursEnabled").checked = settings.quietHoursEnabled;
-  field("quietHoursStart").value = settings.quietHoursStart;
-  field("quietHoursEnd").value = settings.quietHoursEnd;
-  field("badgeEnabled").checked = settings.badgeEnabled;
-  field("historyEnabled").checked = settings.historyEnabled;
-  field("historyRetentionDays").value = String(settings.historyRetentionDays);
-  field("notifiedRetentionDays").value = String(settings.notifiedRetentionDays);
-  field("renotifyAfterRetention").checked = settings.renotifyAfterRetention;
-  field("ignoreDlc").checked = settings.filters.ignoreDlc;
-  field("ignoreSoundtracks").checked = settings.filters.ignoreSoundtracks;
-  field("ignoreDemos").checked = settings.filters.ignoreDemos;
-  field("ignoreTools").checked = settings.filters.ignoreTools;
-  field("ignorePackages").checked = settings.filters.ignorePackages;
-  field("blockedAppIds").value = settings.filters.blockedAppIds.join("\n");
-  field("blockedKeywords").value = settings.filters.blockedKeywords.join("\n");
-}
-
-function renderIgnoredPromotions(entries) {
-  const ignoredEntries = Array.isArray(entries) ? entries : [];
-  ignoredList.textContent = "";
-  ignoredList.classList.toggle("hidden", ignoredEntries.length === 0);
-  ignoredEmpty.classList.toggle("hidden", ignoredEntries.length > 0);
-  ignoredNote.textContent = ignoredEntries.length > 0
-    ? `${ignoredEntries.length} promotion(s) are currently ignored. Restore any title to make it visible again.`
-    : "Ignored titles stay here until you restore them.";
-
-  for (const entry of ignoredEntries) {
-    const item = document.createElement("article");
-    item.className = "ignored-item";
-
-    const copy = document.createElement("div");
-    copy.className = "ignored-copy";
-
-    const title = document.createElement("a");
-    title.className = "ignored-title";
-    title.href = entry.url;
-    title.target = "_blank";
-    title.rel = "noreferrer";
-    title.textContent = entry.title;
-
-    const meta = document.createElement("div");
-    meta.className = "ignored-meta";
-    meta.textContent = `${getPromotionTypeLabel(entry.promoType)} • ${getContentTypeLabel(entry.contentType)} • Ignored ${formatDateTime(entry.dismissedAt)}`;
-
-    const actions = document.createElement("div");
-    actions.className = "ignored-actions";
-
-    const restoreButton = document.createElement("button");
-    restoreButton.type = "button";
-    restoreButton.className = "secondary-button";
-    restoreButton.textContent = "Restore";
-    restoreButton.addEventListener("click", async () => {
-      restoreButton.disabled = true;
-      setStatus(`Restoring ${entry.title}...`);
-      try {
-        const response = await sendMessage("RESTORE_PROMOTION", { id: entry.id });
-        if (!response?.ok) {
-          setStatus(response?.error || "Failed to restore promotion.", STATUS_VARIANTS.error);
-          restoreButton.disabled = false;
-          return;
-        }
-
-        renderIgnoredPromotions(ignoredEntries.filter((ignoredEntry) => ignoredEntry.id !== entry.id));
-        setStatus(`${entry.title} restored.`, STATUS_VARIANTS.success);
-      } catch (error) {
-        setStatus(error instanceof Error ? error.message : "Failed to restore promotion.", STATUS_VARIANTS.error);
-        restoreButton.disabled = false;
-      }
-    });
-
-    const openLink = document.createElement("a");
-    openLink.className = "secondary-button";
-    openLink.href = entry.url;
-    openLink.target = "_blank";
-    openLink.rel = "noreferrer";
-    openLink.textContent = "Open on Steam";
-
-    actions.append(restoreButton, openLink);
-    copy.append(title, meta, actions);
-    item.append(copy);
-    ignoredList.append(item);
-  }
-}
-
-function collectSettings() {
-  return {
-    notificationsEnabled: field("notificationsEnabled").checked,
-    trackFreeToKeep: field("trackFreeToKeep").checked,
-    checkIntervalMinutes: Number(field("checkIntervalMinutes").value),
-    quietHoursEnabled: field("quietHoursEnabled").checked,
-    quietHoursStart: field("quietHoursStart").value,
-    quietHoursEnd: field("quietHoursEnd").value,
-    badgeEnabled: field("badgeEnabled").checked,
-    historyEnabled: field("historyEnabled").checked,
-    historyRetentionDays: Number(field("historyRetentionDays").value),
-    notifiedRetentionDays: Number(field("notifiedRetentionDays").value),
-    renotifyAfterRetention: field("renotifyAfterRetention").checked,
-    filters: {
-      ignoreDlc: field("ignoreDlc").checked,
-      ignoreSoundtracks: field("ignoreSoundtracks").checked,
-      ignoreDemos: field("ignoreDemos").checked,
-      ignoreTools: field("ignoreTools").checked,
-      ignorePackages: field("ignorePackages").checked,
-      blockedAppIds: field("blockedAppIds").value,
-      blockedKeywords: field("blockedKeywords").value
-    }
-  };
-}
-
-async function loadSettings() {
-  const response = await sendMessage("GET_OPTIONS_DATA");
-  if (!response?.ok) {
-    setStatus(response?.error || "Unable to load settings.", STATUS_VARIANTS.error);
-    return;
-  }
-  fillForm(response.settings);
-  renderIgnoredPromotions(response.ignoredPromotions || []);
-  setStatus(
-    response.runtimeState.lastErrorMessage || "Settings loaded.",
-    response.runtimeState.lastErrorMessage ? STATUS_VARIANTS.error : STATUS_VARIANTS.success
-  );
-}
-
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  setStatus("Saving settings...");
-  try {
-    const response = await sendMessage("SAVE_SETTINGS", { settings: collectSettings() });
-    if (!response?.ok) {
-      setStatus(response?.error || "Failed to save settings.", STATUS_VARIANTS.error);
-      return;
-    }
-    fillForm(response.settings);
-    setStatus("Settings saved.", STATUS_VARIANTS.success);
-  } catch (error) {
-    setStatus(error instanceof Error ? error.message : "Failed to save settings.", STATUS_VARIANTS.error);
-  }
-});
-
-testButton.addEventListener("click", async () => {
-  setStatus("Sending test notification...");
-  try {
-    const response = await sendMessage("TEST_NOTIFICATION");
-    setStatus(
-      response?.ok ? "Test notification sent." : (response?.error || "Test notification failed."),
-      response?.ok ? STATUS_VARIANTS.success : STATUS_VARIANTS.error
-    );
-  } catch (error) {
-    setStatus(error instanceof Error ? error.message : "Test notification failed.", STATUS_VARIANTS.error);
-  }
-});
-
-clearHistoryButton.addEventListener("click", async () => {
-  if (!window.confirm("Clear all stored promotion history? This action cannot be undone.")) {
-    setStatus("Clear history canceled.");
-    return;
-  }
-
-  setStatus("Clearing stored history...");
-  try {
-    const response = await sendMessage("CLEAR_HISTORY");
-    setStatus(
-      response?.ok ? "History cleared." : (response?.error || "Failed to clear history."),
-      response?.ok ? STATUS_VARIANTS.success : STATUS_VARIANTS.error
-    );
-  } catch (error) {
-    setStatus(error instanceof Error ? error.message : "Failed to clear history.", STATUS_VARIANTS.error);
-  }
-});
-
-resetSettingsButton.addEventListener("click", async () => {
-  if (!window.confirm("Reset all settings to defaults? This action cannot be undone.")) {
-    setStatus("Reset settings canceled.");
-    return;
-  }
-
-  setStatus("Resetting settings...");
-  try {
-    const response = await sendMessage("RESET_SETTINGS");
-    if (!response?.ok) {
-      setStatus(response?.error || "Failed to reset settings.", STATUS_VARIANTS.error);
-      return;
-    }
-    fillForm(response.settings);
-    setStatus("Settings reset to defaults.", STATUS_VARIANTS.success);
-  } catch (error) {
-    setStatus(error instanceof Error ? error.message : "Failed to reset settings.", STATUS_VARIANTS.error);
-  }
-});
-
-for (const id of fieldIds) {
-  field(id).addEventListener("input", () => {
-    setStatus("Unsaved changes.");
+let dirty = false,
+  report = "",
+  loaded = false;
+function showSection(id) {
+  const section =
+    document.querySelector(`.settings-section[id="${id}"]`) || $("general");
+  document.querySelectorAll(".settings-section").forEach((panel) => {
+    panel.hidden = panel !== section;
+  });
+  document.querySelectorAll("[data-section]").forEach((link) => {
+    if (link.dataset.section === section.id)
+      link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
   });
 }
-
-loadSettings().catch((error) => {
-  setStatus(error instanceof Error ? error.message : String(error), STATUS_VARIANTS.error);
+function sectionFromHash() {
+  // Match against known IDs rather than inserting arbitrary hash text into a selector.
+  const id = location.hash.slice(1);
+  const valid = [...document.querySelectorAll(".settings-section")].some(
+    (panel) => panel.id === id,
+  );
+  showSection(valid ? id : "general");
+}
+window.addEventListener("hashchange", sectionFromHash);
+document.querySelectorAll("[data-section]").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (location.hash !== link.hash) history.pushState(null, "", link.hash);
+    showSection(link.dataset.section);
+    window.scrollTo(0, 0);
+  });
 });
+sectionFromHash();
+// Reveal invalid controls before native form validation tries to focus them.
+let firstInvalid;
+$("settings-form").addEventListener(
+  "invalid",
+  (event) => {
+    if (firstInvalid) return;
+    firstInvalid = event.target;
+    const sectionId = event.target.closest(".settings-section").id;
+    showSection(sectionId);
+    history.replaceState(null, "", `#${sectionId}`);
+    event.target.closest("details")?.setAttribute("open", "");
+    setTimeout(() => {
+      firstInvalid = null;
+    }, 0);
+  },
+  true,
+);
+function fill(settings) {
+  for (const key of [...fields, ...filters]) {
+    const input = $(key),
+      value = fields.includes(key) ? settings[key] : settings.filters[key];
+    if (input.type === "checkbox") input.checked = value;
+    else input.value = Array.isArray(value) ? value.join("\n") : value;
+  }
+  for (const p of ["windows", "mac", "linux"])
+    $(`platform-${p}`).checked = settings.filters.platforms.includes(p);
+  for (const option of $("checkIntervalMinutes").options)
+    option.textContent =
+      Number(option.value) < 60
+        ? t("minutes", { count: option.value })
+        : t("hours", { count: Number(option.value) / 60 });
+  $("quietHoursEnd").setCustomValidity("");
+}
+function collect() {
+  const read = (key) =>
+    $(key).type === "checkbox"
+      ? $(key).checked
+      : $(key).type === "number" || key === "checkIntervalMinutes"
+        ? Number($(key).value)
+        : $(key).value;
+  return {
+    ...Object.fromEntries(fields.map((k) => [k, read(k)])),
+    filters: {
+      ...Object.fromEntries(filters.map((k) => [k, read(k)])),
+      platforms: ["windows", "mac", "linux"].filter(
+        (p) => $(`platform-${p}`).checked,
+      ),
+    },
+  };
+}
+async function refresh() {
+  const data = await send("GET_OPTIONS_DATA");
+  if (!dirty) {
+    await localize(data.settings);
+    fill(data.settings);
+    $("form-status").textContent = t("saved");
+  }
+  loaded = true;
+  $("app-version").textContent = t("version", {
+    value: chrome.runtime.getManifest().version,
+  });
+  const marks = $("personal-marks");
+  marks.replaceChildren();
+  for (const [stableId, record] of Object.entries(data.userActions)) {
+    const entry = data.latestPromotions.find(
+      (e) => e.stableId === stableId,
+    ) || { stableId, title: record.title, fingerprint: record.hiddenCampaign };
+    const state = actionState(entry, data.userActions);
+    if (!state) continue;
+    const row = el("article", "ignored-item");
+    const link = el("a", "ignored-title", entry.title);
+    link.href = buildSteamUrlFromStableId(stableId);
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    row.append(
+      link,
+      el(
+        "span",
+        "ignored-meta",
+        t(state) +
+          (state === "snoozed" ? ` · ${date(record.snoozedUntil)}` : ""),
+      ),
+      button(t("restore"), () => action(entry, "restore"), "secondary-button"),
+    );
+    marks.append(row);
+  }
+  if (!marks.childElementCount) marks.append(el("p", "note", t("noMarks")));
+  $("diagnostics-summary").textContent =
+    `${t("lastFullCheck")}: ${date(data.runtimeState.lastFullSuccessAt)} · ${t("region")}: ${data.settings.region}`;
+  $("source-status").replaceChildren();
+  for (const source of data.diagnostics.sources || [])
+    $("source-status").append(
+      el(
+        "li",
+        "note",
+        `${t(source.id)}: ${t(!source.ok ? "failed" : !source.complete || source.coverageLimited ? "limited" : "complete")}`,
+      ),
+    );
+  if (!data.diagnostics.sources?.length)
+    $("source-status").append(el("li", "note", t("noDiagnostics")));
+  $("rejected-list").replaceChildren();
+  for (const item of data.diagnostics.rejected || [])
+    $("rejected-list").append(
+      el("li", "note", `${item.title}: ${t(item.reason)}`),
+    );
+  report = JSON.stringify(
+    {
+      version: chrome.runtime.getManifest().version,
+      runtime: data.runtimeState,
+      diagnostics: data.diagnostics,
+    },
+    null,
+    2,
+  );
+  $("diagnostics-report").textContent = report;
+  $("check-now").disabled =
+    data.runtimeState.checkInProgress || !data.settings.trackFreeToKeep;
+}
+$("settings-form").addEventListener("input", () => {
+  $("quietHoursEnd").setCustomValidity(
+    $("quietHoursEnabled").checked &&
+      $("quietHoursStart").value === $("quietHoursEnd").value
+      ? t("quietRange")
+      : "",
+  );
+  dirty = true;
+  $("form-status").textContent = t("unsaved");
+});
+window.addEventListener("beforeunload", (event) => {
+  if (dirty) {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+});
+$("settings-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!loaded) return;
+  const submit = event.submitter || $("save-settings");
+  submit.disabled = true;
+  $("form-status").textContent = t("saving");
+  try {
+    await send("SAVE_SETTINGS", { settings: collect() });
+    dirty = false;
+    await refresh();
+    $("form-status").textContent = t("saved");
+  } catch (e) {
+    announce(errorText(e));
+  } finally {
+    submit.disabled = false;
+  }
+});
+function on(id, handler) {
+  $(id).addEventListener("click", async () => {
+    $(id).disabled = true;
+    try {
+      await handler();
+    } catch (e) {
+      announce(errorText(e));
+    } finally {
+      $(id).disabled = false;
+    }
+  });
+}
+on("test-notification", async () => {
+  await send("TEST_NOTIFICATION");
+  announce(t("testSent"));
+});
+on("check-now", async () => {
+  await send("CHECK_NOW");
+  await refresh();
+});
+on("clear-history", async () => {
+  if (confirm(t("clearConfirm"))) {
+    await send("CLEAR_HISTORY");
+    announce(t("cleared"));
+  }
+});
+on("reset-settings", async () => {
+  if (confirm(t("resetConfirm"))) {
+    await send("RESET_SETTINGS");
+    dirty = false;
+    await refresh();
+    announce(t("saved"));
+  }
+});
+on("copy-report", async () => {
+  await navigator.clipboard.writeText(report);
+  announce(t("copied"));
+});
+on("export-backup", async () => {
+  const result = await send("EXPORT_BACKUP");
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(result.data, null, 2)], {
+      type: "application/json",
+    }),
+  );
+  const link = el("a");
+  link.href = url;
+  link.download = "steam-promo-watch-backup.json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+$("import-backup").addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > 1024 * 1024) throw new Error("invalidBackup");
+    const data = await file.text();
+    const preview = await send("VALIDATE_BACKUP", { data });
+    if (confirm(t("importConfirm", preview))) {
+      await send("IMPORT_BACKUP", { data });
+      dirty = false;
+      await refresh();
+      announce(t("imported"));
+    }
+  } catch (e) {
+    announce(errorText(e));
+  } finally {
+    event.target.value = "";
+  }
+});
+watch(refresh);
+refresh().catch((e) => announce(errorText(e)));

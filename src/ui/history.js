@@ -1,95 +1,152 @@
-import { getContentTypeLabel, getPromotionTypeLabel, getStatusLabel } from "../lib/filters.js";
-import { formatDateTime, getPromotionImageUrl } from "../lib/utils.js";
-import { buildSteamStoreAriaLabel, createSteamReviewBadge } from "./review-badge.js";
-
-const note = document.querySelector("#history-note");
-const emptyState = document.querySelector("#empty-state");
-const table = document.querySelector("#history-table");
-const body = document.querySelector("#history-body");
-
-async function loadHistory() {
-  const response = await chrome.runtime.sendMessage({ type: "GET_HISTORY_DATA" });
-  if (!response?.ok) {
-    note.textContent = response?.error || "Unable to load history.";
-    emptyState.classList.remove("hidden");
-    return;
-  }
-
-  note.textContent = response.settings.historyEnabled
-    ? "Full local archive of promotions seen by the extension."
-    : "History recording is disabled. Existing rows are shown until you clear them.";
-
-  const entries = response.historyEntries || [];
-  emptyState.classList.toggle("hidden", entries.length > 0);
-  table.classList.toggle("hidden", entries.length === 0);
-  body.textContent = "";
-
+import {
+  t,
+  localize,
+  send,
+  el,
+  button,
+  announce,
+  date,
+  deadline,
+  steamLink,
+  artwork,
+  action,
+  sortEntries,
+  watch,
+  errorText,
+  moreActions,
+  preserveListInteraction,
+} from "./common.js";
+import { actionState } from "../lib/actions.js";
+import { buildSteamUrlFromStableId } from "../lib/utils.js";
+const $ = (id) => document.getElementById(id);
+let data;
+if (location.hash === "#active") $("status-filter").value = "active";
+function render() {
+  if (!data) return;
+  const merged = new Map(data.historyEntries.map((e) => [e.id, e]));
+  for (const e of data.latestPromotions) merged.set(e.id, e);
+  const represented = new Set([...merged.values()].map((e) => e.stableId));
+  for (const [stableId, a] of Object.entries(data.userActions))
+    if (
+      !represented.has(stableId) &&
+      (a.claimed ||
+        a.ignored ||
+        a.hiddenCampaign ||
+        a.snoozedUntil > Date.now())
+    )
+      merged.set(stableId, {
+        stableId,
+        id: stableId,
+        title: a.title,
+        url: buildSteamUrlFromStableId(stableId),
+        fingerprint: a.hiddenCampaign,
+        status: "unknown",
+      });
+  const query = $("search").value.trim().toLocaleLowerCase();
+  const filter = $("status-filter").value;
+  const entries = sortEntries(
+    [...merged.values()].filter((e) => {
+      const state = actionState(e, data.userActions);
+      const status = e.endsAt && e.endsAt <= Date.now() ? "expired" : e.status;
+      return (
+        (!query || e.title.toLocaleLowerCase().includes(query)) &&
+        (filter === "all" ||
+          (filter === "active"
+            ? data.visiblePromotions.some((v) => v.id === e.id)
+            : filter === "expired"
+              ? status === "expired"
+              : state === filter))
+      );
+    }),
+    $("sort-by").value,
+  );
+  $("history-note").textContent = t("historyNote", {
+    days: data.settings.historyRetentionDays,
+  });
+  $("history-count").textContent = t("recordCount", { count: entries.length });
+  $("empty-state").classList.toggle("hidden", entries.length > 0);
+  $("history-table").classList.toggle("hidden", !entries.length);
+  const restoreInteraction = preserveListInteraction($("history-body"));
+  $("history-body").replaceChildren();
   for (const entry of entries) {
-    const row = document.createElement("tr");
-
-    const titleCell = document.createElement("td");
-    titleCell.className = "title-cell";
-
-    const titleWrap = document.createElement("div");
-    titleWrap.className = "history-entry";
-
-    const imageUrl = getPromotionImageUrl(entry);
-    if (imageUrl) {
-      const preview = document.createElement("a");
-      preview.className = "history-entry-preview";
-      preview.href = entry.url;
-      preview.target = "_blank";
-      preview.rel = "noreferrer";
-      preview.setAttribute("aria-label", buildSteamStoreAriaLabel(entry.title, entry));
-
-      const image = document.createElement("img");
-      image.className = "history-entry-image";
-      image.src = imageUrl;
-      image.alt = `${entry.title} artwork`;
-      image.loading = "lazy";
-
-      preview.append(image);
-      const reviewBadge = createSteamReviewBadge(entry);
-      if (reviewBadge) {
-        preview.append(reviewBadge);
-      }
-      titleWrap.append(preview);
+    const row = el("tr");
+    row.dataset.entryId = entry.id;
+    const titleCell = el("td", "title-cell");
+    const wrap = el("div", "history-entry");
+    const title = el("div", "history-entry-copy");
+    wrap.append(artwork(entry, true), title);
+    titleCell.append(steamLink(entry, entry.title, "game-link"), wrap);
+    if (entry.endsAt) {
+      const end = el("div", "deadline-line", deadline(entry, true));
+      end.title = date(entry.endsAt);
+      end.setAttribute("aria-label", deadline(entry));
+      title.append(end);
     }
-
-    const titleCopy = document.createElement("div");
-    titleCopy.className = "history-entry-copy";
-
-    const link = document.createElement("a");
-    link.className = "game-link";
-    link.href = entry.url;
-    link.target = "_blank";
-    link.rel = "noreferrer";
-    link.textContent = entry.title;
-    titleCopy.append(link);
-    titleWrap.append(titleCopy);
-    titleCell.append(titleWrap);
-
-    const promoTypeCell = document.createElement("td");
-    promoTypeCell.innerHTML = `<span class="tag">${getPromotionTypeLabel(entry.promoType)}</span>`;
-
-    const contentTypeCell = document.createElement("td");
-    contentTypeCell.textContent = getContentTypeLabel(entry.contentType);
-
-    const statusCell = document.createElement("td");
-    statusCell.textContent = getStatusLabel(entry.status, entry.notificationStatus);
-
-    const firstSeenCell = document.createElement("td");
-    firstSeenCell.textContent = formatDateTime(entry.firstSeenAt);
-
-    const notifiedCell = document.createElement("td");
-    notifiedCell.textContent = formatDateTime(entry.lastNotifiedAt);
-
-    row.append(titleCell, promoTypeCell, contentTypeCell, statusCell, firstSeenCell, notifiedCell);
-    body.append(row);
+    if (entry.stale) title.append(el("div", "meta-line", t("stale")));
+    if (entry.reviewTotal)
+      title.append(
+        el(
+          "div",
+          "meta-line",
+          t("reviewSummary", {
+            percent: entry.reviewPercent,
+            count: entry.reviewTotal,
+          }),
+        ),
+      );
+    const personal = actionState(entry, data.userActions);
+    const status =
+      entry.endsAt && entry.endsAt <= Date.now() ? "expired" : entry.status;
+    const state = el("td");
+    state.append(
+      el(
+        "span",
+        `tag${status === "active" ? " status-active" : ""}`,
+        t(status === "expired" ? "ended" : status),
+      ),
+    );
+    if (personal) state.append(el("div", "tag", t(personal)));
+    const actions = el("td", "actions-cell");
+    const controls = el("div", "card-actions");
+    const store = steamLink(entry, "Steam ↗", "header-link");
+    store.setAttribute("aria-label", `${t("openSteam")}: ${entry.title}`);
+    controls.append(store);
+    if (personal)
+      controls.append(button(t("restore"), () => action(entry, "restore")));
+    else {
+      controls.append(button(t("claim"), () => action(entry, "claim")));
+    }
+    const extra = [];
+    if (!personal)
+      extra.push(button(t("ignore"), () => action(entry, "ignore")));
+    if (entry.unread)
+      extra.push(
+        button(t("markRead"), () => send("MARK_READ", { ids: [entry.id] })),
+      );
+    if (extra.length) controls.append(moreActions(entry, extra));
+    actions.append(controls);
+    const dates = el("td");
+    const dateStack = el("div", "history-dates");
+    for (const [label, value] of [
+      [t("firstSeen"), entry.firstSeenAt],
+      [t("lastNotified"), entry.lastNotifiedAt],
+    ]) {
+      const line = el("div");
+      line.append(el("span", "meta-line", label), el("span", "", date(value)));
+      dateStack.append(line);
+    }
+    dates.append(dateStack);
+    row.append(titleCell, state, dates, actions);
+    $("history-body").append(row);
   }
+  restoreInteraction();
 }
-
-loadHistory().catch((error) => {
-  note.textContent = error instanceof Error ? error.message : String(error);
-  emptyState.classList.remove("hidden");
-});
+async function refresh() {
+  data = await send("GET_HISTORY_DATA");
+  await localize(data.settings);
+  render();
+}
+for (const id of ["search", "status-filter", "sort-by"])
+  $(id).addEventListener("input", render);
+watch(refresh);
+refresh().catch((e) => announce(errorText(e)));

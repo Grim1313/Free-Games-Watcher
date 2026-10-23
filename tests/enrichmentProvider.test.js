@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import {
   enrichPromotions,
   extractSteamFreeToKeepEndsAtFromHtml,
-  parseSteamFreeToKeepEndsAt
+  parseSteamFreeToKeepEndsAt,
 } from "../src/lib/providers/enrichmentProvider.js";
 import { PROMOTION_DEADLINE_TTL_MS } from "../src/lib/constants.js";
 
@@ -26,8 +26,11 @@ test("extractSteamFreeToKeepEndsAtFromHtml can parse deadline text outside the p
   const expectedTs = Date.UTC(2026, 5, 1, 17, 0);
 
   assert.equal(
-    extractSteamFreeToKeepEndsAtFromHtml("Free to keep when you get it before Jun 1 @ 10:00am.", nowTs),
-    expectedTs
+    extractSteamFreeToKeepEndsAtFromHtml(
+      "Free to keep when you get it before Jun 1 @ 10:00am.",
+      nowTs,
+    ),
+    expectedTs,
   );
 });
 
@@ -36,8 +39,11 @@ test("extractSteamFreeToKeepEndsAtFromHtml can parse escaped Steam script text",
   const expectedTs = Date.UTC(2026, 5, 1, 17, 0);
 
   assert.equal(
-    extractSteamFreeToKeepEndsAtFromHtml("Free to keep when you get it before Jun 1 @ 10:00am. Some <\\/span> text", nowTs),
-    expectedTs
+    extractSteamFreeToKeepEndsAtFromHtml(
+      "Free to keep when you get it before Jun 1 @ 10:00am. Some <\\/span> text",
+      nowTs,
+    ),
+    expectedTs,
   );
 });
 
@@ -46,8 +52,11 @@ test("parseSteamFreeToKeepEndsAt rolls no-year January deadlines into the next y
   const expectedTs = Date.UTC(2027, 0, 2, 18, 0);
 
   assert.equal(
-    parseSteamFreeToKeepEndsAt("Free to keep when you get it before Jan 2 @ 10:00am.", nowTs),
-    expectedTs
+    parseSteamFreeToKeepEndsAt(
+      "Free to keep when you get it before Jan 2 @ 10:00am.",
+      nowTs,
+    ),
+    expectedTs,
   );
 });
 
@@ -56,8 +65,11 @@ test("parseSteamFreeToKeepEndsAt parses localized Steam times as device-local ti
   const expectedTs = new Date(2026, 6, 1, 20, 0, 0, 0).getTime();
 
   assert.equal(
-    parseSteamFreeToKeepEndsAt("Free to keep when you get it before Jul 1 @ 8:00pm.", nowTs),
-    expectedTs
+    parseSteamFreeToKeepEndsAt(
+      "Free to keep when you get it before Jul 1 @ 8:00pm.",
+      nowTs,
+    ),
+    expectedTs,
   );
 });
 
@@ -81,13 +93,13 @@ test("enrichPromotions adds Steam review summary fields from appreviews", async 
                   appid: 599140,
                   best_purchase_option: {
                     is_free_to_keep: true,
-                    free_to_keep_ends: endsAt / 1000
-                  }
-                }
-              ]
-            }
+                    free_to_keep_ends: endsAt / 1000,
+                  },
+                },
+              ],
+            },
           };
-        }
+        },
       };
     }
 
@@ -103,23 +115,27 @@ test("enrichPromotions adds Steam review summary fields from appreviews", async 
                 type: "game",
                 genres: [{ description: "Simulation" }],
                 categories: [{ description: "Single-player" }],
-                header_image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/header.jpg",
-                capsule_image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/capsule.jpg",
+                header_image:
+                  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/header.jpg",
+                capsule_image:
+                  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/capsule.jpg",
                 screenshots: [
                   {
-                    path_thumbnail: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_600.jpg",
-                    path_full: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_1920.jpg"
-                  }
+                    path_thumbnail:
+                      "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_600.jpg",
+                    path_full:
+                      "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_1920.jpg",
+                  },
                 ],
                 price_overview: {
                   initial: 999,
                   final: 0,
-                  initial_formatted: "$9.99"
-                }
-              }
-            }
+                  initial_formatted: "$9.99",
+                },
+              },
+            },
           };
-        }
+        },
       };
     }
 
@@ -134,10 +150,10 @@ test("enrichPromotions adds Steam review summary fields from appreviews", async 
               review_score_desc: "Very Positive",
               total_positive: 42320,
               total_negative: 7033,
-              total_reviews: 49353
-            }
+              total_reviews: 49353,
+            },
           };
-        }
+        },
       };
     }
 
@@ -146,7 +162,7 @@ test("enrichPromotions adds Steam review summary fields from appreviews", async 
         ok: true,
         async text() {
           return '<p class="game_purchase_discount_quantity ">Free to keep when you get it before Jan 1 @ 10:00am.</p>';
-        }
+        },
       };
     }
 
@@ -158,16 +174,19 @@ test("enrichPromotions adds Steam review summary fields from appreviews", async 
     globalThis.fetch = originalFetch;
   });
 
-  const result = await enrichPromotions([
-    {
-      id: "app:599140|free-to-keep|steam-store-search",
-      stableId: "app:599140",
-      appId: 599140,
-      title: "",
-      promoType: "free-to-keep",
-      sourceId: "steam-store-search"
-    }
-  ], {});
+  const result = await enrichPromotions(
+    [
+      {
+        id: "app:599140|free-to-keep|steam-store-search",
+        stableId: "app:599140",
+        appId: 599140,
+        title: "",
+        promoType: "free-to-keep",
+        sourceId: "steam-store-search",
+      },
+    ],
+    {},
+  );
 
   assert.equal(result.promotions.length, 1);
   assert.equal(result.promotions[0].reviewScore, 8);
@@ -181,7 +200,10 @@ test("enrichPromotions adds Steam review summary fields from appreviews", async 
 
   assert.equal(result.metadataCache["app:599140"].reviewScore, 8);
   assert.equal(result.metadataCache["app:599140"].reviewPercent, 86);
-  assert.equal(result.metadataCache["app:599140"].priceInitialFormatted, "$9.99");
+  assert.equal(
+    result.metadataCache["app:599140"].priceInitialFormatted,
+    "$9.99",
+  );
   assert.equal(result.metadataCache["app:599140"].freeToKeepEndsAt, endsAt);
 });
 
@@ -203,7 +225,7 @@ test("enrichPromotions retries Steam deadline lookup when cached end time miss i
         ok: true,
         async text() {
           return '<p class="game_purchase_discount_quantity ">Free to keep when you get it before Jun 1 @ 10:00am.</p>';
-        }
+        },
       };
     }
 
@@ -215,31 +237,34 @@ test("enrichPromotions retries Steam deadline lookup when cached end time miss i
     globalThis.fetch = originalFetch;
   });
 
-  const result = await enrichPromotions([
+  const result = await enrichPromotions(
+    [
+      {
+        id: "app:3771740|free-to-keep|steam-store-search",
+        stableId: "app:3771740",
+        appId: 3771740,
+        title: "IQ Under Construction",
+        promoType: "free-to-keep",
+        sourceId: "steam-store-search",
+      },
+    ],
     {
-      id: "app:3771740|free-to-keep|steam-store-search",
-      stableId: "app:3771740",
-      appId: 3771740,
-      title: "IQ Under Construction",
-      promoType: "free-to-keep",
-      sourceId: "steam-store-search"
-    }
-  ], {
-    "app:3771740": {
-      title: "IQ Under Construction",
-      type: "game",
-      priceInitial: 299,
-      priceFinal: 299,
-      priceDiscountPercent: 100,
-      priceFinalFormatted: "Free",
-      freeToKeepEndsAt: 0,
-      freeToKeepDeadlineUpdatedAt: nowTs - PROMOTION_DEADLINE_TTL_MS - 1,
-      freeToKeepDeadlineTimeZone: "America/Los_Angeles",
-      freeToKeepDeadlineVersion: 2,
-      reviewUpdatedAt: nowTs,
-      updatedAt: nowTs
-    }
-  });
+      "app:3771740": {
+        title: "IQ Under Construction",
+        type: "game",
+        priceInitial: 299,
+        priceFinal: 299,
+        priceDiscountPercent: 100,
+        priceFinalFormatted: "Free",
+        freeToKeepEndsAt: 0,
+        freeToKeepDeadlineUpdatedAt: nowTs - PROMOTION_DEADLINE_TTL_MS - 1,
+        freeToKeepDeadlineTimeZone: "America/Los_Angeles",
+        freeToKeepDeadlineVersion: 2,
+        reviewUpdatedAt: nowTs,
+        updatedAt: nowTs,
+      },
+    },
+  );
 
   assert.equal(appPageRequests, 1);
   assert.equal(appPageFetchOptions?.credentials, "omit");
@@ -261,7 +286,7 @@ test("enrichPromotions retries fresh cached deadline misses", async (t) => {
         ok: true,
         async json() {
           return { response: { store_items: [] } };
-        }
+        },
       };
     }
 
@@ -271,7 +296,7 @@ test("enrichPromotions retries fresh cached deadline misses", async (t) => {
         ok: true,
         async text() {
           return '<p class="game_purchase_discount_quantity ">Free to keep when you get it before Jun 1 @ 10:00am.</p>';
-        }
+        },
       };
     }
     throw new Error(`Unexpected URL: ${url}`);
@@ -282,31 +307,34 @@ test("enrichPromotions retries fresh cached deadline misses", async (t) => {
     globalThis.fetch = originalFetch;
   });
 
-  const result = await enrichPromotions([
+  const result = await enrichPromotions(
+    [
+      {
+        id: "app:3771740|free-to-keep|steam-store-search",
+        stableId: "app:3771740",
+        appId: 3771740,
+        title: "IQ Under Construction",
+        promoType: "free-to-keep",
+        sourceId: "steam-store-search",
+      },
+    ],
     {
-      id: "app:3771740|free-to-keep|steam-store-search",
-      stableId: "app:3771740",
-      appId: 3771740,
-      title: "IQ Under Construction",
-      promoType: "free-to-keep",
-      sourceId: "steam-store-search"
-    }
-  ], {
-    "app:3771740": {
-      title: "IQ Under Construction",
-      type: "game",
-      priceInitial: 299,
-      priceFinal: 299,
-      priceDiscountPercent: 100,
-      priceFinalFormatted: "Free",
-      freeToKeepEndsAt: 0,
-      freeToKeepDeadlineUpdatedAt: nowTs,
-      freeToKeepDeadlineTimeZone: "America/Los_Angeles",
-      freeToKeepDeadlineVersion: 4,
-      reviewUpdatedAt: nowTs,
-      updatedAt: nowTs
-    }
-  });
+      "app:3771740": {
+        title: "IQ Under Construction",
+        type: "game",
+        priceInitial: 299,
+        priceFinal: 299,
+        priceDiscountPercent: 100,
+        priceFinalFormatted: "Free",
+        freeToKeepEndsAt: 0,
+        freeToKeepDeadlineUpdatedAt: nowTs,
+        freeToKeepDeadlineTimeZone: "America/Los_Angeles",
+        freeToKeepDeadlineVersion: 4,
+        reviewUpdatedAt: nowTs,
+        updatedAt: nowTs,
+      },
+    },
+  );
 
   assert.equal(appPageRequests, 1);
   assert.equal(result.promotions[0].endsAt, endsAt);
@@ -326,7 +354,7 @@ test("enrichPromotions reports when Steam deadline HTML cannot be parsed", async
         ok: true,
         async json() {
           return { response: { store_items: [] } };
-        }
+        },
       };
     }
 
@@ -335,7 +363,7 @@ test("enrichPromotions reports when Steam deadline HTML cannot be parsed", async
         ok: true,
         async text() {
           return "<html><body>No deadline here</body></html>";
-        }
+        },
       };
     }
 
@@ -347,32 +375,44 @@ test("enrichPromotions reports when Steam deadline HTML cannot be parsed", async
     globalThis.fetch = originalFetch;
   });
 
-  const result = await enrichPromotions([
+  const result = await enrichPromotions(
+    [
+      {
+        id: "app:3771740|free-to-keep|steam-store-search",
+        stableId: "app:3771740",
+        appId: 3771740,
+        title: "IQ Under Construction",
+        promoType: "free-to-keep",
+        sourceId: "steam-store-search",
+      },
+    ],
     {
-      id: "app:3771740|free-to-keep|steam-store-search",
-      stableId: "app:3771740",
-      appId: 3771740,
-      title: "IQ Under Construction",
-      promoType: "free-to-keep",
-      sourceId: "steam-store-search"
-    }
-  ], {
-    "app:3771740": {
-      title: "IQ Under Construction",
-      type: "game",
-      priceInitial: 299,
-      priceFinal: 299,
-      priceDiscountPercent: 100,
-      priceFinalFormatted: "Free",
-      reviewUpdatedAt: nowTs,
-      updatedAt: nowTs
-    }
-  });
+      "app:3771740": {
+        title: "IQ Under Construction",
+        type: "game",
+        priceInitial: 299,
+        priceFinal: 299,
+        priceDiscountPercent: 100,
+        priceFinalFormatted: "Free",
+        reviewUpdatedAt: nowTs,
+        updatedAt: nowTs,
+      },
+    },
+  );
 
   assert.equal(result.promotions[0].endsAt, 0);
-  assert.equal(result.metadataCache["app:3771740"].freeToKeepDeadlineUpdatedAt, 0);
-  assert.equal(result.metadataCache["app:3771740"].freeToKeepDeadlineTimeZone, "");
-  assert.equal(result.metadataCache["app:3771740"].freeToKeepDeadlineVersion, 0);
+  assert.equal(
+    result.metadataCache["app:3771740"].freeToKeepDeadlineUpdatedAt,
+    nowTs,
+  );
+  assert.equal(
+    result.metadataCache["app:3771740"].freeToKeepDeadlineTimeZone,
+    "StoreBrowse",
+  );
+  assert.equal(
+    result.metadataCache["app:3771740"].freeToKeepDeadlineVersion,
+    4,
+  );
   assert.match(result.warnings[0], /end time not found for app 3771740/);
 });
 
@@ -386,7 +426,7 @@ test("enrichPromotions backfills reviews for fresh cached metadata created befor
         ok: true,
         async json() {
           return { response: { store_items: [] } };
-        }
+        },
       };
     }
 
@@ -402,22 +442,26 @@ test("enrichPromotions backfills reviews for fresh cached metadata created befor
                 type: "game",
                 genres: [{ description: "Simulation" }],
                 categories: [{ description: "Single-player" }],
-                header_image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/header.jpg",
-                capsule_image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/capsule.jpg",
+                header_image:
+                  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/header.jpg",
+                capsule_image:
+                  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/capsule.jpg",
                 screenshots: [
                   {
-                    path_thumbnail: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_600.jpg",
-                    path_full: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_1920.jpg"
-                  }
+                    path_thumbnail:
+                      "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_600.jpg",
+                    path_full:
+                      "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_1920.jpg",
+                  },
                 ],
                 price_overview: {
                   initial: 999,
-                  final: 0
-                }
-              }
-            }
+                  final: 0,
+                },
+              },
+            },
           };
-        }
+        },
       };
     }
 
@@ -432,10 +476,10 @@ test("enrichPromotions backfills reviews for fresh cached metadata created befor
               review_score_desc: "Very Positive",
               total_positive: 42320,
               total_negative: 7033,
-              total_reviews: 49353
-            }
+              total_reviews: 49353,
+            },
           };
-        }
+        },
       };
     }
 
@@ -446,30 +490,37 @@ test("enrichPromotions backfills reviews for fresh cached metadata created befor
     globalThis.fetch = originalFetch;
   });
 
-  const result = await enrichPromotions([
+  const result = await enrichPromotions(
+    [
+      {
+        id: "app:599140|free-to-keep|steam-store-search",
+        stableId: "app:599140",
+        appId: 599140,
+        title: "",
+        promoType: "free-to-keep",
+        sourceId: "steam-store-search",
+      },
+    ],
     {
-      id: "app:599140|free-to-keep|steam-store-search",
-      stableId: "app:599140",
-      appId: 599140,
-      title: "",
-      promoType: "free-to-keep",
-      sourceId: "steam-store-search"
-    }
-  ], {
-    "app:599140": {
-      title: "Graveyard Keeper",
-      type: "game",
-      genres: ["Simulation"],
-      categories: ["Single-player"],
-      headerImage: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/header.jpg",
-      capsuleImage: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/capsule.jpg",
-      screenshotThumbnail: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_600.jpg",
-      screenshotFull: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_1920.jpg",
-      priceInitial: 999,
-      priceFinal: 0,
-      updatedAt: nowTs
-    }
-  });
+      "app:599140": {
+        title: "Graveyard Keeper",
+        type: "game",
+        genres: ["Simulation"],
+        categories: ["Single-player"],
+        headerImage:
+          "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/header.jpg",
+        capsuleImage:
+          "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/capsule.jpg",
+        screenshotThumbnail:
+          "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_600.jpg",
+        screenshotFull:
+          "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/shot_1920.jpg",
+        priceInitial: 999,
+        priceFinal: 0,
+        updatedAt: nowTs,
+      },
+    },
+  );
 
   assert.equal(result.promotions[0].reviewTotal, 49353);
   assert.equal(result.promotions[0].reviewPercent, 86);
@@ -485,7 +536,7 @@ test("enrichPromotions confirms 100 percent appdetails discounts with non-zero n
         ok: true,
         async json() {
           return { response: { store_items: [] } };
-        }
+        },
       };
     }
 
@@ -501,19 +552,21 @@ test("enrichPromotions confirms 100 percent appdetails discounts with non-zero n
                 type: "game",
                 genres: [{ description: "Adventure" }],
                 categories: [{ description: "Single-player" }],
-                header_image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3550490/header.jpg",
-                capsule_image: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3550490/capsule.jpg",
+                header_image:
+                  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3550490/header.jpg",
+                capsule_image:
+                  "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3550490/capsule.jpg",
                 screenshots: [],
                 price_overview: {
                   initial: 599,
                   final: 599,
                   discount_percent: 100,
-                  final_formatted: "Free"
-                }
-              }
-            }
+                  final_formatted: "Free",
+                },
+              },
+            },
           };
-        }
+        },
       };
     }
 
@@ -528,10 +581,10 @@ test("enrichPromotions confirms 100 percent appdetails discounts with non-zero n
               review_score_desc: "Mostly Positive",
               total_positive: 108,
               total_negative: 32,
-              total_reviews: 140
-            }
+              total_reviews: 140,
+            },
           };
-        }
+        },
       };
     }
 
@@ -542,16 +595,19 @@ test("enrichPromotions confirms 100 percent appdetails discounts with non-zero n
     globalThis.fetch = originalFetch;
   });
 
-  const result = await enrichPromotions([
-    {
-      id: "app:3550490|free-to-keep|metadata-only",
-      stableId: "app:3550490",
-      appId: 3550490,
-      title: "",
-      promoType: "free-to-keep",
-      sourceId: "metadata-only"
-    }
-  ], {});
+  const result = await enrichPromotions(
+    [
+      {
+        id: "app:3550490|free-to-keep|metadata-only",
+        stableId: "app:3550490",
+        appId: 3550490,
+        title: "",
+        promoType: "free-to-keep",
+        sourceId: "metadata-only",
+      },
+    ],
+    {},
+  );
 
   assert.equal(result.promotions.length, 1);
   assert.equal(result.promotions[0].isLikelyFreeToKeep, true);

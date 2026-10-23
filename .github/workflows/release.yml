@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag, for example v0.4.0"
+        description: "Release tag, for example v1.0.0"
         required: true
         type: string
 
@@ -20,15 +20,33 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+
+      - name: Set up Node.js LTS
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          check-latest: true
+          package-manager-cache: false
+
+      - name: Verify version matches tag
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          $version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
+          if ($env:RELEASE_TAG -ne "v$version") { throw "Release tag and manifest version differ" }
+
+      - name: Run tests
+        run: npm test
 
       - name: Build release archive
         id: build
         shell: pwsh
         run: |
-          $archivePath = pwsh -File ./scripts/build-release.ps1
+          $archivePath = & ./scripts/build-release.ps1
           if (-not $archivePath) {
             throw "build-release.ps1 did not return an archive path"
           }
@@ -42,7 +60,7 @@ jobs:
         run: |
           $version = $env:RELEASE_TAG -replace '^v', ''
           $notesPath = Join-Path $env:RUNNER_TEMP ("steam-promo-watch-{0}-release-notes.md" -f $version)
-          pwsh -File ./scripts/get-release-notes.ps1 -Version $version -OutputPath $notesPath
+          & ./scripts/get-release-notes.ps1 -Version $version -OutputPath $notesPath
           "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
 
       - name: Create or update GitHub release

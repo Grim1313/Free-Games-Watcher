@@ -2,19 +2,19 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const manifest = JSON.parse(await readFile(new URL("../manifest.json", import.meta.url), "utf8"));
+const manifest = JSON.parse(
+  await readFile(new URL("../manifest.json", import.meta.url), "utf8"),
+);
 
-test("manifest version is prepared for the 0.5.0 release", () => {
-  assert.equal(manifest.version, "0.5.0");
+test("manifest version is prepared for the 1.0.0 release", () => {
+  assert.equal(manifest.version, "1.0.0");
 });
 
 test("manifest uses the Chrome Web Store release name and summary", () => {
-  assert.equal(manifest.name, "Steam Promo Watch: Free Game Alerts");
-  assert.equal(
-    manifest.description,
-    "Find limited-time free Steam games and get giveaway alerts. No Steam login required."
-  );
-  assert.equal(manifest.action.default_title, "Steam Promo Watch: Free Game Alerts");
+  assert.equal(manifest.name, "__MSG_extensionName__");
+  assert.equal(manifest.default_locale, "en");
+  assert.equal(manifest.description, "__MSG_extensionDescription__");
+  assert.equal(manifest.action.default_title, "__MSG_extensionName__");
 });
 
 test("manifest does not request the tabs permission", () => {
@@ -22,5 +22,7 @@ test("manifest does not request the tabs permission", () => {
 });
 
 test("manifest allows Steam Store API deadline lookups", () => {
-  assert.ok(manifest.host_permissions.includes("https://api.steampowered.com/*"));
+  assert.ok(
+    manifest.host_permissions.includes("https://api.steampowered.com/*"),
+  );
 });

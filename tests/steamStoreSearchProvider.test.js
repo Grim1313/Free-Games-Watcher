@@ -126,12 +126,14 @@ test("parseSearchRows detects active free-to-keep rows discounted to zero", () =
   assert.equal(promotions.length, 2);
   assert.deepEqual(
     promotions.map((promotion) => promotion.appId),
-    [599140, 3027490]
+    [599140, 3027490],
   );
   assert.equal(promotions[0].basePriceFormatted, "$19.99");
   assert.equal(promotions[1].basePriceFormatted, "$15.99");
   assert.equal(promotions[0].endsAt, 1780333245 * 1000);
-  assert.ok(promotions.every((promotion) => promotion.promoType === "free-to-keep"));
+  assert.ok(
+    promotions.every((promotion) => promotion.promoType === "free-to-keep"),
+  );
 });
 
 test("parseSearchRows ignores specials that are not actually free", () => {
@@ -143,7 +145,7 @@ test("parseSearchRows ignores specials that are not actually free", () => {
 test("parseSearchRows can scan free-price pages without accepting permanent free-to-play rows", () => {
   const promotions = parseSearchRows(FREE_PRICE_SEARCH_HTML, {
     allowFreeLabel: false,
-    rawTypeLabel: "Store free price"
+    rawTypeLabel: "Store free price",
   });
 
   assert.equal(promotions.length, 1);

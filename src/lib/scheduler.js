@@ -1,40 +1,128 @@
-import { CHECK_ALARM_NAME } from "./constants.js";
-import { setRuntimeState } from "./runtime-state.js";
-import { computeBackoffMs, minutesToMs } from "./utils.js";
+import { CHECK_ALARM_NAME, FOLLOWUP_ALARM_NAME } from "./constants.js";
+import { getRuntimeState, setRuntimeState } from "./runtime-state.js";
+import {
+  computeBackoffMs,
+  minutesToMs,
+  isQuietHoursActive,
+  parseTimeString,
+} from "./utils.js";
+import { getLatestPromotionEntries } from "./history.js";
+import { getActions } from "./actions.js";
+import { visibleEntries } from "./promotions.js";
+import { readKey } from "./storage.js";
 
-export async function getCheckAlarm() {
-  return chrome.alarms.get(CHECK_ALARM_NAME);
+export const getCheckAlarm = () => chrome.alarms.get(CHECK_ALARM_NAME);
+export async function scheduleCheckAt(when) {
+  await chrome.alarms.create(CHECK_ALARM_NAME, { when });
+  await setRuntimeState({ nextCheckAt: when });
+  return when;
 }
-
-export async function scheduleCheckAt(whenMs) {
-  await chrome.alarms.clear(CHECK_ALARM_NAME);
-  await chrome.alarms.create(CHECK_ALARM_NAME, { when: whenMs });
-  await setRuntimeState({ nextCheckAt: whenMs });
-  return whenMs;
-}
-
-export async function scheduleCheckIn(delayMs) {
-  const whenMs = Date.now() + Math.max(delayMs, 30 * 1000);
-  return scheduleCheckAt(whenMs);
-}
-
+export const scheduleCheckIn = (delay) =>
+  scheduleCheckAt(Date.now() + Math.max(delay, 30000));
 export async function ensureCheckAlarm(settings) {
-  const existing = await getCheckAlarm();
-  if (existing?.scheduledTime) {
-    await setRuntimeState({ nextCheckAt: existing.scheduledTime });
-    return existing.scheduledTime;
+  if (!settings.trackFreeToKeep) {
+    await chrome.alarms.clear(CHECK_ALARM_NAME);
+    await chrome.alarms.clear(FOLLOWUP_ALARM_NAME);
+    await setRuntimeState({ nextCheckAt: 0, lastCheckOutcome: "paused" });
+    return 0;
   }
-  return scheduleCheckIn(minutesToMs(settings.checkIntervalMinutes));
+  const existing = await getCheckAlarm();
+  const state = await getRuntimeState();
+  const due =
+    state.nextCheckAt ||
+    (state.lastSuccessAt
+      ? state.lastSuccessAt + minutesToMs(settings.checkIntervalMinutes)
+      : Date.now());
+  const scheduledTime = existing?.scheduledTime;
+  if (scheduledTime && scheduledTime > Date.now()) {
+    await setRuntimeState({ nextCheckAt: scheduledTime });
+    return scheduledTime;
+  }
+  return scheduleCheckAt(Math.max(Date.now() + 30000, due));
 }
-
 export async function resetCheckAlarm(settings) {
-  return scheduleCheckIn(minutesToMs(settings.checkIntervalMinutes));
+  return settings.trackFreeToKeep
+    ? scheduleCheckIn(minutesToMs(settings.checkIntervalMinutes))
+    : ensureCheckAlarm(settings);
 }
-
-export async function scheduleAfterError(settings, backoffLevel) {
-  return scheduleCheckIn(computeBackoffMs(settings.checkIntervalMinutes, backoffLevel));
+export const scheduleAfterError = (settings, level) =>
+  settings.trackFreeToKeep
+    ? scheduleCheckIn(computeBackoffMs(settings.checkIntervalMinutes, level))
+    : ensureCheckAlarm(settings);
+export const scheduleAfterSuccess = (settings) => resetCheckAlarm(settings);
+export function quietEndAfter(settings, timestamp) {
+  if (!isQuietHoursActive(settings, timestamp)) return timestamp;
+  const end = parseTimeString(settings.quietHoursEnd);
+  const date = new Date(timestamp);
+  date.setHours(Math.floor(end / 60), end % 60, 0, 0);
+  if (date.getTime() <= timestamp) date.setDate(date.getDate() + 1);
+  return date.getTime();
 }
-
-export async function scheduleAfterSuccess(settings) {
-  return scheduleCheckIn(minutesToMs(settings.checkIntervalMinutes));
+export function getFollowupTime(
+  entries,
+  settings,
+  actions,
+  notified,
+  state,
+  now = Date.now(),
+) {
+  if (!settings.trackFreeToKeep) return 0;
+  const candidates = Object.values(actions)
+    .filter((a) => !a.claimed && !a.ignored)
+    .map((a) =>
+      a.snoozedUntil > now
+        ? a.snoozedUntil
+        : a.snoozePending && settings.notificationsEnabled
+          ? now + 15 * 60000
+          : 0,
+    )
+    .filter((t) => t > now);
+  candidates.push(
+    ...entries
+      .filter(
+        (e) =>
+          e.status === "active" &&
+          e.endsAt > now &&
+          e.region === settings.region,
+      )
+      .map((e) => e.endsAt),
+  );
+  if (settings.notificationsEnabled) {
+    if (state.pendingQuietCount && isQuietHoursActive(settings, now))
+      candidates.push(quietEndAfter(settings, now));
+    if (settings.remindersEnabled) {
+      for (const e of visibleEntries(entries, settings, actions, now)) {
+        if (
+          !e.endsAt ||
+          e.endsAt <= now ||
+          notified[e.id]?.fingerprint !== e.fingerprint ||
+          notified[`${e.id}:reminder`]?.fingerprint === e.fingerprint
+        )
+          continue;
+        const target = e.endsAt - settings.reminderHours * 3600000;
+        let due =
+          target > now
+            ? target
+            : Math.max(
+                now + 30000,
+                Math.min(now + 15 * 60000, e.endsAt - 60000),
+              );
+        due = quietEndAfter(settings, due);
+        if (due < e.endsAt) candidates.push(due);
+      }
+    }
+  }
+  return candidates.length ? Math.max(now + 30000, Math.min(...candidates)) : 0;
+}
+export async function scheduleFollowup(settings) {
+  const [entries, actions, notified, state] = await Promise.all([
+    getLatestPromotionEntries(),
+    getActions(),
+    readKey("notifiedPromotions", {}),
+    getRuntimeState(),
+  ]);
+  const when = getFollowupTime(entries, settings, actions, notified, state);
+  if (when) await chrome.alarms.create(FOLLOWUP_ALARM_NAME, { when });
+  else await chrome.alarms.clear(FOLLOWUP_ALARM_NAME);
+  return when;
 }

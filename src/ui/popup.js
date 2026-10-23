@@ -1,208 +1,187 @@
-import { getContentTypeLabel, getPromotionTypeLabel } from "../lib/filters.js";
-import { formatDateTime, formatPromotionDeadlineStatus, formatRelativeTime, getPromotionImageUrl } from "../lib/utils.js";
-import { getPopupStatusText, getPromotionBasePriceLabel, getVisiblePromotions } from "./popup-state.js";
-import { buildSteamStoreAriaLabel, createSteamReviewBadge } from "./review-badge.js";
-
-const RELEASES_URL = "https://github.com/Grim1313/steam-promo-watch/releases/latest";
-const checkNowButton = document.querySelector("#check-now");
-const statusText = document.querySelector("#status-text");
-const lastSuccess = document.querySelector("#last-success");
-const nextCheck = document.querySelector("#next-check");
-const warningBox = document.querySelector("#warning-box");
-const emptyState = document.querySelector("#empty-state");
-const promotionList = document.querySelector("#promotion-list");
-const promotionsHeading = document.querySelector("#promotions-heading");
-const unreadPill = document.querySelector("#unread-pill");
-const historyLink = document.querySelector("#open-history");
-const optionsLink = document.querySelector("#open-options");
-const appVersion = document.querySelector("#app-version");
-const checkUpdatesLink = document.querySelector("#check-updates");
-
-appVersion.textContent = `Version ${chrome.runtime.getManifest().version}`;
-checkUpdatesLink.href = RELEASES_URL;
-
-async function sendMessage(type, payload = {}) {
-  return chrome.runtime.sendMessage({ type, ...payload });
-}
-
-function renderWarning(text) {
-  warningBox.textContent = text || "";
-  warningBox.classList.toggle("hidden", !text);
-}
-
-function renderPromotions(entries) {
-  const visibleEntries = getVisiblePromotions(entries);
-
-  promotionList.textContent = "";
-  emptyState.classList.toggle("hidden", visibleEntries.length > 0);
-  promotionsHeading.textContent = `Latest promotions (${visibleEntries.length})`;
-
-  for (const entry of visibleEntries) {
-    const item = document.createElement("li");
-    item.className = "promotion-item";
-
-    const imageUrl = getPromotionImageUrl(entry);
-    if (imageUrl) {
-      const mediaLink = document.createElement("a");
-      mediaLink.className = "promotion-media";
-      mediaLink.href = entry.url;
-      mediaLink.target = "_blank";
-      mediaLink.rel = "noreferrer";
-      mediaLink.setAttribute("aria-label", buildSteamStoreAriaLabel(entry.title, entry));
-
-      const image = document.createElement("img");
-      image.className = "promotion-image";
-      image.src = imageUrl;
-      image.alt = `${entry.title} artwork`;
-      image.loading = "lazy";
-
-      mediaLink.append(image);
-      const reviewBadge = createSteamReviewBadge(entry);
-      if (reviewBadge) {
-        mediaLink.append(reviewBadge);
-      }
-      item.append(mediaLink);
-    }
-
-    const head = document.createElement("div");
-    head.className = "promotion-head";
-
-    const title = document.createElement("a");
-    title.className = "promotion-title";
-    title.href = entry.url;
-    title.target = "_blank";
-    title.rel = "noreferrer";
-    title.textContent = entry.title;
-
-    const dismiss = document.createElement("button");
-    dismiss.className = "ghost-button";
-    dismiss.type = "button";
-    dismiss.textContent = "Ignore";
-    dismiss.addEventListener("click", async () => {
-      dismiss.disabled = true;
-      const response = await sendMessage("DISMISS_PROMOTION", { id: entry.id });
-      if (!response?.ok) {
-        dismiss.disabled = false;
-        renderWarning(response?.error || "Failed to ignore promotion.");
-        return;
-      }
-      await refresh("Promotion ignored. Restore it from Settings > Ignored promotions.");
-    });
-
-    head.append(title, dismiss);
-
-    const meta = document.createElement("div");
-    meta.className = "promotion-meta";
-
-    const stack = document.createElement("div");
-    stack.className = "meta-stack";
-
-    const tags = document.createElement("div");
-    tags.className = "meta-tags";
-
-    const promoTag = document.createElement("span");
-    promoTag.className = "tag";
-    promoTag.textContent = getPromotionTypeLabel(entry.promoType);
-
-    const contentTag = document.createElement("span");
-    contentTag.className = "tag";
-    contentTag.textContent = getContentTypeLabel(entry.contentType);
-
-    const basePriceLabel = getPromotionBasePriceLabel(entry);
-
-    tags.append(promoTag, contentTag);
-    if (basePriceLabel) {
-      const basePriceTag = document.createElement("span");
-      basePriceTag.className = "tag base-price-tag";
-      basePriceTag.textContent = basePriceLabel;
-      basePriceTag.title = "Base price before the 100% discount, not the current price.";
-      tags.append(basePriceTag);
-    }
-
-    const seenLine = document.createElement("div");
-    seenLine.className = "meta-line";
-    seenLine.textContent = `Seen ${formatRelativeTime(entry.firstSeenAt)}`;
-
-    const endLine = document.createElement("div");
-    endLine.className = entry.endsAt ? "meta-line deadline-line" : "meta-line";
-    endLine.textContent = formatPromotionDeadlineStatus(entry.endsAt, entry.lastCheckedAt);
-
-    stack.append(tags, seenLine, endLine);
-    meta.append(stack);
-
-    item.append(head, meta);
-    promotionList.append(item);
+import {
+  t,
+  localize,
+  send,
+  el,
+  button,
+  announce,
+  date,
+  deadline,
+  steamLink,
+  artwork,
+  action,
+  sortEntries,
+  watch,
+  errorText,
+  moreActions,
+  preserveListInteraction,
+} from "./common.js";
+const $ = (selector) => document.querySelector(selector);
+let refreshId = 0;
+async function refresh() {
+  const id = ++refreshId;
+  const data = await send("GET_POPUP_DATA");
+  if (id !== refreshId) return;
+  await localize(data.settings);
+  if (id !== refreshId) return;
+  const state = data.runtimeState;
+  $("#app-version").textContent = t("version", {
+    value: chrome.runtime.getManifest().version,
+  });
+  $("#check-now").disabled =
+    state.checkInProgress || !data.settings.trackFreeToKeep;
+  $("#status-text").textContent = !data.settings.trackFreeToKeep
+    ? t("paused")
+    : state.checkInProgress
+      ? t("checking")
+      : state.lastCheckOutcome === "error"
+        ? t("failed")
+        : state.lastSuccessAt
+          ? t("activeCount", { count: data.visiblePromotions.length })
+          : t("firstCheck");
+  $("#last-success").textContent = date(state.lastSuccessAt);
+  $("#next-check").textContent = state.nextCheckAt
+    ? date(state.nextCheckAt)
+    : t("notScheduled");
+  $("#status-region").textContent = data.settings.region;
+  $(".status-panel").dataset.state = !data.settings.trackFreeToKeep
+    ? "paused"
+    : !state.lastSuccessAt && state.lastCheckOutcome !== "error"
+      ? "pending"
+      : state.lastCheckOutcome;
+  $("#quiet-status").textContent = state.pendingQuietCount
+    ? t("quietPending", { count: state.pendingQuietCount })
+    : "";
+  const warning =
+    state.lastCheckOutcome === "error"
+      ? t("sourceError")
+      : state.lastCheckOutcome === "partial"
+        ? t("partial")
+        : "";
+  $("#warning-box").textContent = warning;
+  $("#warning-box").classList.toggle("hidden", !warning);
+  $("#sort-by").value = data.settings.sortBy;
+  $("#compact-view").checked = data.settings.compactView;
+  const list = $("#promotion-list");
+  list.classList.toggle("compact", data.settings.compactView);
+  const restoreInteraction = preserveListInteraction(list);
+  list.replaceChildren();
+  const entries = sortEntries(data.visiblePromotions, data.settings.sortBy);
+  const unread = entries.filter((e) => e.unread).length;
+  $("#unread-pill").textContent = t("newCount", { count: unread });
+  $("#unread-pill").classList.toggle("hidden", !unread);
+  $("#mark-all-read").disabled = !unread;
+  $("#empty-state").classList.toggle("hidden", entries.length > 0);
+  $("#empty-state").textContent = !data.settings.trackFreeToKeep
+    ? t("paused")
+    : !state.lastSuccessAt
+      ? state.lastCheckOutcome === "error"
+        ? t("sourceError")
+        : t("firstCheck")
+      : data.latestPromotions.some(
+            (e) => e.status === "active" && e.region === data.settings.region,
+          )
+        ? t("allHidden")
+        : t("noOffers");
+  $("#show-all").classList.toggle("hidden", entries.length <= 10);
+  $("#open-history").classList.toggle("hidden", entries.length > 10);
+  $("#show-all").textContent = t("showAll", { count: entries.length });
+  for (const entry of entries.slice(0, 10)) {
+    const item = el("li", "promotion-item");
+    item.dataset.entryId = entry.id;
+    const overview = el("div", "promotion-overview");
+    overview.append(artwork(entry));
+    const copy = el("div", "card-copy");
+    const head = el("div", "promotion-head");
+    head.append(steamLink(entry, entry.title, "promotion-title"));
+    if (entry.unread) head.append(el("span", "pill", t("new")));
+    const end = el("div", "deadline-line", deadline(entry, true));
+    end.title = entry.endsAt ? date(entry.endsAt) : t("endUnknown");
+    end.setAttribute("aria-label", deadline(entry));
+    if (entry.endsAt > Date.now() && entry.endsAt - Date.now() < 86400000)
+      end.classList.add("urgent");
+    copy.append(end);
+    if (entry.stale) copy.append(el("p", "meta-line", t("stale")));
+    const tags = el("div", "meta-tags");
+    tags.append(el("span", "tag", t(entry.contentType)));
+    if (entry.reviewTotal)
+      copy.append(
+        el(
+          "span",
+          "meta-line review-summary",
+          t("reviewSummary", {
+            percent: entry.reviewPercent,
+            count: entry.reviewTotal,
+          }),
+        ),
+      );
+    if (entry.basePriceFormatted)
+      tags.append(
+        el(
+          "span",
+          "tag base-price-tag",
+          t("basePrice", { value: entry.basePriceFormatted }),
+        ),
+      );
+    copy.append(tags);
+    const actions = el("div", "card-actions");
+    actions.append(
+      steamLink(entry, t("openSteam"), "primary-button"),
+      button(t("claim"), () => action(entry, "claim")),
+    );
+    const extra = [
+      button(t("snooze"), () => action(entry, "snooze")),
+      button(t("hide"), () => action(entry, "hide")),
+      button(t("ignore"), () => action(entry, "ignore")),
+    ];
+    if (entry.unread)
+      extra.unshift(
+        button(t("markRead"), () => send("MARK_READ", { ids: [entry.id] })),
+      );
+    actions.append(moreActions(entry, extra));
+    overview.append(copy);
+    item.append(head, overview, actions);
+    list.append(item);
   }
+  restoreInteraction();
 }
-
-function renderStatus(runtimeState) {
-  statusText.textContent = getPopupStatusText(runtimeState);
-  lastSuccess.textContent = formatDateTime(runtimeState.lastSuccessAt);
-  nextCheck.textContent = runtimeState.nextCheckAt ? `${formatDateTime(runtimeState.nextCheckAt)} (${formatRelativeTime(runtimeState.nextCheckAt)})` : "Not scheduled";
-  checkNowButton.disabled = runtimeState.checkInProgress;
-}
-
-async function refresh(temporaryWarning = "") {
-  const response = await sendMessage("GET_POPUP_DATA");
-  if (!response?.ok) {
-    renderWarning(response?.error || "Unable to load popup data.");
-    return;
-  }
-
-  renderStatus(response.runtimeState);
-  renderPromotions(response.latestPromotions || []);
-
-  const warning = temporaryWarning || response.runtimeState.lastErrorMessage || response.runtimeState.lastProviderSummary;
-  renderWarning(warning);
-
-  const unreadCount = Number(response.runtimeState.unreadCount) || 0;
-  unreadPill.textContent = `${unreadCount} new`;
-  unreadPill.classList.toggle("hidden", unreadCount === 0);
-
-  if (unreadCount > 0) {
-    await sendMessage("MARK_ALL_READ");
-  }
-}
-
-checkNowButton.addEventListener("click", async () => {
-  checkNowButton.disabled = true;
-  statusText.textContent = "Checking now...";
+$("#check-now").addEventListener("click", async () => {
+  $("#check-now").disabled = true;
   try {
-    const response = await sendMessage("CHECK_NOW");
-    if (!response?.ok) {
-      renderWarning(response?.error || "Manual check failed.");
-    }
-  } catch (error) {
-    renderWarning(error instanceof Error ? error.message : "Manual check failed.");
-  } finally {
+    await send("CHECK_NOW");
+  } catch (e) {
+    announce(errorText(e));
+  }
+  await refresh();
+});
+$("#mark-all-read").addEventListener("click", async () => {
+  try {
+    await send("MARK_ALL_READ");
+    await refresh();
+  } catch (e) {
+    announce(errorText(e));
+  }
+});
+for (const [id, key] of [
+  ["#sort-by", "sortBy"],
+  ["#compact-view", "compactView"],
+])
+  $(id).addEventListener("change", async (event) => {
     try {
+      await send("SAVE_SETTINGS", {
+        settings: {
+          [key]:
+            event.target.type === "checkbox"
+              ? event.target.checked
+              : event.target.value,
+        },
+      });
       await refresh();
-    } catch (error) {
-      checkNowButton.disabled = false;
-      renderWarning(error instanceof Error ? error.message : String(error));
+    } catch (e) {
+      announce(errorText(e));
     }
-  }
-});
-
-optionsLink.addEventListener("click", async (event) => {
-  event.preventDefault();
-  await chrome.runtime.openOptionsPage();
-});
-
-historyLink.addEventListener("click", async (event) => {
-  event.preventDefault();
-  await chrome.tabs.create({ url: chrome.runtime.getURL("src/ui/history.html") });
-});
-
-chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName !== "local") {
-    return;
-  }
-  if (changes.runtimeState || changes.latestPromotions) {
-    refresh().catch(() => undefined);
-  }
-});
-
-refresh().catch((error) => {
-  renderWarning(error instanceof Error ? error.message : String(error));
-});
+  });
+watch(refresh);
+refresh().catch((e) => announce(errorText(e)));
+// Refresh relative deadlines only while this view is alive; no background polling.
+setInterval(() => refresh().catch(() => undefined), 60000);

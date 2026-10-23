@@ -1,0 +1,554 @@
+{
+  "extensionName": {
+    "message": "Steam Promo Watch: бесплатные игры"
+  },
+  "extensionDescription": {
+    "message": "Следите за бесплатными раздачами Steam и получайте уведомления. Вход в Steam не нужен."
+  },
+  "freeToKeep": {
+    "message": "Бесплатно навсегда"
+  },
+  "checkNow": {
+    "message": "Проверить сейчас"
+  },
+  "checking": {
+    "message": "Проверяем…"
+  },
+  "status": {
+    "message": "Состояние"
+  },
+  "lastSuccess": {
+    "message": "Последняя успешная проверка"
+  },
+  "nextCheck": {
+    "message": "Следующая проверка"
+  },
+  "never": {
+    "message": "Ещё не было"
+  },
+  "notScheduled": {
+    "message": "Не запланирована"
+  },
+  "activeCount": {
+    "message": "Активных предложений: {count}"
+  },
+  "partial": {
+    "message": "Часть источников проверена не полностью. Предыдущие результаты сохранены."
+  },
+  "sourceError": {
+    "message": "Не удалось проверить Steam. Сохранённые предложения могут устареть. Повторите попытку позже."
+  },
+  "paused": {
+    "message": "Отслеживание приостановлено"
+  },
+  "firstCheck": {
+    "message": "Ожидается первая проверка. Вход в Steam не нужен."
+  },
+  "noOffers": {
+    "message": "Активных раздач не найдено. Проверки продолжатся автоматически."
+  },
+  "allHidden": {
+    "message": "Предложения скрыты фильтрами или вашими отметками."
+  },
+  "promotions": {
+    "message": "Активные раздачи"
+  },
+  "newCount": {
+    "message": "Новых: {count}"
+  },
+  "new": {
+    "message": "Новое"
+  },
+  "markAllRead": {
+    "message": "Прочитать всё"
+  },
+  "markRead": {
+    "message": "Прочитано"
+  },
+  "showAll": {
+    "message": "Показать все: {count}"
+  },
+  "openSteam": {
+    "message": "Открыть в Steam"
+  },
+  "claim": {
+    "message": "Уже забрал"
+  },
+  "more": {
+    "message": "Ещё действия"
+  },
+  "hide": {
+    "message": "Скрыть эту раздачу"
+  },
+  "ignore": {
+    "message": "Игнорировать игру"
+  },
+  "snooze": {
+    "message": "Отложить на 24 часа"
+  },
+  "restore": {
+    "message": "Восстановить"
+  },
+  "undo": {
+    "message": "Отменить"
+  },
+  "actionSaved": {
+    "message": "Отметка сохранена."
+  },
+  "endingSoon": {
+    "message": "Скоро завершится"
+  },
+  "endsAt": {
+    "message": "До {value}"
+  },
+  "endUnknown": {
+    "message": "Срок окончания неизвестен"
+  },
+  "ended": {
+    "message": "Завершена"
+  },
+  "stale": {
+    "message": "Доступность требует проверки"
+  },
+  "basePrice": {
+    "message": "Обычная цена: {value}"
+  },
+  "seen": {
+    "message": "Найдена {value}"
+  },
+  "reviewSummary": {
+    "message": "{percent}% положительных · отзывов: {count}"
+  },
+  "notificationSummary": {
+    "message": "Ещё раздач: {count}. Откройте список, чтобы посмотреть их."
+  },
+  "history": {
+    "message": "История и все предложения"
+  },
+  "settings": {
+    "message": "Настройки"
+  },
+  "githubVersions": {
+    "message": "Версии на GitHub"
+  },
+  "version": {
+    "message": "Версия {value}"
+  },
+  "compactView": {
+    "message": "Компактные карточки"
+  },
+  "sortBy": {
+    "message": "Сортировка"
+  },
+  "sort_ending": {
+    "message": "Скоро завершатся"
+  },
+  "sort_newest": {
+    "message": "Сначала новые"
+  },
+  "sort_rating": {
+    "message": "По рейтингу"
+  },
+  "sort_title": {
+    "message": "По названию"
+  },
+  "notifications": {
+    "message": "Уведомления"
+  },
+  "notificationsEnabled": {
+    "message": "Уведомления браузера"
+  },
+  "badgeEnabled": {
+    "message": "Число активных раздач на значке расширения"
+  },
+  "remindersEnabled": {
+    "message": "Напоминать перед завершением раздачи"
+  },
+  "reminderHours": {
+    "message": "За сколько часов до конца"
+  },
+  "schedule": {
+    "message": "Расписание"
+  },
+  "trackFreeToKeep": {
+    "message": "Отслеживать раздачи навсегда"
+  },
+  "checkIntervalMinutes": {
+    "message": "Частота проверок"
+  },
+  "minutes": {
+    "message": "Минут: {count}"
+  },
+  "hours": {
+    "message": "Часов: {count}"
+  },
+  "quietHoursEnabled": {
+    "message": "Тихие часы; сводка после их окончания"
+  },
+  "quietHoursStart": {
+    "message": "Начало тихих часов"
+  },
+  "quietHoursEnd": {
+    "message": "Конец тихих часов"
+  },
+  "quietNote": {
+    "message": "Время указано в часовом поясе устройства. После сна проверка выполнится при возобновлении работы браузера."
+  },
+  "general": {
+    "message": "Общие"
+  },
+  "region": {
+    "message": "Код страны магазина Steam"
+  },
+  "regionNote": {
+    "message": "Две буквы: например US, RU, DE или GB. Выберите страну своего магазина Steam; это не обходит региональные ограничения."
+  },
+  "language": {
+    "message": "Язык интерфейса"
+  },
+  "autoLanguage": {
+    "message": "Как в браузере"
+  },
+  "historyEnabled": {
+    "message": "Сохранять историю локально"
+  },
+  "historyRetentionDays": {
+    "message": "Хранить историю, дней"
+  },
+  "filters": {
+    "message": "Фильтры"
+  },
+  "filterNote": {
+    "message": "Фильтры действуют на список и уведомления. Игры с неизвестными жанрами или платформами не проходят эти фильтры; для отзывов есть отдельная настройка."
+  },
+  "ignoreDlc": {
+    "message": "Скрывать DLC"
+  },
+  "ignoreSoundtracks": {
+    "message": "Скрывать саундтреки"
+  },
+  "ignoreDemos": {
+    "message": "Скрывать демоверсии"
+  },
+  "ignoreTools": {
+    "message": "Скрывать программы"
+  },
+  "ignorePackages": {
+    "message": "Скрывать наборы"
+  },
+  "minRating": {
+    "message": "Минимум положительных отзывов, %"
+  },
+  "minReviews": {
+    "message": "Минимальное число отзывов"
+  },
+  "includeUnrated": {
+    "message": "Показывать игры без данных об отзывах"
+  },
+  "genres": {
+    "message": "Жанры, по одному в строке (любой из них)"
+  },
+  "genresNote": {
+    "message": "Английские названия жанров Steam: Action, Adventure, RPG, Strategy, Simulation, Indie. Пустой список — все жанры."
+  },
+  "platforms": {
+    "message": "Платформы (любая выбранная; без выбора — все)"
+  },
+  "advanced": {
+    "message": "Дополнительные настройки"
+  },
+  "blockedAppIds": {
+    "message": "Исключённые ID игр и наборов Steam, по одному в строке"
+  },
+  "blockedKeywords": {
+    "message": "Исключённые слова в названиях, по одному в строке"
+  },
+  "renotifyAfterRetention": {
+    "message": "Повторять уведомления о длительных раздачах"
+  },
+  "notifiedRetentionDays": {
+    "message": "Интервал повторов, дней"
+  },
+  "saveSettings": {
+    "message": "Сохранить настройки"
+  },
+  "saved": {
+    "message": "Настройки сохранены."
+  },
+  "unsaved": {
+    "message": "Есть несохранённые изменения"
+  },
+  "saving": {
+    "message": "Сохраняем…"
+  },
+  "testNotification": {
+    "message": "Проверить уведомления"
+  },
+  "testSent": {
+    "message": "Уведомление отправлено браузеру. Если его не видно, проверьте настройки уведомлений браузера и ОС."
+  },
+  "clearHistory": {
+    "message": "Очистить архив"
+  },
+  "clearConfirm": {
+    "message": "Удалить локальный архив? Активные предложения и личные отметки сохранятся."
+  },
+  "cleared": {
+    "message": "Архив очищен."
+  },
+  "resetSettings": {
+    "message": "Сбросить настройки"
+  },
+  "resetConfirm": {
+    "message": "Вернуть настройки по умолчанию? Личные отметки сохранятся."
+  },
+  "personalMarks": {
+    "message": "Личные отметки"
+  },
+  "noMarks": {
+    "message": "Личных отметок пока нет."
+  },
+  "claimed": {
+    "message": "Получена"
+  },
+  "ignored": {
+    "message": "Игра игнорируется"
+  },
+  "hidden": {
+    "message": "Раздача скрыта"
+  },
+  "snoozed": {
+    "message": "Отложена"
+  },
+  "active": {
+    "message": "Активна"
+  },
+  "backup": {
+    "message": "Резервная копия и перенос"
+  },
+  "backupNote": {
+    "message": "Включает настройки, исключения и личные отметки. Архив и сведения об отправке уведомлений не включены. Импорт заменяет настройки и отметки."
+  },
+  "exportBackup": {
+    "message": "Экспорт настроек и отметок"
+  },
+  "importBackup": {
+    "message": "Импорт резервной копии"
+  },
+  "importConfirm": {
+    "message": "Заменить настройки и личные отметки? Страна в копии: {region}; отметок: {count}."
+  },
+  "imported": {
+    "message": "Резервная копия импортирована."
+  },
+  "invalidBackup": {
+    "message": "Некорректный файл резервной копии. Импорт не выполнен."
+  },
+  "unsupportedBackup": {
+    "message": "Неподдерживаемая версия резервной копии или данных."
+  },
+  "diagnostics": {
+    "message": "Диагностика"
+  },
+  "diagnosticsNote": {
+    "message": "Охват ограничен ответами Steam и лимитом запросов. Полная проверка означает успешную загрузку запрошенных страниц, а не гарантию обнаружения всех раздач Steam."
+  },
+  "copyReport": {
+    "message": "Копировать отчёт"
+  },
+  "copied": {
+    "message": "Отчёт скопирован."
+  },
+  "lastFullCheck": {
+    "message": "Последняя полная проверка поиска"
+  },
+  "provider": {
+    "message": "Источник"
+  },
+  "result": {
+    "message": "Результат"
+  },
+  "complete": {
+    "message": "Полная"
+  },
+  "limited": {
+    "message": "Ограниченная"
+  },
+  "failed": {
+    "message": "Ошибка"
+  },
+  "rejected": {
+    "message": "Исключено фильтрами"
+  },
+  "technicalDetails": {
+    "message": "Технические сведения"
+  },
+  "search": {
+    "message": "Поиск по названию"
+  },
+  "all": {
+    "message": "Все"
+  },
+  "noHistory": {
+    "message": "Подходящих записей нет."
+  },
+  "historyNote": {
+    "message": "Локальный архив: до {days} дней и 400 записей. Активные предложения видны и при отключённой записи истории."
+  },
+  "firstSeen": {
+    "message": "Впервые найдена"
+  },
+  "lastNotified": {
+    "message": "Последнее уведомление"
+  },
+  "actions": {
+    "message": "Действия"
+  },
+  "operationFailed": {
+    "message": "Не удалось выполнить действие. Повторите попытку."
+  },
+  "invalidData": {
+    "message": "Проверьте введённые значения."
+  },
+  "notFound": {
+    "message": "Предложение не найдено. Обновите список."
+  },
+  "game": {
+    "message": "Игра"
+  },
+  "dlc": {
+    "message": "DLC"
+  },
+  "soundtrack": {
+    "message": "Саундтрек"
+  },
+  "demo": {
+    "message": "Демоверсия"
+  },
+  "tool": {
+    "message": "Программа"
+  },
+  "package": {
+    "message": "Набор"
+  },
+  "unknown": {
+    "message": "Неизвестно"
+  },
+  "notificationSent": {
+    "message": "Уведомление отправлено"
+  },
+  "notificationPending": {
+    "message": "Не отправлено"
+  },
+  "quietPending": {
+    "message": "Ожидают окончания тихих часов: {count}"
+  },
+  "unsavedConfirm": {
+    "message": "Отменить несохранённые изменения настроек?"
+  },
+  "notificationTestTitle": {
+    "message": "Проверка уведомлений: Graveyard Keeper"
+  },
+  "badgeTitle": {
+    "message": "Активных раздач: {active} · новых: {unread}"
+  },
+  "quietRange": {
+    "message": "Начало и конец тихих часов должны различаться."
+  },
+  "noDiagnostics": {
+    "message": "Запустите проверку, чтобы увидеть состояние источников."
+  },
+  "steam_store_search": {
+    "message": "Поиск Steam"
+  },
+  "steam_store_featured": {
+    "message": "Витрина Steam"
+  },
+  "dlc_filter": {
+    "message": "Исключено DLC"
+  },
+  "soundtrack_filter": {
+    "message": "Исключён саундтрек"
+  },
+  "demo_filter": {
+    "message": "Исключена демоверсия"
+  },
+  "tool_filter": {
+    "message": "Исключена программа"
+  },
+  "package_filter": {
+    "message": "Исключён набор"
+  },
+  "id_blocklist": {
+    "message": "Исключённый ID Steam"
+  },
+  "keyword_blocklist": {
+    "message": "Исключённое слово в названии"
+  },
+  "not_confirmed_free_to_keep": {
+    "message": "Раздача навсегда не подтверждена"
+  },
+  "free_to_keep_disabled": {
+    "message": "Отслеживание приостановлено"
+  },
+  "rating_unknown": {
+    "message": "Нет данных об отзывах"
+  },
+  "reviews_filter": {
+    "message": "Недостаточно отзывов"
+  },
+  "rating_filter": {
+    "message": "Рейтинг ниже порога"
+  },
+  "genre_filter": {
+    "message": "Жанр не подходит или неизвестен"
+  },
+  "platform_filter": {
+    "message": "Платформа не подходит или неизвестна"
+  },
+  "reviewCount": {
+    "message": "Отзывов: {count}"
+  },
+  "navigation": {
+    "message": "Навигация"
+  },
+  "settingsSections": {
+    "message": "Разделы настроек"
+  },
+  "historyShort": {
+    "message": "История"
+  },
+  "historyTitle": {
+    "message": "История раздач"
+  },
+  "historyAndMarks": {
+    "message": "История и отметки"
+  },
+  "historyDates": {
+    "message": "Обнаружение и уведомление"
+  },
+  "backupShort": {
+    "message": "Перенос данных"
+  },
+  "advancedShort": {
+    "message": "Дополнительно"
+  },
+  "compactShort": {
+    "message": "Компактно"
+  },
+  "checkStatus": {
+    "message": "Состояние и расписание проверок"
+  },
+  "appearance": {
+    "message": "Внешний вид"
+  },
+  "themeNote": {
+    "message": "Светлая и тёмная темы переключаются вместе с темой системы."
+  },
+  "endsRelative": {
+    "message": "Закончится {value}"
+  },
+  "recordCount": {
+    "message": "Записей: {count}"
+  }
+}

@@ -1,20 +1,37 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildHistoryViewEntries, buildIgnoredPromotionEntries, restoreEntry, sanitizePromotionEntry } from "../src/lib/history.js";
+import {
+  buildHistoryViewEntries,
+  buildIgnoredPromotionEntries,
+  restoreEntry,
+  sanitizePromotionEntry,
+} from "../src/lib/history.js";
 
 test("restoreEntry returns dismissed active entries back to active state", () => {
-  const [restored] = restoreEntry([
-    {
-      id: "promo-1",
-      fingerprint: "fp-1",
-      status: "dismissed",
-      notificationStatus: "dismissed",
-      lastSeenAt: 200,
-      lastCheckedAt: 200,
-      unread: false
-    }
-  ], "promo-1", 500, {});
+  const [restored] = restoreEntry(
+    [
+      {
+        campaignId: "",
+        genres: [],
+        platforms: [],
+        stale: false,
+        missingCount: 0,
+        confirmedEnded: false,
+        region: "US",
+        id: "promo-1",
+        fingerprint: "fp-1",
+        status: "dismissed",
+        notificationStatus: "dismissed",
+        lastSeenAt: 200,
+        lastCheckedAt: 200,
+        unread: false,
+      },
+    ],
+    "promo-1",
+    500,
+    {},
+  );
 
   assert.equal(restored.status, "active");
   assert.equal(restored.notificationStatus, "pending");
@@ -22,19 +39,31 @@ test("restoreEntry returns dismissed active entries back to active state", () =>
 });
 
 test("restoreEntry keeps notified entries marked as sent", () => {
-  const [restored] = restoreEntry([
+  const [restored] = restoreEntry(
+    [
+      {
+        campaignId: "",
+        genres: [],
+        platforms: [],
+        stale: false,
+        missingCount: 0,
+        confirmedEnded: false,
+        region: "US",
+        id: "promo-1",
+        fingerprint: "fp-1",
+        status: "dismissed",
+        notificationStatus: "dismissed",
+        lastSeenAt: 200,
+        lastCheckedAt: 300,
+        unread: false,
+      },
+    ],
+    "promo-1",
+    700,
     {
-      id: "promo-1",
-      fingerprint: "fp-1",
-      status: "dismissed",
-      notificationStatus: "dismissed",
-      lastSeenAt: 200,
-      lastCheckedAt: 300,
-      unread: false
-    }
-  ], "promo-1", 700, {
-    "promo-1": { fingerprint: "fp-1" }
-  });
+      "promo-1": { fingerprint: "fp-1" },
+    },
+  );
 
   assert.equal(restored.status, "expired");
   assert.equal(restored.notificationStatus, "sent");
@@ -42,19 +71,25 @@ test("restoreEntry keeps notified entries marked as sent", () => {
 });
 
 test("restoreEntry can restore the same promotion across different source ids", () => {
-  const [restored] = restoreEntry([
-    {
-      id: "app:978520|free-to-keep|steam-store-search",
-      stableId: "app:978520",
-      promoType: "free-to-keep",
-      fingerprint: "fp-2",
-      status: "dismissed",
-      notificationStatus: "dismissed",
-      lastSeenAt: 500,
-      lastCheckedAt: 500,
-      unread: false
-    }
-  ], "app:978520|free-to-keep|steam-store-featured", 900, {}, "app:978520|free-to-keep");
+  const [restored] = restoreEntry(
+    [
+      {
+        id: "app:978520|free-to-keep|steam-store-search",
+        stableId: "app:978520",
+        promoType: "free-to-keep",
+        fingerprint: "fp-2",
+        status: "dismissed",
+        notificationStatus: "dismissed",
+        lastSeenAt: 500,
+        lastCheckedAt: 500,
+        unread: false,
+      },
+    ],
+    "app:978520|free-to-keep|steam-store-featured",
+    900,
+    {},
+    "app:978520|free-to-keep",
+  );
 
   assert.equal(restored.status, "active");
   assert.equal(restored.notificationStatus, "pending");
@@ -67,14 +102,14 @@ test("buildIgnoredPromotionEntries prefers current entry metadata and sorts newe
         title: "Fallback Title",
         stableId: "app:10",
         appId: 10,
-        dismissedAt: 100
+        dismissedAt: 100,
       },
       "promo-2": {
         title: "Older Title",
         stableId: "app:20",
         appId: 20,
-        dismissedAt: 50
-      }
+        dismissedAt: 50,
+      },
     },
     [
       {
@@ -84,15 +119,15 @@ test("buildIgnoredPromotionEntries prefers current entry metadata and sorts newe
         appId: 10,
         url: "https://store.steampowered.com/app/10/",
         promoType: "free-to-keep",
-        contentType: "game"
-      }
+        contentType: "game",
+      },
     ],
-    []
+    [],
   );
 
   assert.deepEqual(
     ignored.map((entry) => entry.id),
-    ["promo-1", "promo-2"]
+    ["promo-1", "promo-2"],
   );
   assert.equal(ignored[0].title, "Current Title");
   assert.equal(ignored[1].url, "https://store.steampowered.com/app/20/");
@@ -106,8 +141,8 @@ test("buildIgnoredPromotionEntries reuses current entries even when ignored id c
         stableId: "app:3534240",
         appId: 3534240,
         promoType: "free-to-keep",
-        dismissedAt: 100
-      }
+        dismissedAt: 100,
+      },
     },
     [
       {
@@ -117,10 +152,10 @@ test("buildIgnoredPromotionEntries reuses current entries even when ignored id c
         appId: 3534240,
         url: "https://store.steampowered.com/app/3534240/",
         promoType: "free-to-keep",
-        contentType: "game"
-      }
+        contentType: "game",
+      },
     ],
-    []
+    [],
   );
 
   assert.equal(ignored.length, 1);
@@ -138,8 +173,8 @@ test("buildHistoryViewEntries keeps ignored promotions visible in history", () =
         notificationStatus: "pending",
         firstSeenAt: 100,
         lastSeenAt: 200,
-        lastStateChangeAt: 200
-      }
+        lastStateChangeAt: 200,
+      },
     ],
     [
       {
@@ -149,14 +184,14 @@ test("buildHistoryViewEntries keeps ignored promotions visible in history", () =
         url: "https://store.steampowered.com/app/3534240/",
         promoType: "free-to-keep",
         contentType: "game",
-        dismissedAt: 300
-      }
-    ]
+        dismissedAt: 300,
+      },
+    ],
   );
 
   assert.deepEqual(
     historyEntries.map((entry) => entry.id),
-    ["ignored-1", "active-1"]
+    ["ignored-1", "active-1"],
   );
   assert.equal(historyEntries[0].status, "dismissed");
   assert.equal(historyEntries[0].notificationStatus, "dismissed");
@@ -171,9 +206,16 @@ test("sanitizePromotionEntry preserves normalized review summary fields", () => 
       review_score_desc: "Very Positive",
       total_positive: 42320,
       total_negative: 7033,
-      total_reviews: 49353
+      total_reviews: 49353,
     }),
     {
+      campaignId: "",
+      genres: [],
+      platforms: [],
+      stale: false,
+      missingCount: 0,
+      confirmedEnded: false,
+      region: "US",
       id: "promo-1",
       fingerprint: "",
       stableId: "",
@@ -206,7 +248,7 @@ test("sanitizePromotionEntry preserves normalized review summary fields", () => 
       unread: false,
       status: "active",
       notificationStatus: "pending",
-      lastStateChangeAt: 0
-    }
+      lastStateChangeAt: 0,
+    },
   );
 });

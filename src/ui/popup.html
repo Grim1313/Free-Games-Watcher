@@ -1,68 +1,126 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>Steam Promo Watch</title>
-    <link rel="stylesheet" href="./theme.css">
-    <link rel="stylesheet" href="./popup.css">
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <main class="popup-shell">
-      <header class="hero">
-        <div>
-          <p class="eyebrow">Steam Promo Watch</p>
-          <h1>Free to Keep</h1>
+      <header class="popup-header">
+        <div class="brand">
+          <img
+            src="../../resources/icons/icon48.png"
+            alt=""
+            width="30"
+            height="30"
+          /><span>Steam Promo Watch</span>
         </div>
-        <button id="check-now" class="primary-button" type="button">Check now</button>
+        <button
+          id="check-now"
+          class="ghost-button text-button"
+          type="button"
+          data-i18n="checkNow"
+        >
+          Check now
+        </button>
       </header>
-
-      <section class="status-panel">
-        <div class="status-row">
-          <span class="label">Status</span>
-          <span id="status-text" class="value">Loading...</span>
+      <details class="status-panel" data-state="pending">
+        <summary data-i18n-aria="checkStatus">
+          <span id="status-text" role="status" aria-live="polite"></span
+          ><span id="status-region"></span>
+        </summary>
+        <div class="status-details">
+          <div class="status-row">
+            <span class="label" data-i18n="lastSuccess"></span
+            ><span id="last-success" class="value"></span>
+          </div>
+          <div class="status-row">
+            <span class="label" data-i18n="nextCheck"></span
+            ><span id="next-check" class="value"></span>
+          </div>
+          <p id="quiet-status" class="meta-line"></p>
+          <a
+            href="options.html#diagnostics"
+            target="_blank"
+            data-i18n="diagnostics"
+          ></a>
         </div>
-        <div class="status-row">
-          <span class="label">Last success</span>
-          <span id="last-success" class="value">Never</span>
-        </div>
-        <div class="status-row">
-          <span class="label">Next check</span>
-          <span id="next-check" class="value">Unknown</span>
-        </div>
-      </section>
-
-      <section id="warning-box" class="warning-box hidden"></section>
-
-      <section class="list-panel">
+      </details>
+      <p id="warning-box" class="warning-box hidden" role="status"></p>
+      <section class="list-panel" aria-labelledby="offers-heading">
         <div class="section-head">
-          <h2 id="promotions-heading">Latest promotions</h2>
+          <h1 id="offers-heading" data-i18n="freeToKeep">Free to Keep</h1>
           <span id="unread-pill" class="pill hidden"></span>
         </div>
-        <div id="empty-state" class="empty-state hidden">No new free promotions found.</div>
-        <ul id="promotion-list" class="promotion-list"></ul>
+        <div class="view-controls">
+          <label
+            ><span class="sr-only" data-i18n="sortBy"></span
+            ><select id="sort-by">
+              <option value="ending" data-i18n="sort_ending"></option>
+              <option value="newest" data-i18n="sort_newest"></option>
+              <option value="rating" data-i18n="sort_rating"></option>
+              <option value="title" data-i18n="sort_title"></option></select
+          ></label>
+          <label
+            ><input type="checkbox" id="compact-view" /><span
+              data-i18n="compactShort"
+              >Compact</span
+            ></label
+          >
+        </div>
+        <div class="promotion-scroll">
+          <p id="empty-state" class="empty-state hidden"></p>
+          <ul id="promotion-list" class="promotion-list"></ul>
+        </div>
+        <div class="list-footer">
+          <button
+            id="mark-all-read"
+            type="button"
+            class="ghost-button text-button"
+            data-i18n="markAllRead"
+          ></button>
+          <a
+            id="show-all"
+            class="header-link text-button hidden"
+            href="history.html#active"
+            target="_blank"
+          ></a>
+          <a
+            id="open-history"
+            class="header-link text-button"
+            href="history.html"
+            target="_blank"
+            data-i18n="historyShort"
+          ></a>
+        </div>
       </section>
-
+      <div
+        id="feedback"
+        class="feedback hidden"
+        role="status"
+        aria-live="polite"
+      ></div>
       <footer class="footer">
-        <a id="open-history" class="footer-link" href="#">Open history</a>
-        <a id="open-options" class="footer-link" href="#">Settings</a>
-      </footer>
-
-      <div class="app-version-bar">
-        <p id="app-version" class="app-version" aria-label="Extension version"></p>
+        <p id="app-version" class="app-version"></p>
         <a
-          id="check-updates"
-          class="app-version-link"
+          id="open-options"
+          href="options.html"
+          target="_blank"
+          data-i18n="settings"
+        ></a>
+        <a
           href="https://github.com/Grim1313/steam-promo-watch/releases/latest"
           target="_blank"
           rel="noreferrer"
-        >
-          Check for updates
-        </a>
-      </div>
+          data-i18n="githubVersions"
+        ></a>
+      </footer>
     </main>
-
-    <script type="module" src="./popup.js"></script>
+    <script type="module" src="popup.js"></script>
   </body>
-  </html>
+</html>

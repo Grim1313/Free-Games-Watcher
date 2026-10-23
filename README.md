@@ -1,120 +1,97 @@
-# Steam Promo Watch - track new free game giveaways on Steam
-![GitHub Release](https://img.shields.io/github/v/release/Grim1313/steam-promo-watch) ![GitHub Release Date](https://img.shields.io/github/release-date/Grim1313/steam-promo-watch) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Grim1313/steam-promo-watch/total)
+# Steam Promo Watch
 
-Steam Promo Watch is a lightweight Chrome / Edge extension that watches Steam for `Free to Keep` 100% discount game promotions and notifies you when something new appears.
+![GitHub Release](https://img.shields.io/github/v/release/Grim1313/steam-promo-watch) ![GitHub Release Date](https://img.shields.io/github/release-date/Grim1313/steam-promo-watch) ![GitHub Downloads](https://img.shields.io/github/downloads/Grim1313/steam-promo-watch/total)
+
+A lightweight Chrome / Edge extension that finds limited-time Steam **Free to Keep** giveaways and notifies you about new offers. No Steam login, account connection or API key is required. Settings, history and personal marks stay in your browser.
 
 [![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png)](https://chromewebstore.google.com/detail/steam-promo-watch-free-ga/aahjgnocdbhipkfcmhkhlkneonhkafji)
 
 ![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/aahjgnocdbhipkfcmhkhlkneonhkafji) ![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/aahjgnocdbhipkfcmhkhlkneonhkafji)
 
+[Download on GitHub](https://github.com/Grim1313/steam-promo-watch/releases/latest) · [Changelog](CHANGELOG.md)
 
-Release notes are tracked in [CHANGELOG.md](CHANGELOG.md).
+## What's new in 1.0.0
 
-## What it is
+- New design.
+- More reliable giveaway discovery and fewer duplicate notifications.
+- English and Russian interface and notifications, with a selectable Steam store region.
+- **Already claimed**, **Snooze for 24 hours**, **Hide this giveaway** and **Ignore this game**, with undo and restore.
+- Reminders before a known giveaway deadline and notifications after quiet hours.
+- Filters for rating, review count, genres and supported platforms.
+- Sorting, read/unread controls, and searchable history with status filters.
+- Import and export of settings and personal marks, plus source diagnostics.
 
-Steam Promo Watch helps you catch Steam games that become free to keep for a limited time.
+## Features
 
-It works locally in your browser:
+- Automatic background checks and an on-demand **Check now** action.
+- Browser notifications, quiet hours and a toolbar badge for active offers.
+- Giveaway deadlines, original prices and Steam review summaries when available.
+- Light and dark themes that follow your system, plus an optional compact view.
+- Sorting by ending time, discovery date, rating or title.
+- Content filters for DLC, soundtracks, demos, tools and packages; exclusions by title or Steam ID.
+- Local history and personal marks that can be managed separately.
 
-- no server
-- no Steam login
-- no account connection
+Only limited-time **Free to Keep** offers are tracked. Permanently free games, **Free Weekend** and **Play for Free** events are outside the scope of this extension. Opening an offer takes you to Steam; claiming the game is up to you.
 
-## Why use it
+## Installation
 
-Use it if you want a simple way to keep an eye on Steam giveaways without manually checking the store all the time.
+Requires Chrome 120+ or a compatible Chromium-based browser such as Microsoft Edge.
 
-It is built for people who want:
+### Chrome Web Store
 
-- automatic checks in the background
-- browser notifications when a new promotion appears
-- a small popup with recent results and status
-- promotion end times when Steam exposes them
-- Steam user review badges directly on promotion cards
-- an ignore list with restore support for promotions you do not want to see right now
-- simple settings without extra complexity
+Open [Steam Promo Watch in the Chrome Web Store](https://chromewebstore.google.com/detail/steam-promo-watch-free-ga/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. Store releases are published separately and may arrive later than GitHub releases.
 
-## How it works
+### Manual installation from GitHub
 
-The extension periodically checks Steam for `Free to Keep` promotions.
+1. Open [GitHub Releases](https://github.com/Grim1313/steam-promo-watch/releases/latest).
+2. Download **steam-promo-watch-1.0.0.zip** (or the corresponding ZIP for a newer release).
+3. Extract it to a permanent local folder.
+4. Open `chrome://extensions/` or `edge://extensions/`.
+5. Enable **Developer mode**, select **Load unpacked**, and choose the extracted folder containing `manifest.json`.
+6. Pin the extension to your browser toolbar.
 
-When it finds a new one, it can:
+Use the named release ZIP, rather than GitHub's **Source code (zip)** or **Source code (tar.gz)** downloads. Keep the extracted folder in place while the extension is installed.
 
-- show a browser notification
-- update the extension badge
-- save a short local history so you can see recent detections
-- show the promotion end time when Steam exposes it
-- include Steam review summary details when review data is available
+## Updating a manual installation
 
-You can also open the popup at any time to:
+1. Download the new release ZIP and close any open extension pages.
+2. Replace the extension files in the **same folder** used for the previous installation.
+3. Open `chrome://extensions/` or `edge://extensions/` and click **Reload** on Steam Promo Watch.
 
-- see the latest promotions
-- see Steam review badges on supported entries
-- see known promotion end times
-- check when the last scan happened
-- see when the next scan is planned
-- start a manual check with `Check now`
-- open the latest GitHub release from `Check for updates`
+Updating in place preserves the browser's extension storage; version 1.0.0 automatically migrates existing settings and ignored games. Avoid removing the extension to update it, as removal can erase its local data. In version 1.0.0 and later, you can also export settings and personal marks before moving to another browser, computer or installation folder. Backups do not include the full detection history.
 
-## What it tracks
+## Getting started
 
-This extension intentionally tracks only `Free to Keep` promotions on Steam website.
+1. Open **Settings**, choose your Steam store region and preferred language, and save. The default region is **US**; the interface language follows the browser unless you choose English or Russian.
+2. Configure notifications, the check interval, quiet hours and filters. DLC, soundtracks, demos and tools are excluded by default; enable them if you want those offers.
+3. Select **Check now** in the popup. Scheduled checks run every three hours by default while the browser can run the extension.
+4. Open an offer on Steam and mark it **Already claimed** after receiving it. This stops further alerts for that game until you restore it.
+5. Use **More actions** to snooze an offer, hide its current giveaway, or ignore the game until restored. Mark offers as read individually or together.
+6. Open **History** to search and filter records. Settings also provides personal marks, backup import/export and source diagnostics.
 
-It does not currently track temporary free play events such as `Free Weekend` or `Play for Free`.
+Reminders are enabled by default three hours before a known end time. Quiet hours and personal marks also apply to reminders. **Versions on GitHub** opens the latest release page; manually installed copies need to be updated using the steps above.
 
-## How to install in Chrome
+## Privacy and permissions
 
-There are two installation methods.
-
-### Method 1: Chrome Web Store installation:
-
-Follow [this link](https://chromewebstore.google.com/detail/steam-promo-watch-free-ga/aahjgnocdbhipkfcmhkhlkneonhkafji) and click "Add to Chrome" button.
-
-### Method 2: Manual installation:
-
-1. Open the repository's `Releases` page on GitHub.
-2. Download the asset `steam-promo-watch-<version>.zip`.
-3. Extract the archive to a local folder.
-4. Open `chrome://extensions/`.
-5. Turn on `Developer mode`.
-6. Click `Load unpacked`.
-7. Select the extracted `steam-promo-watch` folder.
-
-
-Do not use GitHub's auto-generated `Source code (zip)` archive for installation. That archive is a repository snapshot and may include development files that are not part of the release package.
-
-For Microsoft Edge, use the same steps on `edge://extensions/`.
-
-## How to update an extension if it was installed manually
-
-1. Open the repository's `Releases` page on GitHub.
-2. Download the new asset `steam-promo-watch-<version>.zip`.
-3. Extract the new archive.
-4. If you want to keep the same extension entry in the browser, replace the contents of the folder you used for the previous version with the newly extracted files.
-5. Open `chrome://extensions/` or `edge://extensions/`.
-6. Find `Steam Promo Watch`.
-7. Click `Reload`.
-
-If you extracted the new version into a different folder instead of replacing the old one, remove the currently loaded unpacked extension first, then load the new folder with `Load unpacked`.
-
-## How to use it
-
-1. Click the extension icon in the browser toolbar.
-2. Open `Settings` if you want to change the check interval, notifications, badge, quiet hours, or restore ignored promotions.
-3. Use `Check now` when you want an immediate scan.
-4. Use `Ignore` on a promotion card when you want to hide that title until you restore it later from Settings.
-5. Use `Check for updates` in the popup when you want to jump straight to the latest release on GitHub.
-6. Keep the browser installed and enabled so scheduled checks can continue.
-
-It is recommended to pin Steam Promo Watch to your browser's toolbar so you don't miss any free games it finds.
+The extension contacts Steam to discover offers, load game details and retrieve images. It has no separate backend and does not connect to your Steam library. Its permissions support scheduled checks, notifications and local storage, with network access limited to the Steam domains listed in the manifest.
 
 ## Limitations
 
-- The extension is still in beta.
-- Steam can change store pages or data sources, which may require updates.
-- No localization yet.
-- No settings import/export yet.
+- Steam's available listings and regional restrictions mean that not every giveaway can be found.
+- Steam may change its pages or data sources, requiring an extension update. Diagnostics shows source status and incomplete checks.
+- Deadlines, prices, reviews and other details depend on what Steam provides. Reminders require a known deadline.
+- A sleeping device or closed browser can delay checks and alerts. Operating-system notification settings may also suppress alerts.
+- **Already claimed** is a manual local mark; it does not verify ownership or claim a game for you.
 
-## Technical details
+## Development and releases
 
-Technical notes for developers and advanced troubleshooting were moved to [TECHNICAL.md](TECHNICAL.md).
+Development checks use Node.js 24 LTS; packaging uses PowerShell 7. The extension has no runtime package dependencies, and users do not need Node.js or PowerShell to install it.
+
+```powershell
+npm test
+npm run pack
+```
+
+The ZIP is written to `dist/`, which is excluded from Git. On GitHub, pushing a version tag such as **v1.0.0** runs the release workflow: it checks the version, runs tests, builds the ZIP, and creates or updates the GitHub release with that asset. The release description is extracted from the matching section of **CHANGELOG.md**. Committing alone does not generate a changelog or publish a release.
+
+See [TECHNICAL.md](TECHNICAL.md) for architecture, browser checks, troubleshooting and release maintenance.

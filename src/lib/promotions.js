@@ -1,397 +1,360 @@
 import {
-  ENTRY_STATUS,
+  STORAGE_KEYS,
   MAX_HISTORY_ITEMS,
   MAX_LATEST_ITEMS,
-  NOTIFICATION_STATUS,
   PROMO_TYPES,
-  SOURCE_PRIORITIES,
-  STORAGE_KEYS
 } from "./constants.js";
 import {
-  buildPromotionFingerprint,
   buildPromotionIdentity,
-  dismissPromotionRecord,
-  isPromotionDismissed,
+  buildPromotionFingerprint,
+  shouldNotifyPromotion,
   markPromotionsNotified,
-  pruneDismissedMap,
-  restorePromotionRecord,
-  sanitizeDismissedMap,
-  sanitizeNotifiedMap,
-  shouldNotifyPromotion
 } from "./dedupe.js";
 import { applyPromotionFilters } from "./filters.js";
 import {
-  buildIgnoredPromotionEntries,
-  buildLatestEntries,
-  countActivePromotions,
-  countUnreadActive,
-  dismissEntry,
   getHistoryEntries,
   getLatestPromotionEntries,
-  markEntriesRead,
   mergePromotionEntries,
-  restoreEntry
+  countUnreadActive,
 } from "./history.js";
 import { createPromotionNotifications } from "./notifications.js";
 import { fetchPromotionsFromProviders } from "./providers/index.js";
-import { buildRecoveredRuntimeState, getRuntimeState, setRuntimeState } from "./runtime-state.js";
+import {
+  buildRecoveredRuntimeState,
+  getRuntimeState,
+  setRuntimeState,
+} from "./runtime-state.js";
 import { getSettings } from "./settings.js";
 import { readKey, writeLocal } from "./storage.js";
-import { createHash, isQuietHoursActive } from "./utils.js";
+import { isQuietHoursActive } from "./utils.js";
+import { actionState, getActions, changeAction } from "./actions.js";
+import { mutate } from "./queue.js";
 
 let activeCheckPromise = null;
-
-export async function recoverInterruptedCheckState(nowTs = Date.now()) {
-  if (activeCheckPromise) {
-    return getRuntimeState();
-  }
-
-  const runtimeState = await getRuntimeState();
-  if (!runtimeState.checkInProgress) {
-    return runtimeState;
-  }
-
-  const recoveredState = buildRecoveredRuntimeState(runtimeState, nowTs);
-  await writeLocal({ [STORAGE_KEYS.runtimeState]: recoveredState });
-  return recoveredState;
-}
-
-function getPromotionMatchKey(promotion) {
-  const stableId = typeof promotion?.stableId === "string" ? promotion.stableId : "";
-  const promoType = typeof promotion?.promoType === "string" ? promotion.promoType : "";
-  if (stableId && promoType) {
-    return `${stableId}|${promoType}`;
-  }
-  return "";
-}
-
-function dedupePromotions(promotions) {
-  const map = new Map();
-
-  for (const promotion of promotions) {
-    const id = buildPromotionIdentity(promotion);
-    const fingerprint = buildPromotionFingerprint({ ...promotion, id });
-    const normalized = { ...promotion, id, fingerprint };
-    const existing = map.get(id);
-    if (!existing) {
-      map.set(id, normalized);
-      continue;
-    }
-
-    const currentPriority = SOURCE_PRIORITIES[normalized.sourceId] || 0;
-    const existingPriority = SOURCE_PRIORITIES[existing.sourceId] || 0;
-    if (currentPriority > existingPriority) {
-      map.set(id, normalized);
-      continue;
-    }
-    if (currentPriority === existingPriority && normalized.sourceFingerprint.length > existing.sourceFingerprint.length) {
-      map.set(id, normalized);
-    }
-  }
-
-  return Array.from(map.values());
-}
-
-function buildSnapshotFingerprint(promotions) {
-  return createHash(
-    promotions
-      .map((promotion) => `${promotion.id}|${promotion.fingerprint}`)
-      .sort()
-      .join("||")
-  );
-}
-
-function applyDismissedState(entries, dismissedMap) {
-  const dismissedMatchKeys = new Set(
-    Object.values(dismissedMap)
-      .map((record) => getPromotionMatchKey(record))
-      .filter(Boolean)
-  );
-
-  return entries.map((entry) => {
-    const dismissed = dismissedMap[entry.id];
-    const matchKey = getPromotionMatchKey(entry);
-    if (dismissed?.fingerprint === entry.fingerprint || (matchKey && dismissedMatchKeys.has(matchKey))) {
-      return {
-        ...entry,
-        status: ENTRY_STATUS.DISMISSED,
-        notificationStatus: NOTIFICATION_STATUS.DISMISSED,
-        unread: false
-      };
-    }
-    if (entry.status === ENTRY_STATUS.DISMISSED) {
-      return {
-        ...entry,
-        status: entry.lastSeenAt === entry.lastCheckedAt ? ENTRY_STATUS.ACTIVE : ENTRY_STATUS.EXPIRED,
-        notificationStatus: entry.notificationStatus === NOTIFICATION_STATUS.DISMISSED
-          ? NOTIFICATION_STATUS.PENDING
-          : entry.notificationStatus
-      };
-    }
-    return entry;
+export async function recoverInterruptedCheckState(now = Date.now()) {
+  return mutate(async () => {
+    const state = await getRuntimeState();
+    if (activeCheckPromise || !state.checkInProgress) return state;
+    const recovered = buildRecoveredRuntimeState(state, now);
+    await writeLocal({ runtimeState: recovered });
+    return recovered;
   });
 }
-
-function applyNotificationState(entries, sentPromotions, nowTs, quietHoursActive) {
-  const sentIds = new Set(sentPromotions.map((promotion) => promotion.id));
-  return entries.map((entry) => {
-    if (entry.status !== ENTRY_STATUS.ACTIVE) {
-      return entry;
-    }
-    if (sentIds.has(entry.id)) {
-      return {
-        ...entry,
-        lastNotifiedAt: nowTs,
-        notificationStatus: NOTIFICATION_STATUS.SENT
-      };
-    }
-    if (entry.notificationStatus === NOTIFICATION_STATUS.PENDING && quietHoursActive) {
-      return {
-        ...entry,
-        notificationStatus: NOTIFICATION_STATUS.QUIET
-      };
-    }
-    return entry;
-  });
+export function visibleEntries(entries, settings, actions, now = Date.now()) {
+  return applyPromotionFilters(
+    entries.filter(
+      (e) =>
+        e.status === "active" &&
+        (!e.endsAt || e.endsAt > now) &&
+        (e.region || "US") === settings.region &&
+        !actionState(e, actions, now),
+    ),
+    settings,
+  ).accepted;
 }
-
-async function performPromotionCheck(trigger) {
-  const nowTs = Date.now();
-  const settings = await getSettings();
-  await setRuntimeState({
-    checkInProgress: true,
-    lastCheckStartedAt: nowTs,
-    lastCheckOutcome: "running",
-    lastErrorMessage: "",
-    lastTrigger: trigger
-  });
-
-  const [historyEntries, latestEntries, notifiedMap, dismissedMap] = await Promise.all([
-    getHistoryEntries(),
+export async function refreshCounts() {
+  const [entries, settings, actions] = await Promise.all([
     getLatestPromotionEntries(),
-    readKey(STORAGE_KEYS.notifiedPromotions, {}),
-    readKey(STORAGE_KEYS.dismissedPromotions, {})
+    getSettings(),
+    getActions(),
   ]);
-
+  const visible = visibleEntries(entries, settings, actions);
+  return setRuntimeState({
+    unreadCount: countUnreadActive(visible),
+    activeFreeToKeepCount: visible.length,
+  });
+}
+export function assignCampaigns(promotions, existing, now) {
+  const previous = new Map();
+  for (const e of existing)
+    if (!previous.has(buildPromotionIdentity(e)))
+      previous.set(buildPromotionIdentity(e), e);
+  return promotions.map((p) => {
+    const id = buildPromotionIdentity(p);
+    const old = previous.get(id);
+    // Only a previously confirmed end establishes a new cycle. HTML is never a campaign key.
+    const newCycle =
+      old &&
+      old.status === "expired" &&
+      (old.confirmedEnded || (old.endsAt > 0 && old.endsAt <= now)) &&
+      (!p.endsAt || p.endsAt > now);
+    const campaignId = newCycle ? `${id}:${now}` : old?.campaignId || id;
+    return {
+      ...p,
+      id,
+      campaignId,
+      fingerprint: buildPromotionFingerprint({ ...p, campaignId }),
+      confirmedEnded: false,
+    };
+  });
+}
+async function performPromotionCheck(trigger) {
+  const started = Date.now();
+  const settings = await getSettings();
+  if (!settings.trackFreeToKeep) {
+    const runtimeState = await mutate(() =>
+      setRuntimeState({
+        checkInProgress: false,
+        lastCheckOutcome: "paused",
+        lastErrorMessage: "",
+        pendingQuietCount: 0,
+      }),
+    );
+    return { ok: true, runtimeState };
+  }
+  await mutate(() =>
+    setRuntimeState({
+      checkInProgress: true,
+      lastCheckStartedAt: started,
+      lastCheckOutcome: "running",
+      lastErrorMessage: "",
+      lastTrigger: trigger,
+    }),
+  );
   try {
-    const providerResult = await fetchPromotionsFromProviders(settings);
-    if (!providerResult.hadSuccess && providerResult.promotions.length === 0) {
-      throw new Error(providerResult.warnings.join(" ") || "No provider returned usable data.");
-    }
-    const filtered = applyPromotionFilters(dedupePromotions(providerResult.promotions), settings);
-    const promotions = filtered.accepted;
-    const snapshotFingerprint = buildSnapshotFingerprint(promotions);
-    const quietHoursActive = isQuietHoursActive(settings, nowTs);
-    const sanitizedDismissedMap = sanitizeDismissedMap(dismissedMap);
-    const sanitizedNotifiedMap = sanitizeNotifiedMap(notifiedMap);
-
-    const historyMerge = settings.historyEnabled
-      ? mergePromotionEntries(historyEntries, promotions, nowTs, {
-        maxItems: MAX_HISTORY_ITEMS,
-        retentionDays: settings.historyRetentionDays
-      })
-      : { entries: historyEntries, newEntries: [] };
-
-    const latestMerge = mergePromotionEntries(latestEntries, promotions, nowTs, {
-      maxItems: MAX_LATEST_ITEMS,
-      retentionDays: Math.max(settings.historyRetentionDays, 14)
-    });
-
-    let nextHistoryEntries = applyDismissedState(historyMerge.entries, sanitizedDismissedMap);
-    let nextLatestEntries = buildLatestEntries(applyDismissedState(latestMerge.entries, sanitizedDismissedMap));
-
-    const notificationsToSend = [];
-    let pendingQuietCount = 0;
-
-    if (settings.notificationsEnabled) {
-      for (const promotion of promotions) {
-        if (isPromotionDismissed(promotion, sanitizedDismissedMap)) {
-          continue;
-        }
-        const decision = shouldNotifyPromotion(promotion, sanitizedNotifiedMap, settings, nowTs);
-        if (!decision.shouldNotify) {
-          continue;
-        }
-        if (quietHoursActive) {
-          pendingQuietCount += 1;
-        } else {
-          notificationsToSend.push(promotion);
+    const known = await getLatestPromotionEntries();
+    const result = await fetchPromotionsFromProviders(settings, known);
+    if (!result.hadSuccess)
+      throw new Error(result.warnings.join("; ") || "No source available");
+    return await mutate(async () => {
+      const currentSettings = await getSettings();
+      if (
+        !currentSettings.trackFreeToKeep ||
+        currentSettings.region !== settings.region
+      ) {
+        const runtimeState = await setRuntimeState({
+          checkInProgress: false,
+          lastCheckOutcome: currentSettings.trackFreeToKeep ? "idle" : "paused",
+        });
+        return { ok: true, discarded: true, runtimeState };
+      }
+      const now = Date.now();
+      const [history, latest, actions] = await Promise.all([
+        getHistoryEntries(),
+        getLatestPromotionEntries(),
+        getActions(),
+      ]);
+      const promotions = assignCampaigns(
+        result.promotions,
+        [...latest, ...history],
+        now,
+      );
+      const mergeOptions = {
+        retentionDays: currentSettings.historyRetentionDays,
+        complete: result.complete,
+        confirmedEnded: result.confirmedEnded,
+      };
+      let nextLatest = mergePromotionEntries(latest, promotions, now, {
+        ...mergeOptions,
+        maxItems: MAX_LATEST_ITEMS,
+      }).entries;
+      let nextHistory = currentSettings.historyEnabled
+        ? mergePromotionEntries(history, promotions, now, {
+            ...mergeOptions,
+            maxItems: MAX_HISTORY_ITEMS,
+          }).entries
+        : history;
+      let notified = await readKey(STORAGE_KEYS.notifiedPromotions, {});
+      const visible = visibleEntries(nextLatest, currentSettings, actions, now);
+      const fresh = visible.filter((e) => !e.stale);
+      const quiet = isQuietHoursActive(currentSettings, now);
+      const pending = fresh.filter(
+        (e) =>
+          shouldNotifyPromotion(e, notified, currentSettings, now)
+            .shouldNotify ||
+          (actions[e.stableId]?.snoozePending &&
+            actions[e.stableId].snoozedUntil <= now),
+      );
+      const pendingIds = new Set(pending.map((e) => e.id));
+      const reminders = currentSettings.remindersEnabled
+        ? fresh.filter(
+            (e) =>
+              !pendingIds.has(e.id) &&
+              e.endsAt > now &&
+              e.endsAt - now <= currentSettings.reminderHours * 3600000 &&
+              notified[e.id]?.fingerprint === e.fingerprint &&
+              notified[e.id]?.lastNotifiedAt < now - 60000 &&
+              notified[`${e.id}:reminder`]?.fingerprint !== e.fingerprint,
+          )
+        : [];
+      let sent = 0;
+      const notificationErrors = [];
+      // Persist the scan before optional OS delivery; OS errors must not erase a valid result.
+      await writeLocal({
+        history: nextHistory,
+        latestPromotions: nextLatest,
+        metadataCache: result.metadataCache,
+      });
+      if (currentSettings.notificationsEnabled && !quiet) {
+        for (const [items, reminder] of [
+          [pending, false],
+          [reminders, true],
+        ]) {
+          if (!items.length) continue;
+          await createPromotionNotifications(items, {
+            settings: currentSettings,
+            reminder,
+            onDelivered: async (delivered) => {
+              sent += delivered.length;
+              const records = delivered.map((e) =>
+                reminder ? { ...e, id: `${e.id}:reminder` } : e,
+              );
+              notified = markPromotionsNotified(notified, records, now, {
+                ...currentSettings,
+                renotifyAfterRetention: false,
+              });
+              const ids = new Set(delivered.map((e) => e.id));
+              for (const e of delivered)
+                if (
+                  actions[e.stableId]?.snoozePending &&
+                  actions[e.stableId].snoozedUntil <= now
+                ) {
+                  actions[e.stableId].snoozePending = false;
+                  actions[e.stableId].snoozedUntil = 0;
+                }
+              if (!reminder) {
+                const update = (entries) =>
+                  entries.map((e) =>
+                    ids.has(e.id)
+                      ? {
+                          ...e,
+                          lastNotifiedAt: now,
+                          notificationStatus: "sent",
+                        }
+                      : e,
+                  );
+                nextLatest = update(nextLatest);
+                nextHistory = update(nextHistory);
+              }
+              await writeLocal({
+                notifiedPromotions: notified,
+                latestPromotions: nextLatest,
+                history: nextHistory,
+                userActions: actions,
+              });
+            },
+            onError: (error) =>
+              notificationErrors.push(String(error.message || error)),
+          });
         }
       }
-    }
-
-    const sentNotificationIds = quietHoursActive ? [] : await createPromotionNotifications(notificationsToSend);
-    const nextNotifiedMap = notificationsToSend.length
-      ? markPromotionsNotified(sanitizedNotifiedMap, notificationsToSend, nowTs, settings)
-      : sanitizedNotifiedMap;
-
-    nextHistoryEntries = applyNotificationState(nextHistoryEntries, notificationsToSend, nowTs, quietHoursActive);
-    nextLatestEntries = buildLatestEntries(applyNotificationState(nextLatestEntries, notificationsToSend, nowTs, quietHoursActive));
-
-    const unreadCount = countUnreadActive(nextLatestEntries);
-    const activeFreeToKeepCount = countActivePromotions(nextLatestEntries, PROMO_TYPES.FREE_TO_KEEP);
-    const providerSummary = providerResult.warnings.filter(Boolean).join(" ");
-
-    await writeLocal({
-      [STORAGE_KEYS.history]: nextHistoryEntries,
-      [STORAGE_KEYS.latestPromotions]: nextLatestEntries,
-      [STORAGE_KEYS.notifiedPromotions]: nextNotifiedMap,
-      [STORAGE_KEYS.dismissedPromotions]: pruneDismissedMap(sanitizedDismissedMap),
-      [STORAGE_KEYS.metadataCache]: providerResult.metadataCache
+      const filterResult = applyPromotionFilters(
+        nextLatest.filter((e) => e.status === "active"),
+        currentSettings,
+      );
+      const diagnostics = {
+        checkedAt: now,
+        region: currentSettings.region,
+        complete: result.complete,
+        durationMs: now - started,
+        sources: result.sources,
+        warnings: [...result.warnings, ...notificationErrors],
+        found: promotions.length,
+        rejected: filterResult.rejected.map(({ promotion, reason }) => ({
+          stableId: promotion.stableId,
+          title: promotion.title,
+          reason,
+        })),
+      };
+      await writeLocal({ diagnostics });
+      const runtimeState = await setRuntimeState({
+        checkInProgress: false,
+        lastCheckFinishedAt: now,
+        lastSuccessAt: now,
+        lastFullSuccessAt: result.complete
+          ? now
+          : (await getRuntimeState()).lastFullSuccessAt,
+        lastCheckOutcome: result.complete ? "success" : "partial",
+        lastErrorMessage: "",
+        lastProviderSummary: result.warnings.join("; "),
+        pendingQuietCount:
+          currentSettings.notificationsEnabled && quiet
+            ? pending.length + reminders.length
+            : 0,
+        backoffLevel: 0,
+        lastResultCount: promotions.length,
+        unreadCount: countUnreadActive(visible),
+        activeFreeToKeepCount: visible.length,
+      });
+      return {
+        ok: true,
+        notificationsSent: sent,
+        promotionsFound: promotions.length,
+        runtimeState,
+      };
     });
-
-    const runtimeState = await setRuntimeState({
-      checkInProgress: false,
-      lastCheckFinishedAt: nowTs,
-      lastSuccessAt: nowTs,
-      lastCheckOutcome: "success",
-      lastErrorMessage: "",
-      lastProviderSummary: providerSummary,
-      unreadCount,
-      activeFreeToKeepCount,
-      pendingQuietCount,
-      backoffLevel: 0,
-      lastResultFingerprint: snapshotFingerprint,
-      lastResultCount: promotions.length
-    });
-
-    return {
-      ok: true,
-      sentNotificationIds,
-      notificationsSent: notificationsToSend.length,
-      promotionsFound: promotions.length,
-      unreadCount,
-      runtimeState,
-      providerWarnings: providerResult.warnings
-    };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const currentState = await getRuntimeState();
-    const nextBackoffLevel = Math.min((currentState.backoffLevel || 0) + 1, 6);
-    const runtimeState = await setRuntimeState({
-      checkInProgress: false,
-      lastCheckFinishedAt: nowTs,
-      lastCheckOutcome: "error",
-      lastErrorMessage: message,
-      backoffLevel: nextBackoffLevel
+    return mutate(async () => {
+      const currentSettings = await getSettings();
+      if (
+        !currentSettings.trackFreeToKeep ||
+        currentSettings.region !== settings.region
+      ) {
+        const runtimeState = await setRuntimeState({
+          checkInProgress: false,
+          lastCheckOutcome: currentSettings.trackFreeToKeep ? "idle" : "paused",
+          lastErrorMessage: "",
+        });
+        return { ok: true, discarded: true, runtimeState };
+      }
+      const state = await getRuntimeState();
+      const runtimeState = await setRuntimeState({
+        checkInProgress: false,
+        lastCheckFinishedAt: Date.now(),
+        lastCheckOutcome: "error",
+        lastErrorMessage: String(error.message || error),
+        backoffLevel: Math.min((state.backoffLevel || 0) + 1, 6),
+      });
+      return { ok: false, error: "sourceError", runtimeState };
     });
-    return {
-      ok: false,
-      error: message,
-      runtimeState
-    };
   }
 }
-
-export async function runPromotionCheck(trigger = "manual") {
-  if (activeCheckPromise) {
-    return activeCheckPromise;
-  }
-  activeCheckPromise = performPromotionCheck(trigger).finally(() => {
-    activeCheckPromise = null;
-  });
+export function runPromotionCheck(trigger = "manual") {
+  if (!activeCheckPromise)
+    activeCheckPromise = performPromotionCheck(trigger).finally(() => {
+      activeCheckPromise = null;
+    });
   return activeCheckPromise;
 }
-
-export async function markAllPromotionsRead() {
-  const [historyEntries, latestEntries] = await Promise.all([
-    getHistoryEntries(),
-    getLatestPromotionEntries()
-  ]);
-
-  const nextHistoryEntries = markEntriesRead(historyEntries);
-  const nextLatestEntries = buildLatestEntries(markEntriesRead(latestEntries));
-
-  await writeLocal({
-    [STORAGE_KEYS.history]: nextHistoryEntries,
-    [STORAGE_KEYS.latestPromotions]: nextLatestEntries
+export async function markPromotionsRead(ids = null) {
+  return mutate(async () => {
+    const [history, latest] = await Promise.all([
+      getHistoryEntries(),
+      getLatestPromotionEntries(),
+    ]);
+    const selected = ids === null ? null : new Set(ids);
+    const mark = (entries) =>
+      entries.map((e) =>
+        !selected || selected.has(e.id) ? { ...e, unread: false } : e,
+      );
+    await writeLocal({
+      history: mark(history),
+      latestPromotions: mark(latest),
+    });
+    return { ok: true, runtimeState: await refreshCounts() };
   });
-
-  const runtimeState = await setRuntimeState({
-    unreadCount: 0,
-    activeFreeToKeepCount: countActivePromotions(nextLatestEntries, PROMO_TYPES.FREE_TO_KEEP)
-  });
-  return { ok: true, runtimeState };
 }
-
-export async function dismissPromotionById(promotionId) {
-  const nowTs = Date.now();
-  const [historyEntries, latestEntries, dismissedMap] = await Promise.all([
-    getHistoryEntries(),
-    getLatestPromotionEntries(),
-    readKey(STORAGE_KEYS.dismissedPromotions, {})
-  ]);
-
-  const target = latestEntries.find((entry) => entry.id === promotionId) || historyEntries.find((entry) => entry.id === promotionId);
-  if (!target) {
-    return { ok: false, error: "Promotion not found." };
-  }
-
-  const targetMatchKey = getPromotionMatchKey(target);
-  const nextDismissedMap = dismissPromotionRecord(dismissedMap, target, nowTs);
-  const nextHistoryEntries = dismissEntry(historyEntries, promotionId, nowTs, targetMatchKey);
-  const nextLatestEntries = buildLatestEntries(dismissEntry(latestEntries, promotionId, nowTs, targetMatchKey));
-  const unreadCount = countUnreadActive(nextLatestEntries);
-  const activeFreeToKeepCount = countActivePromotions(nextLatestEntries, PROMO_TYPES.FREE_TO_KEEP);
-
-  await writeLocal({
-    [STORAGE_KEYS.dismissedPromotions]: nextDismissedMap,
-    [STORAGE_KEYS.history]: nextHistoryEntries,
-    [STORAGE_KEYS.latestPromotions]: nextLatestEntries
-  });
-
-  await setRuntimeState({ unreadCount, activeFreeToKeepCount });
-  return { ok: true };
+export const markAllPromotionsRead = () => markPromotionsRead();
+export async function dismissPromotionById(id) {
+  const entries = await getLatestPromotionEntries();
+  const entry = entries.find((e) => e.id === id);
+  if (!entry) return { ok: false, error: "notFound" };
+  return changeAction(entry.stableId, "ignore", { title: entry.title });
 }
-
-export async function restorePromotionById(promotionId) {
-  const nowTs = Date.now();
-  const [historyEntries, latestEntries, dismissedMap, notifiedMap] = await Promise.all([
-    getHistoryEntries(),
-    getLatestPromotionEntries(),
-    readKey(STORAGE_KEYS.dismissedPromotions, {}),
-    readKey(STORAGE_KEYS.notifiedPromotions, {})
-  ]);
-
-  const sanitizedDismissedMap = sanitizeDismissedMap(dismissedMap);
-  const dismissedTarget = sanitizedDismissedMap[promotionId];
-  if (!dismissedTarget) {
-    return { ok: false, error: "Ignored promotion not found." };
-  }
-
-  const sanitizedNotifiedMap = sanitizeNotifiedMap(notifiedMap);
-  const targetMatchKey = getPromotionMatchKey(dismissedTarget);
-  const nextDismissedMap = restorePromotionRecord(sanitizedDismissedMap, promotionId);
-  const nextHistoryEntries = restoreEntry(historyEntries, promotionId, nowTs, sanitizedNotifiedMap, targetMatchKey);
-  const nextLatestEntries = buildLatestEntries(restoreEntry(latestEntries, promotionId, nowTs, sanitizedNotifiedMap, targetMatchKey));
-  const unreadCount = countUnreadActive(nextLatestEntries);
-  const activeFreeToKeepCount = countActivePromotions(nextLatestEntries, PROMO_TYPES.FREE_TO_KEEP);
-
-  await writeLocal({
-    [STORAGE_KEYS.dismissedPromotions]: nextDismissedMap,
-    [STORAGE_KEYS.history]: nextHistoryEntries,
-    [STORAGE_KEYS.latestPromotions]: nextLatestEntries
-  });
-
-  await setRuntimeState({ unreadCount, activeFreeToKeepCount });
-  return { ok: true };
-}
-
+export const restorePromotionById = (stableId) =>
+  changeAction(stableId, "restore");
 export async function getIgnoredPromotions() {
-  const [historyEntries, latestEntries, dismissedMap] = await Promise.all([
-    getHistoryEntries(),
-    getLatestPromotionEntries(),
-    readKey(STORAGE_KEYS.dismissedPromotions, {})
-  ]);
-
-  return buildIgnoredPromotionEntries(dismissedMap, latestEntries, historyEntries);
+  return Object.entries(await getActions())
+    .map(([stableId, action]) => ({ stableId, ...action }))
+    .filter(
+      (a) =>
+        a.ignored ||
+        a.claimed ||
+        a.hiddenCampaign ||
+        a.snoozedUntil > Date.now(),
+    );
 }
-
 export async function clearStoredHistory() {
-  await writeLocal({
-    [STORAGE_KEYS.history]: [],
-    [STORAGE_KEYS.latestPromotions]: []
-  });
-  await setRuntimeState({ unreadCount: 0, activeFreeToKeepCount: 0, pendingQuietCount: 0 });
+  await mutate(() => writeLocal({ history: [] }));
   return { ok: true };
 }

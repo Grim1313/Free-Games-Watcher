@@ -1,4 +1,9 @@
-import { DEBUG, FETCH_TIMEOUT_MS, PROMO_TYPES, CONTENT_TYPES } from "./constants.js";
+import {
+  DEBUG,
+  FETCH_TIMEOUT_MS,
+  PROMO_TYPES,
+  CONTENT_TYPES,
+} from "./constants.js";
 
 const STEAM_STORE_HOST = "store.steampowered.com";
 const STEAM_ASSET_HOST_RE = /(^|\.)steamstatic\.com$/i;
@@ -33,7 +38,9 @@ export function createHash(input) {
 }
 
 export function normalizeWhitespace(value) {
-  return String(value || "").replace(/\s+/g, " ").trim();
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function decodeHtmlEntities(html) {
@@ -52,7 +59,9 @@ export function stripHtml(html) {
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(div|p|li|section|article|h1|h2|h3|h4|h5|h6|span)>/gi, " ");
-  return normalizeWhitespace(decodeHtmlEntities(withoutScripts.replace(/<[^>]+>/g, " ")));
+  return normalizeWhitespace(
+    decodeHtmlEntities(withoutScripts.replace(/<[^>]+>/g, " ")),
+  );
 }
 
 export function safeArray(value) {
@@ -81,7 +90,7 @@ export function formatDateTime(timestamp) {
     month: "short",
     day: "numeric",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   }).format(timestamp);
 }
 
@@ -120,7 +129,9 @@ export function formatPromotionDeadlineStatus(timestamp, checkedAt = 0) {
     return deadline;
   }
   const checked = safeNumber(checkedAt, 0);
-  return checked ? `End time unavailable · Last checked ${formatDateTime(checked)}` : "End time unavailable";
+  return checked
+    ? `End time unavailable · Last checked ${formatDateTime(checked)}`
+    : "End time unavailable";
 }
 
 export function parseTimeString(value) {
@@ -133,7 +144,7 @@ export function parseTimeString(value) {
   if (hours > 23 || minutes > 59) {
     return null;
   }
-  return (hours * 60) + minutes;
+  return hours * 60 + minutes;
 }
 
 export function isQuietHoursActive(settings, timestamp = Date.now()) {
@@ -147,7 +158,7 @@ export function isQuietHoursActive(settings, timestamp = Date.now()) {
   }
 
   const local = new Date(timestamp);
-  const currentMinutes = (local.getHours() * 60) + local.getMinutes();
+  const currentMinutes = local.getHours() * 60 + local.getMinutes();
 
   if (start < end) {
     return currentMinutes >= start && currentMinutes < end;
@@ -202,7 +213,10 @@ export function sanitizeSteamAssetUrl(url) {
     if (parsed.protocol !== "https:") {
       return "";
     }
-    if (STEAM_ASSET_HOST_RE.test(parsed.hostname) || parsed.hostname === STEAM_STORE_HOST) {
+    if (
+      STEAM_ASSET_HOST_RE.test(parsed.hostname) ||
+      parsed.hostname === STEAM_STORE_HOST
+    ) {
       return parsed.toString();
     }
     return "";
@@ -221,20 +235,36 @@ export function buildSteamHeaderImageUrl(appId) {
 
 export function sanitizeSteamReviewSummary(raw = {}) {
   const source = typeof raw === "object" && raw ? raw : {};
-  const reviewScore = Math.max(0, safeNumber(source.reviewScore ?? source.review_score, 0));
-  const reviewScoreDesc = typeof (source.reviewScoreDesc ?? source.review_score_desc) === "string"
-    ? normalizeWhitespace(source.reviewScoreDesc ?? source.review_score_desc)
-    : "";
-  const reviewPositive = Math.max(0, safeNumber(source.reviewPositive ?? source.total_positive, 0));
-  const reviewNegative = Math.max(0, safeNumber(source.reviewNegative ?? source.total_negative, 0));
+  const reviewScore = Math.max(
+    0,
+    safeNumber(source.reviewScore ?? source.review_score, 0),
+  );
+  const reviewScoreDesc =
+    typeof (source.reviewScoreDesc ?? source.review_score_desc) === "string"
+      ? normalizeWhitespace(source.reviewScoreDesc ?? source.review_score_desc)
+      : "";
+  const reviewPositive = Math.max(
+    0,
+    safeNumber(source.reviewPositive ?? source.total_positive, 0),
+  );
+  const reviewNegative = Math.max(
+    0,
+    safeNumber(source.reviewNegative ?? source.total_negative, 0),
+  );
   const reviewTotal = Math.max(
     reviewPositive + reviewNegative,
-    safeNumber(source.reviewTotal ?? source.total_reviews, 0)
+    safeNumber(source.reviewTotal ?? source.total_reviews, 0),
   );
-  const explicitPercent = safeNumber(source.reviewPercent ?? source.positive_percent, -1);
-  const reviewPercent = reviewTotal > 0
-    ? clamp(Math.round((reviewPositive / reviewTotal) * 100), 0, 100)
-    : (explicitPercent >= 0 ? clamp(Math.round(explicitPercent), 0, 100) : 0);
+  const explicitPercent = safeNumber(
+    source.reviewPercent ?? source.positive_percent,
+    -1,
+  );
+  const reviewPercent =
+    reviewTotal > 0
+      ? clamp(Math.round((reviewPositive / reviewTotal) * 100), 0, 100)
+      : explicitPercent >= 0
+        ? clamp(Math.round(explicitPercent), 0, 100)
+        : 0;
 
   return {
     reviewScore,
@@ -242,7 +272,7 @@ export function sanitizeSteamReviewSummary(raw = {}) {
     reviewPositive,
     reviewNegative,
     reviewTotal,
-    reviewPercent
+    reviewPercent,
   };
 }
 
@@ -276,13 +306,15 @@ export function formatCompactNumber(value) {
   const units = [
     [1_000_000_000, "B"],
     [1_000_000, "M"],
-    [1_000, "K"]
+    [1_000, "K"],
   ];
 
   for (const [threshold, suffix] of units) {
     if (normalized >= threshold) {
       const compact = Math.round((normalized / threshold) * 10) / 10;
-      const text = Number.isInteger(compact) ? String(compact) : compact.toFixed(1);
+      const text = Number.isInteger(compact)
+        ? String(compact)
+        : compact.toFixed(1);
       return `${text.replace(/\.0$/, "")}${suffix}`;
     }
   }
@@ -324,15 +356,46 @@ export function formatSteamReviewNotificationSummary(raw = {}) {
   return parts.join(" · ");
 }
 
+// Store artwork only: gallery screenshots are not a stable visual identity.
+// Guess a legacy header URL only when no explicit artwork URL was supplied.
+export function getPromotionCoverUrls(promotion) {
+  const source = typeof promotion === "object" && promotion ? promotion : {};
+  const candidates = [source.headerImage, source.capsuleImage]
+    .map(sanitizeSteamAssetUrl)
+    .filter(Boolean);
+  if (!candidates.length) {
+    const stableIdMatch = /^app:(\d+)$/.exec(String(source.stableId || ""));
+    const fallback = buildSteamHeaderImageUrl(
+      source.appId || stableIdMatch?.[1],
+    );
+    if (fallback) candidates.push(fallback);
+  }
+  return [...new Set(candidates)];
+}
+
 export function getPromotionImageUrl(promotion, options = {}) {
   const source = typeof promotion === "object" && promotion ? promotion : {};
   const preferScreenshot = options.preferScreenshot !== false;
-  const screenshotKey = options.fullSize ? "screenshotFull" : "screenshotThumbnail";
+  const screenshotKey = options.fullSize
+    ? "screenshotFull"
+    : "screenshotThumbnail";
   const stableIdMatch = /^app:(\d+)$/.exec(String(source.stableId || ""));
-  const fallbackHeaderImage = buildSteamHeaderImageUrl(source.appId || stableIdMatch?.[1] || 0);
+  const fallbackHeaderImage = buildSteamHeaderImageUrl(
+    source.appId || stableIdMatch?.[1] || 0,
+  );
   const ordered = preferScreenshot
-    ? [source[screenshotKey], source.headerImage, source.capsuleImage, fallbackHeaderImage]
-    : [source.headerImage, source.capsuleImage, fallbackHeaderImage, source[screenshotKey]];
+    ? [
+        source[screenshotKey],
+        source.headerImage,
+        source.capsuleImage,
+        fallbackHeaderImage,
+      ]
+    : [
+        source.headerImage,
+        source.capsuleImage,
+        fallbackHeaderImage,
+        source[screenshotKey],
+      ];
 
   for (const candidate of ordered) {
     const sanitized = sanitizeSteamAssetUrl(candidate);
@@ -350,23 +413,41 @@ export function computeBackoffMs(intervalMinutes, backoffLevel) {
   return Math.min(base * factor, Math.max(base, 6 * 60 * 60 * 1000));
 }
 
-export async function fetchJsonWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
-  const response = await fetchWithTimeout(url, {
-    ...options,
-    headers: {
-      Accept: "application/json",
-      ...(options.headers || {})
-    }
-  }, timeoutMs);
-  return response.json();
+export async function fetchJsonWithTimeout(
+  url,
+  options = {},
+  timeoutMs = FETCH_TIMEOUT_MS,
+) {
+  return fetchWithTimeout(
+    url,
+    {
+      ...options,
+      headers: {
+        Accept: "application/json",
+        ...(options.headers || {}),
+      },
+    },
+    timeoutMs,
+    (response) => response.json(),
+  );
 }
 
-export async function fetchTextWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
-  const response = await fetchWithTimeout(url, options, timeoutMs);
-  return response.text();
+export async function fetchTextWithTimeout(
+  url,
+  options = {},
+  timeoutMs = FETCH_TIMEOUT_MS,
+) {
+  return fetchWithTimeout(url, options, timeoutMs, (response) =>
+    response.text(),
+  );
 }
 
-export async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
+export async function fetchWithTimeout(
+  url,
+  options = {},
+  timeoutMs = FETCH_TIMEOUT_MS,
+  readBody = null,
+) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort("timeout"), timeoutMs);
 
@@ -374,12 +455,12 @@ export async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIME
     const response = await fetch(url, {
       cache: "no-store",
       ...options,
-      signal: controller.signal
+      signal: controller.signal,
     });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    return response;
+    return readBody ? await readBody(response) : response;
   } finally {
     clearTimeout(timeoutId);
   }

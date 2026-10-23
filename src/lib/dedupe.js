@@ -1,19 +1,19 @@
-import {
-  MAX_DISMISSED_ITEMS,
-  MAX_NOTIFIED_ITEMS
-} from "./constants.js";
+import { MAX_DISMISSED_ITEMS, MAX_NOTIFIED_ITEMS } from "./constants.js";
 import { safeNumber } from "./utils.js";
 
 function getPromotionMatchKey(promotion) {
-  const stableId = typeof promotion?.stableId === "string" ? promotion.stableId : "";
-  const promoType = typeof promotion?.promoType === "string" ? promotion.promoType : "";
+  const stableId =
+    typeof promotion?.stableId === "string" ? promotion.stableId : "";
+  const promoType =
+    typeof promotion?.promoType === "string" ? promotion.promoType : "";
   if (stableId && promoType) {
     return `${stableId}|${promoType}`;
   }
 
   const appId = safeNumber(promotion?.appId, 0);
   const packageId = safeNumber(promotion?.packageId, 0);
-  const numericKey = appId > 0 ? `app:${appId}` : (packageId > 0 ? `sub:${packageId}` : "");
+  const numericKey =
+    appId > 0 ? `app:${appId}` : packageId > 0 ? `sub:${packageId}` : "";
   return numericKey && promoType ? `${numericKey}|${promoType}` : "";
 }
 
@@ -46,9 +46,10 @@ export function sanitizeNotifiedMap(raw = {}) {
       continue;
     }
     result[key] = {
-      fingerprint: typeof value.fingerprint === "string" ? value.fingerprint : "",
+      fingerprint:
+        typeof value.fingerprint === "string" ? value.fingerprint : "",
       firstNotifiedAt: safeNumber(value.firstNotifiedAt, 0),
-      lastNotifiedAt: safeNumber(value.lastNotifiedAt, 0)
+      lastNotifiedAt: safeNumber(value.lastNotifiedAt, 0),
     };
   }
   return result;
@@ -62,7 +63,8 @@ export function sanitizeDismissedMap(raw = {}) {
       continue;
     }
     result[key] = {
-      fingerprint: typeof value.fingerprint === "string" ? value.fingerprint : "",
+      fingerprint:
+        typeof value.fingerprint === "string" ? value.fingerprint : "",
       title: typeof value.title === "string" ? value.title : "",
       dismissedAt: safeNumber(value.dismissedAt, 0),
       stableId: typeof value.stableId === "string" ? value.stableId : "",
@@ -70,31 +72,20 @@ export function sanitizeDismissedMap(raw = {}) {
       packageId: safeNumber(value.packageId, 0),
       url: typeof value.url === "string" ? value.url : "",
       promoType: typeof value.promoType === "string" ? value.promoType : "",
-      contentType: typeof value.contentType === "string" ? value.contentType : ""
+      contentType:
+        typeof value.contentType === "string" ? value.contentType : "",
     };
   }
   return result;
 }
 
 export function buildPromotionIdentity(promotion) {
-  return `${promotion.stableId}|${promotion.promoType}|${promotion.sourceId}`;
+  return `${promotion.stableId}|${promotion.promoType}`;
 }
 
 export function buildPromotionFingerprint(promotion) {
-  const payload = [
-    buildPromotionIdentity(promotion),
-    promotion.startsAt || "",
-    promotion.endsAt || "",
-    promotion.sourceFingerprint || "",
-    promotion.rawTypeLabel || ""
-  ].join("|");
-
-  let hash = 2166136261;
-  for (let index = 0; index < payload.length; index += 1) {
-    hash ^= payload.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return (hash >>> 0).toString(36);
+  // A campaign survives metadata, deadline and provider changes.
+  return promotion.campaignId || buildPromotionIdentity(promotion);
 }
 
 export function shouldNotifyPromotion(promotion, notifiedMap, settings, nowTs) {
@@ -108,21 +99,27 @@ export function shouldNotifyPromotion(promotion, notifiedMap, settings, nowTs) {
   if (
     settings.renotifyAfterRetention &&
     settings.notifiedRetentionDays > 0 &&
-    (nowTs - record.lastNotifiedAt) >= (settings.notifiedRetentionDays * 24 * 60 * 60 * 1000)
+    nowTs - record.lastNotifiedAt >=
+      settings.notifiedRetentionDays * 24 * 60 * 60 * 1000
   ) {
     return { shouldNotify: true, reason: "ttl-expired" };
   }
   return { shouldNotify: false, reason: "already-notified" };
 }
 
-export function markPromotionsNotified(notifiedMap, promotions, nowTs, settings) {
+export function markPromotionsNotified(
+  notifiedMap,
+  promotions,
+  nowTs,
+  settings,
+) {
   const next = { ...sanitizeNotifiedMap(notifiedMap) };
   for (const promotion of promotions) {
     const existing = next[promotion.id];
     next[promotion.id] = {
       fingerprint: promotion.fingerprint,
       firstNotifiedAt: existing?.firstNotifiedAt || nowTs,
-      lastNotifiedAt: nowTs
+      lastNotifiedAt: nowTs,
     };
   }
   return pruneNotifiedMap(next, settings, nowTs);
@@ -139,14 +136,17 @@ export function pruneNotifiedMap(notifiedMap, settings, nowTs) {
     if (
       settings.renotifyAfterRetention &&
       settings.notifiedRetentionDays > 0 &&
-      (nowTs - value.lastNotifiedAt) >= (settings.notifiedRetentionDays * 24 * 60 * 60 * 1000)
+      nowTs - value.lastNotifiedAt >=
+        settings.notifiedRetentionDays * 24 * 60 * 60 * 1000
     ) {
       continue;
     }
     filtered.push(entry);
   }
 
-  filtered.sort((left, right) => right[1].lastNotifiedAt - left[1].lastNotifiedAt);
+  filtered.sort(
+    (left, right) => right[1].lastNotifiedAt - left[1].lastNotifiedAt,
+  );
   return Object.fromEntries(filtered.slice(0, MAX_NOTIFIED_ITEMS));
 }
 
@@ -174,7 +174,7 @@ export function dismissPromotionRecord(dismissedMap, promotion, nowTs) {
     packageId: promotion.packageId,
     url: promotion.url,
     promoType: promotion.promoType,
-    contentType: promotion.contentType
+    contentType: promotion.contentType,
   };
   return pruneDismissedMap(next);
 }

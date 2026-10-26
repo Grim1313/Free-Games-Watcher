@@ -1,14 +1,15 @@
-import { sanitizeSettings } from "./settings.js";
+import { validStableId } from "./stores.js";
+import { sanitizeSettings, getSettings } from "./settings.js";
 import { getActions, sanitizeActions } from "./actions.js";
-import { readKey, writeLocal } from "./storage.js";
+import { writeLocal } from "./storage.js";
 import { mutate } from "./queue.js";
 
 export async function exportBackup() {
   return {
     format: "steam-promo-watch",
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
-    settings: sanitizeSettings(await readKey("settings", {})),
+    settings: await getSettings(),
     userActions: await getActions(),
   };
 }
@@ -21,7 +22,7 @@ export function validateBackup(input) {
   } catch {
     throw new Error("invalidBackup");
   }
-  if (data?.format !== "steam-promo-watch" || data.version !== 1)
+  if (data?.format !== "steam-promo-watch" || ![1, 2].includes(data.version))
     throw new Error("unsupportedBackup");
   if (
     !data.settings ||
@@ -36,7 +37,7 @@ export function validateBackup(input) {
     Object.keys(data.userActions).length > 2000 ||
     Object.entries(data.userActions).some(
       ([k, v]) =>
-        !/^(app|sub):[1-9]\d*$/.test(k) ||
+        !validStableId(k) ||
         !v ||
         typeof v !== "object" ||
         Array.isArray(v),

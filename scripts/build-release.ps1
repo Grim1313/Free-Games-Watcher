@@ -17,8 +17,8 @@ if ([string]::IsNullOrWhiteSpace($version)) {
 if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Expected a numeric release version' }
 
 $distDir = Join-Path $repoRoot 'dist'
-$stageDir = Join-Path $distDir 'steam-promo-watch'
-$archivePath = Join-Path $distDir ("steam-promo-watch-{0}.zip" -f $version)
+$stageDir = Join-Path $distDir 'Free-Games-Watcher'
+$archivePath = Join-Path $distDir ("Free-Games-Watcher-{0}.zip" -f $version)
 
 # Only remove build outputs resolved directly under this repository's dist folder.
 $resolvedDist = [IO.Path]::GetFullPath($distDir) + [IO.Path]::DirectorySeparatorChar

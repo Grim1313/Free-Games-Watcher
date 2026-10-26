@@ -1,110 +1,86 @@
-# Technical details — 1.0.0
+# Free Games Watcher — technical details, 2.0.0
 
 ## Runtime and architecture
 
-Manifest V3, Chrome/Edge 120+, ES modules, no runtime or npm dependencies. Development uses Node.js 24 LTS (current verified stable on 2026-10-23: 24.22.1; local preinstalled test runtime: 24.14.1). Node is not needed by extension users.
+Manifest V3, Chrome/Edge 120+, ES modules, no runtime/npm dependencies. Development uses Node.js 24 LTS and PowerShell 7; neither is required by extension users.
 
-- `service-worker.js`: synchronous event registration, initialization gate, message routing and alarm restoration at every worker start.
-- `queue.js`: serializes local read/modify/write operations. Network discovery is outside the queue; the commit re-reads current marks, filters and history. Results are discarded if tracking was paused or the region changed during a request.
-- `promotions.js`: campaign lifecycle, complete/partial/error states, scan commits and notification eligibility.
-- `actions.js`: claimed games, permanent ignores, campaign-only hiding and temporary snooze. These records are independent of disposable history and delivery state.
-- `scheduler.js`: one regular check alarm and at most one follow-up alarm (quiet-hours end, reminder, snooze or known expiry). No persistent polling loop. Popup-relative dates refresh only while the popup is open.
-- `_locales/en` and `_locales/ru`: manifest strings, interface and notifications. Interface language can be selected independently of the English parsing language.
+- `service-worker.js` registers listeners synchronously, gates entry points on initialization and restores alarms at worker start.
+- `queue.js` serializes storage mutations. Discovery runs outside the queue; commits re-read settings and user marks. Changes to country, tracking or enabled stores discard an in-flight result.
+- `promotions.js` manages campaigns, scan states and notification eligibility. Known deadlines or confirmed source evidence end an offer; a missing result alone does not.
+- `actions.js` stores claimed/ignored games, campaign hiding and snooze independently of history.
+- `scheduler.js` maintains one regular alarm and at most one follow-up for quiet hours, reminders, snooze, expiry or an upcoming offer's start. Selecting no stores pauses checks.
+- `_locales/en` and `_locales/ru` localize interface and notifications independently of parsing language.
 
-## Discovery and limits
+## Store providers and limits
 
-The selected country is applied consistently to search, featured offers, details, purchase verification and deadline lookups. Requests omit Steam credentials, except the existing age-gate deadline fallback, which may reuse browser cookies. No Steam account connection or API key is required.
+`providers/index.js` runs selected providers with independent settled results. Each store reports success, completeness and last successful check. Failed sources preserve stale offers; disabled stores are not queried. Successful bounded discovery does not guarantee full store-wide coverage.
 
-Two search strategies paginate independently, up to six pages of 100 results each. Pagination stops at the reported result count. The old English-support filter is removed. Failed pages are reported, and invalid response shapes cannot masquerade as a successful empty result. Featured offers are a limited fallback, not a full catalog.
+**Steam:** two paginated search strategies, up to six pages of 100 results each, with featured offers as a limited fallback. Up to 100 previously known missing offers are verified against StoreBrowse purchase options. App details/reviews are cached for seven days; imminent deadlines refresh hourly, other deadlines/negative results after six hours. Country changes clear metadata. Requests omit credentials except the existing age-gate deadline fallback, which may reuse browser cookies.
 
-Previously active offers missing from search are verified in batches against StoreBrowse purchase options (up to 100 missing offers per check). A free-to-keep option recovers the offer. An explicit paid option or an elapsed known deadline ends it; missing/failed data keeps the old offer with a stale marker. A successful bounded search is called complete even if a search budget was reached; **this does not guarantee full Steam-wide coverage**. Coverage limitations are shown in diagnostics.
+**Epic Games Store:** anonymous regional `freeGamesPromotions` JSON. Current giveaways require valid dates, a PERCENTAGE promotion with `discountPercentage: 0`, positive original price, current zero price and a valid product link. Future windows remain in `upcomingPromotions`, separate from current cards, counts and notifications. Their start schedules a fresh availability check. Genre/platform metadata is not present in this feed and remains unknown.
 
-App details and review summaries are cached for seven days. Known imminent deadlines refresh hourly; other deadlines and negative deadline results refresh after six hours. Region changes invalidate metadata. Unconfirmed content types stay unknown instead of becoming games automatically.
+**GOG (experimental):** public homepage section configuration plus one bounded discounted-zero catalog query. Up to three public `GIVEAWAY_SECTION` records are fetched. Product identity/title/slug and valid end date are required; the claim destination is GOG's homepage. Zero-price catalog entries without giveaway terms produce an incomplete result, never a fabricated giveaway. The positive section schema was inferred from GOG's public component and tested with synthetic fixtures. No active live section was available on 26 October 2026, so positive live validation remains outstanding. The `sectionSchemaLiveVerified: false` diagnostic records this limitation. No account-status or authenticated claim endpoint is called.
 
-## Identity, marks and delivery
+The initial [source audit](docs/SOURCE_AUDIT.ru.md) and [implementation report](docs/MULTISTORE_IMPLEMENTATION.ru.md) preserve dated evidence. Microsoft Store/Xbox, itch.io, IndieGala and Ubisoft remain future work.
 
-Campaign identity is independent of provider, HTML, review counts, images and deadline corrections. A new campaign requires a previously confirmed end or elapsed known deadline. Legacy IDs and notification records are migrated once to schema 2 without resending everything.
+## Rename, identity and compatibility
 
-- Claimed and ignored marks apply to the game until restored.
-- Hide applies only to the current campaign.
-- Snooze hides the game temporarily and requests a fresh alert when due, after checking availability again.
-- Opening the popup does not clear unread marks. Users mark one or all entries explicitly.
-- Notifications and reminders respect filters, personal marks and quiet hours.
-- Up to three individual alerts plus one summary are issued per batch. The summary opens the extension's list.
-- Successful groups are recorded individually. An OS delivery failure does not discard the scan; failed groups can be retried. Deterministic notification IDs reduce duplicates after interruption. Image failures fall back to basic notifications.
-- The OS can suppress a notification even after the browser accepts it. The test-notification message explains this limitation.
+Product name: **Free Games Watcher**. Repository: `Grim1313/Free-Games-Watcher`. The npm package uses lowercase `free-games-watcher`; release archives use `Free-Games-Watcher-<version>.zip`.
 
-Default interval: 3 hours; reminders: enabled, 3 hours before a known end; quiet hours: off (23:00–08:00 if enabled); archive: 30 days. Storage is bounded: 400 recent/archive records, 500 metadata and dedupe records, 2,000 personal marks. Personal marks are independent of archive clearing.
+Store IDs remain `app:<id>` / `sub:<id>` for Steam, `epic:<namespace>:<offerId>` for Epic, and `gog:<productId>` for GOG. Campaign identity is independent of HTML, provider metadata and artwork. A new cycle needs a previously confirmed end or elapsed known deadline.
 
-## Filters and transfer
+Storage schema 3 preserves schema-2 campaign and delivery records. Legacy settings select Steam only; fresh settings select all three stores. The rename deliberately retains internal alarm names (`steam-promo-check`, `steam-promo-followup`), notification prefix (`steam-promo-watch`), storage keys and the backup format marker (`steam-promo-watch`). These are compatibility identifiers, not visible branding. Changing them requires a separate migration.
 
-Rating threshold and review-count threshold use Steam review totals. The explicit unrated policy applies when review data is unavailable. Genre matching is case-insensitive against Steam's English genre names; any selected genre/platform can match. Empty lists disable those filters. Unknown genre/platform metadata does not pass a selected filter.
+Backups export version 2 and accept versions 1 and 2. They contain normalized settings and personal marks, not full history, caches or delivery records. Import validates the format, size (1 MiB), ID syntax and mark count (2,000), previews the country/count, and requires confirmation in the interface. Failed validation writes nothing. The exported filename is `free-games-watcher-backup.json`.
 
-JSON backups include normalized settings and personal marks, not the archive, cached metadata or notification delivery records. Import validates format/version/size (maximum 1 MiB and 2,000 marks), previews country/count in the UI, and replaces settings and marks only after the user's confirmation. Failed validation writes nothing. Export a backup before replacing an unpacked installation with a different extension entry.
+There is no `key` in the manifest. Unpacked installations can change ID when their folder moves. Installed store copies must be updated through the existing store listing, not a newly created item. Product/repository renaming does not itself migrate browser storage between extension IDs.
+
+## Filtering, delivery and resource limits
+
+Steam ratings and review-count filters apply only to Steam. Genres match English names case-insensitively; any selected genre/platform may match. Unknown metadata does not pass an explicitly selected filter. Empty lists disable these filters.
+
+Claimed/ignored marks last until restored; hiding applies only to the current campaign. Snooze requests a fresh alert after checking availability again. Notifications respect filters, personal marks and quiet hours. Up to three individual alerts plus one summary are issued per batch. Delivery is persisted per successful group; OS errors do not erase a valid scan. Deterministic notification IDs reduce interruption duplicates; image failures fall back to basic notifications. Browser acceptance does not prove native OS display.
+
+Default check interval: 3 hours; reminders: 3 hours before a known end; quiet hours off (23:00–08:00 if enabled); history: 30 days. Limits: 400 recent/archive records, 500 metadata/delivery records and 2,000 personal marks. No persistent polling loop or remote backend.
+
+## Interface
+
+Popup, settings and history support EN/RU and system light/dark themes. Popup artwork and history artwork use one shared 120×56 frame, centered `object-fit: cover`, safe store-specific image URLs and a neutral fallback. Header/capsule candidates are bounded to two; gallery screenshots are excluded. Compact mode removes artwork. Dates expose exact deadlines as well as relative labels.
+
+Settings sections share one form to preserve drafts. Validation reveals the invalid field's section. History becomes stacked records on narrow screens. Storage-driven rerenders preserve open menus, keyboard focus and popup scroll position.
 
 ## Development checks
 
 ```powershell
 npm test
 npm run pack
+pwsh -File scripts/get-release-notes.ps1
 ```
 
-No npm install is needed for the Node test suite or packaging. The archive includes only manifest, source, locales, license and icons. Its required entries and manifest version are checked after creation. GitHub CI and the release workflow run the tests; the release workflow also verifies that the tag matches the manifest. Local work does not create a tag, commit, release or push.
+No npm install is required. Packaging copies only manifest, source, locales, license and icons into `dist/Free-Games-Watcher`, then builds `dist/Free-Games-Watcher-2.0.0.zip`. It validates required archive entries and version and restricts cleanup to resolved build outputs inside `dist`.
 
-Optional browser tests use Playwright 1.62.1 with its Chromium and an isolated profile. Install it as test tooling outside the release, or set `PLAYWRIGHT_MODULE` to an existing `playwright/index.mjs` and `PLAYWRIGHT_BROWSERS_PATH` to its browser directory, then run:
+Browser checks use a separately installed Playwright/Chromium. Set `PLAYWRIGHT_MODULE` to an existing `playwright/index.mjs` and `PLAYWRIGHT_BROWSERS_PATH` to the matching browser directory:
 
 ```powershell
 npm run test:browser
+node scripts/browser-smoke.mjs --popup-scales
+npm run test:multistore:live
+npm run audit:sources
+npm run audit:sources:browser
 ```
 
-The script stages a test-only extension under `dist/browser-check`, supplies deterministic Steam responses, exercises real extension pages/storage/alarms/message routing, and saves screenshots plus `focus-results.json`. `focus-ui-checks.mjs` covers all settings sections, both locales/themes, text contrast, narrow layouts, cross-section validation, draft preservation, keyboard menus during storage updates, secondary actions with undo, and actual JSON export/import. `native-popup-checks.mjs` opens real toolbar popups with `chrome.action.openPopup()` and inspects their unmodified, content-driven size over CDP: 0/2/12 offers, EN/RU, both themes, collapsed/expanded status, list height and footer separation. It does not substitute a tab with an assigned viewport. `artwork-ui-checks.mjs` verifies header selection, capsule fallback after HTTP failure, missing artwork, no gallery requests, preserved links/details, both themes and narrow history layouts. Its wide SVG artwork fixture has edge marks to make cropping visible. The browser needs write access to `dist/browser-check/downloads` to complete the export check. Test bootstrap files are never copied into `src` or the release archive. Browser tests do not prove native Windows notification visibility or full live catalog coverage.
+The fixture browser suite stages an isolated extension/profile in `dist/browser-check`. It covers UI/actions, backup export/import, both locales/themes, source failures and native popup geometry. Test bootstrap files are never shipped. Live tools perform anonymous requests and are optional, not CI dependencies; production-worker live checks disable OS notifications. Reports/screenshots are saved under `dist`.
 
-Optional anonymous live-source checks (do not invoke on every CI run):
+## Release procedure
 
-```powershell
-node scripts/check-live.mjs US
-node scripts/check-live.mjs RU
-```
+1. Update manifest/package version, localized branding and the matching `CHANGELOG.md` section. Run unit/browser/package checks.
+2. Commit with the maintainer's configured Git identity and push the branch. Wait for the `Tests` workflow.
+3. For a release attributed to the maintainer, create a **draft release in GitHub's UI under that account**, with the intended tag, title and changelog text, before pushing the tag.
+4. Push the matching `v2.0.0` tag. The `Release` workflow validates version, runs tests and builds the ZIP. When a draft exists, it updates notes/assets but leaves it unpublished and keeps its author. Without an existing release, the workflow retains its automatic publication behavior.
+5. Verify the completed workflow and ZIP, then publish the draft from the maintainer's account and mark it latest. GitHub Actions supplies the archive; no locally built ZIP needs uploading.
 
-These write timestamped reports under `dist/` and check actual Steam search, featured offers and metadata for up to three candidates. For systems using a trusted enterprise certificate store, Node's `--use-system-ca` can be used without disabling certificate verification.
+The workflows use `actions/checkout@v7`, `actions/setup-node@v7`, Node 24 and `windows-latest`. A branch push runs validation, not publication. Manual dispatch takes an existing tag. Reruns can update an existing release asset; inspect the selected revision before retrying. Chrome Web Store publication is separate.
 
-## Local validation — 2026-10-23
+## Validation record
 
-- Node.js test suite: 85 passed, 0 failed. Covers migration, source errors, filtering, personal marks, concurrency, notification retries, reminders, quiet hours and backup validation.
-- Isolated Chromium 151.0.7922.34 extension test on Node.js 24.14.1: 138 checks passed, no page JavaScript errors. Covers real UI/message/storage/alarm integration, both locales/themes and all seven settings sections, narrow layouts, text contrast, validation in inactive sections, draft preservation, menu/focus continuity, read/claim/undo/restore, snooze/hide/ignore, actual backup export/import, empty/error/partial states, pause/resume and region changes. Includes 24 native action-popup geometry checks in addition to the tab-based checks. An additional 40 headed Chromium checks passed at 100%, 125%, 150%, 175% and 200% display scale (EN/RU, light/dark, collapsed/expanded status). At 100% and 125%, two fully detailed DLC cards with long titles fit without list scrolling. Final screenshots were visually inspected. Results are saved in `dist/browser-check/focus-results.json`.
-- Anonymous live Steam checks performed before the Focus redesign: US and RU both returned valid responses. Seven search pages per region found two DLC offers; metadata, platforms and deadlines were parsed. Both reports explicitly recorded limited search coverage. Default DLC filtering hides these offers. The redesign was tested with deterministic source fixtures; these live requests were not repeated.
-- Local ZIP: built successfully with version 1.0.0; required files and exclusion of development/test files verified by the packaging script.
-- Native Windows notification visibility and older browser versions were not tested interactively. Browser acceptance does not prove OS display; full Steam-wide discovery is not guaranteed.
-
-## Compatibility and scope
-
-Uses longstanding `chrome.alarms` behavior and verifies/restores scheduled work rather than requiring the new Chrome 150 persistence option. Local tests cover midnight quiet intervals, interrupted checks, concurrent actions, migration, source failures, reminders, cache TTL and backup validation.
-
-Steam login/library synchronization, automatic claiming, other stores and Free Weekend tracking are outside this release.
-
-## Focus interface
-
-- Shared theme tokens use system light/dark media queries. No runtime dependencies, remote fonts or additional permissions were added.
-- The popup requests 410 × 600 CSS pixels on the root element, avoiding Chrome's initial action-popup viewport becoming its permanent size. The inner layout fits the available height, with its own scrollable offer list and persistent navigation/actions. The brand row and collapsed status row are both 41 CSS pixels high. Tighter card spacing keeps two complete offers visible at 100%/125%; scrolling remains available at 150% and above or for longer lists. Compact mode removes artwork; ratings, content type and base price remain available. Exact deadlines are exposed via title and accessible labels alongside relative time.
-- Popup and history display 120 × 56 CSS-pixel artwork with `object-fit: contain`; the full title sits above the image and metadata. The UI tries sanitized explicit header/capsule URLs in order (at most two candidates), or a generated legacy header URL when no explicit cover exists. Failed/missing covers keep a neutral placeholder and the Steam link without shifting the row. Gallery screenshots are never candidates for these two screens. Notification artwork behavior is unchanged.
-- Seven settings sections share one form, so switching sections preserves unsaved values. Hash links support direct navigation and browser history. Validation reveals the first invalid field before the browser focuses it; the save bar remains reachable on long sections.
-- History keeps search, sorting, status filters, separate campaign/personal states, first discovery and last notification dates, and all original actions. Narrow layouts turn table rows into stacked records.
-- Storage-driven rerenders preserve open menus, keyboard focus and popup scroll position. Escape closes an action menu and returns focus to its trigger.
-
-## Release maintenance
-
-Release preparation on 2026-10-23 rechecked all 85 unit tests and 138 browser checks successfully. The browser run needed write access outside the restricted execution sandbox for its test backup download. The rebuilt ZIP's 43 files were compared against the current sources by SHA-256; the release-notes extractor returned the eight intended bullets for 1.0.0. Publication itself remains untested until the user pushes the tag.
-
-The `Tests` workflow runs unit tests, validates the release archive, and checks that the manifest version has an entry in `CHANGELOG.md` on every push and pull request. Both workflows use `actions/checkout@v7`, `actions/setup-node@v7`, and the latest available Node.js 24 LTS patch on `windows-latest`. The v7 migration does not affect these workflows: they use neither privileged fork checkout triggers nor npm registry authentication.
-
-To publish 1.0.0 through GitHub Desktop:
-
-1. Review and commit all release changes on `main`, including new source, locale, test and workflow files. Build outputs under `dist/` are intentionally ignored.
-2. Push the commit and wait for the `Tests` workflow to pass.
-3. In Desktop's **History**, right-click that release commit, select **Create Tag**, and enter `v1.0.0`.
-4. Push the tag. The `Release` workflow checks the tag against `manifest.json`, runs tests, builds `steam-promo-watch-1.0.0.zip`, extracts the `1.0.0` changelog section, and publishes the release with its ZIP.
-5. Verify the successful workflow and the named ZIP under the GitHub release's **Assets**.
-
-`CHANGELOG.md` is maintained manually before committing. Its matching section becomes the release description automatically; commit messages do not generate that section. A branch push alone does not publish a release. Do not manually create a second release or attach the local ZIP when using this workflow.
-
-For a failed publication, fix the reported problem first. For a transient failure, rerun the failed workflow; alternatively use **Actions → Release → Run workflow** with the existing tag. Manual dispatch checks out that tag, so changes made after tagging are not included. The workflow can update an existing release and replace its ZIP. Chrome Web Store publication is separate.
+Version 2.0.0: 106 module tests and 157 browser checks passed, and the release ZIP passed packaging validation. Before renaming, 40 additional display-scale checks passed at 100–200%. Live US/RU checks returned successful responses for all three stores, two current Epic games and one Steam DLC hidden by default; GOG returned an empty result. Positive GOG giveaway validation, native Windows notification visibility and older browser versions remain unverified. Current release-validation outputs are kept under `dist/release-2.0.0-*`.

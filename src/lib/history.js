@@ -1,3 +1,4 @@
+import { storeOf, storeUrl, storeAsset } from "./stores.js";
 import {
   CONTENT_TYPES,
   ENTRY_STATUS,
@@ -14,9 +15,7 @@ import {
   normalizeWhitespace,
   safeArray,
   safeNumber,
-  sanitizeSteamAssetUrl,
   sanitizeSteamReviewSummary,
-  sanitizeSteamUrl,
 } from "./utils.js";
 
 function getPromotionMatchKey(promotion) {
@@ -37,8 +36,10 @@ function getPromotionMatchKey(promotion) {
 
 export function sanitizePromotionEntry(raw = {}) {
   const source = typeof raw === "object" && raw ? raw : {};
-  const reviewSummary = sanitizeSteamReviewSummary(source);
+  const reviewSummary = sanitizeSteamReviewSummary(storeOf(source) === "steam" ? source : {});
   return {
+    store: storeOf(source),
+    claimUrl: storeUrl({ ...source, url: source.claimUrl || source.url }),
     campaignId: typeof source.campaignId === "string" ? source.campaignId : "",
     genres: Array.isArray(source.genres) ? source.genres.map(String) : [],
     platforms: Array.isArray(source.platforms)
@@ -65,13 +66,11 @@ export function sanitizePromotionEntry(raw = {}) {
       typeof source.basePriceFormatted === "string"
         ? normalizeWhitespace(source.basePriceFormatted).slice(0, 64)
         : "",
-    url: sanitizeSteamUrl(
-      source.url || buildSteamUrlFromStableId(source.stableId),
-    ),
-    headerImage: sanitizeSteamAssetUrl(source.headerImage),
-    capsuleImage: sanitizeSteamAssetUrl(source.capsuleImage),
-    screenshotThumbnail: sanitizeSteamAssetUrl(source.screenshotThumbnail),
-    screenshotFull: sanitizeSteamAssetUrl(source.screenshotFull),
+    url: storeUrl(source),
+    headerImage: storeAsset(source.headerImage, source),
+    capsuleImage: storeAsset(source.capsuleImage, source),
+    screenshotThumbnail: storeAsset(source.screenshotThumbnail, source),
+    screenshotFull: storeAsset(source.screenshotFull, source),
     ...reviewSummary,
     sourceId: typeof source.sourceId === "string" ? source.sourceId : "",
     sourceFingerprint:
@@ -159,6 +158,11 @@ export function mergePromotionEntries(
     if (activeIds.has(entry.id)) {
       continue;
     }
+    const storeState = options.storeResults?.[storeOf(entry)];
+    if (options.storeResults && !storeState) {
+      merged.push(entry);
+      continue;
+    }
     const expired = sanitizePromotionEntry({
       ...entry,
       status:
@@ -171,8 +175,8 @@ export function mergePromotionEntries(
       stale: true,
       confirmedEnded:
         options.confirmedEnded?.has(entry.stableId) || entry.confirmedEnded,
-      missingCount: entry.missingCount + (options.complete ? 1 : 0),
-      lastCheckedAt: nowTs,
+      missingCount: entry.missingCount + ((storeState ? storeState.complete : options.complete) ? 1 : 0),
+      lastCheckedAt: storeState && !storeState.ok ? entry.lastCheckedAt : nowTs,
     });
     merged.push(expired);
   }

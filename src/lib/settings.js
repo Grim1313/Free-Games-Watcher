@@ -1,3 +1,4 @@
+import { STORE_IDS } from "./stores.js";
 import {
   CHECK_INTERVAL_OPTIONS,
   DEFAULT_CHECK_INTERVAL_MINUTES,
@@ -18,6 +19,7 @@ import {
 export const DEFAULT_SETTINGS = Object.freeze({
   notificationsEnabled: true,
   region: "US",
+  enabledStores: ["steam", "epic", "gog"],
   language: "auto",
   compactView: false,
   sortBy: "ending",
@@ -84,6 +86,9 @@ export function sanitizeSettings(raw = {}) {
   );
 
   return {
+    enabledStores: Array.isArray(source.enabledStores)
+      ? STORE_IDS.filter((store) => source.enabledStores.includes(store))
+      : ["steam"],
     region: /^[A-Z]{2}$/.test(String(source.region || "").toUpperCase())
       ? String(source.region).toUpperCase()
       : "US",

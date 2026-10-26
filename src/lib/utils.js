@@ -1,3 +1,4 @@
+import { storeOf, storeAsset } from "./stores.js";
 import {
   DEBUG,
   FETCH_TIMEOUT_MS,
@@ -12,7 +13,7 @@ const INTEGER_NUMBER_FORMATTER = new Intl.NumberFormat();
 
 export function debugLog(...args) {
   if (DEBUG) {
-    console.log("[Steam Promo Watch]", ...args);
+    console.log("[Free Games Watcher]", ...args);
   }
 }
 
@@ -361,9 +362,9 @@ export function formatSteamReviewNotificationSummary(raw = {}) {
 export function getPromotionCoverUrls(promotion) {
   const source = typeof promotion === "object" && promotion ? promotion : {};
   const candidates = [source.headerImage, source.capsuleImage]
-    .map(sanitizeSteamAssetUrl)
+    .map((value) => storeAsset(value, source))
     .filter(Boolean);
-  if (!candidates.length) {
+  if (!candidates.length && storeOf(source) === "steam") {
     const stableIdMatch = /^app:(\d+)$/.exec(String(source.stableId || ""));
     const fallback = buildSteamHeaderImageUrl(
       source.appId || stableIdMatch?.[1],
@@ -398,7 +399,7 @@ export function getPromotionImageUrl(promotion, options = {}) {
       ];
 
   for (const candidate of ordered) {
-    const sanitized = sanitizeSteamAssetUrl(candidate);
+    const sanitized = storeAsset(candidate, source);
     if (sanitized) {
       return sanitized;
     }

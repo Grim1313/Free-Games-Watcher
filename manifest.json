@@ -2,13 +2,23 @@
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "minimum_chrome_version": "120",
-  "permissions": ["alarms", "notifications", "storage"],
+  "permissions": [
+    "alarms",
+    "notifications",
+    "storage"
+  ],
   "host_permissions": [
     "https://api.steampowered.com/*",
     "https://store.steampowered.com/*",
-    "https://*.steamstatic.com/*"
+    "https://*.steamstatic.com/*",
+    "https://store-site-backend-static.ak.epicgames.com/*",
+    "https://cdn1.epicgames.com/*",
+    "https://sections.gog.com/*",
+    "https://catalog.gog.com/*",
+    "https://images.gog-statics.com/*",
+    "https://images.gog.com/*"
   ],
   "background": {
     "service_worker": "src/service-worker.js",

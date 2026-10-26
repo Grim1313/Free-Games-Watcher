@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag, for example v1.0.0"
+        description: "Release tag, for example v2.0.0"
         required: true
         type: string
 
@@ -59,7 +59,7 @@ jobs:
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: |
           $version = $env:RELEASE_TAG -replace '^v', ''
-          $notesPath = Join-Path $env:RUNNER_TEMP ("steam-promo-watch-{0}-release-notes.md" -f $version)
+          $notesPath = Join-Path $env:RUNNER_TEMP ("Free-Games-Watcher-{0}-release-notes.md" -f $version)
           & ./scripts/get-release-notes.ps1 -Version $version -OutputPath $notesPath
           "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
 
@@ -83,9 +83,16 @@ jobs:
 
           if ($releaseViewExitCode -eq 0) {
             gh release upload $tag $archivePath --clobber
-            gh release edit $tag --title "Steam Promo Watch $tag" --notes-file $notesPath --latest
+            $isDraft = gh release view $tag --json isDraft --jq '.isDraft'
+            if ($LASTEXITCODE -ne 0) { throw "Could not inspect release draft state" }
+            if ($isDraft -eq 'true') {
+              # Preserve the human-created draft and its author; publish from the UI after validation.
+              gh release edit $tag --title "Free Games Watcher $tag" --notes-file $notesPath
+            } else {
+              gh release edit $tag --title "Free Games Watcher $tag" --notes-file $notesPath --latest
+            }
           } elseif ($releaseViewExitCode -eq 1) {
-            gh release create $tag $archivePath --title "Steam Promo Watch $tag" --notes-file $notesPath --latest --verify-tag
+            gh release create $tag $archivePath --title "Free Games Watcher $tag" --notes-file $notesPath --latest --verify-tag
           } else {
             throw "gh release view failed with exit code $releaseViewExitCode"
           }

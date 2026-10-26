@@ -219,7 +219,7 @@ test("0.5.0 migration preserves ignored titles and delivered notifications acros
     },
   });
   await ensureSchemaVersion();
-  assert.equal(data.schemaVersion, 2);
+  assert.equal(data.schemaVersion, 3);
   assert.equal(data.userActions["app:123"].ignored, true);
   assert.equal(data.latestPromotions[0].id, "app:123|free-to-keep");
   assert.equal(

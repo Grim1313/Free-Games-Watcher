@@ -81,7 +81,7 @@ test("createPromotionNotifications uses image notifications when artwork is avai
     notificationCalls[0][1].imageUrl,
     "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/header.jpg",
   );
-  assert.match(notificationCalls[0][1].message, /^Free to Keep\. Ends .+\.$/);
+  assert.match(notificationCalls[0][1].message, /^Steam · Free to Keep\. Ends .+\.$/);
   assert.equal(
     notificationCalls[0][1].contextMessage,
     "86% positive · 49353 reviews",
@@ -123,6 +123,6 @@ test("createPromotionNotifications keeps deadline status visible when no end tim
   assert.equal(notificationCalls.length, 1);
   assert.equal(
     notificationCalls[0][1].message,
-    "Free to Keep. End time unavailable.",
+    "Steam · Free to Keep. End time unavailable.",
   );
 });

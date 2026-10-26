@@ -32,6 +32,13 @@ export async function ensureSchemaVersion() {
   if (current > STORAGE_SCHEMA_VERSION) throw new Error("unsupportedBackup");
   if (current === STORAGE_SCHEMA_VERSION) return;
   const data = await readLocal();
+  if (current >= 2) {
+    // Schema 2 already has stable campaigns: never re-run legacy deduplication.
+    await writeLocal({ schemaVersion: STORAGE_SCHEMA_VERSION,
+      ...(!data.settings ? { settings: { enabledStores: ["steam"] } } : {}),
+    });
+    return;
+  }
   const canonical = (entry) =>
     `${entry.stableId}|${entry.promoType || "free-to-keep"}`;
   const migrateEntries = (entries = []) => {

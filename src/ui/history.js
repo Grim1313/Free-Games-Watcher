@@ -7,7 +7,10 @@ import {
   announce,
   date,
   deadline,
-  steamLink,
+  storeLink,
+  storeOf,
+  STORE_NAMES,
+  storeUrl,
   artwork,
   action,
   sortEntries,
@@ -38,17 +41,19 @@ function render() {
         stableId,
         id: stableId,
         title: a.title,
-        url: buildSteamUrlFromStableId(stableId),
+        url: storeUrl({ stableId, url: a.url }),
         fingerprint: a.hiddenCampaign,
         status: "unknown",
       });
   const query = $("search").value.trim().toLocaleLowerCase();
   const filter = $("status-filter").value;
+  const selectedStore = $("store-filter").value;
   const entries = sortEntries(
     [...merged.values()].filter((e) => {
       const state = actionState(e, data.userActions);
       const status = e.endsAt && e.endsAt <= Date.now() ? "expired" : e.status;
       return (
+        (selectedStore === "all" || storeOf(e) === selectedStore) &&
         (!query || e.title.toLocaleLowerCase().includes(query)) &&
         (filter === "all" ||
           (filter === "active"
@@ -75,7 +80,7 @@ function render() {
     const wrap = el("div", "history-entry");
     const title = el("div", "history-entry-copy");
     wrap.append(artwork(entry, true), title);
-    titleCell.append(steamLink(entry, entry.title, "game-link"), wrap);
+    titleCell.append(storeLink(entry, entry.title, "game-link"), wrap);
     if (entry.endsAt) {
       const end = el("div", "deadline-line", deadline(entry, true));
       end.title = date(entry.endsAt);
@@ -94,6 +99,7 @@ function render() {
           }),
         ),
       );
+    title.append(el("span", "tag store-tag", STORE_NAMES[storeOf(entry)]));
     const personal = actionState(entry, data.userActions);
     const status =
       entry.endsAt && entry.endsAt <= Date.now() ? "expired" : entry.status;
@@ -108,8 +114,8 @@ function render() {
     if (personal) state.append(el("div", "tag", t(personal)));
     const actions = el("td", "actions-cell");
     const controls = el("div", "card-actions");
-    const store = steamLink(entry, "Steam ↗", "header-link");
-    store.setAttribute("aria-label", `${t("openSteam")}: ${entry.title}`);
+    const store = storeLink({ ...entry, url: entry.claimUrl || entry.url }, `${storeOf(entry) === "epic" ? "Epic" : STORE_NAMES[storeOf(entry)]} ↗`, "header-link");
+    store.setAttribute("aria-label", `${t("openStore")}: ${entry.title}`);
     controls.append(store);
     if (personal)
       controls.append(button(t("restore"), () => action(entry, "restore")));
@@ -146,7 +152,7 @@ async function refresh() {
   await localize(data.settings);
   render();
 }
-for (const id of ["search", "status-filter", "sort-by"])
+for (const id of ["search", "status-filter", "sort-by", "store-filter"])
   $(id).addEventListener("input", render);
 watch(refresh);
 refresh().catch((e) => announce(errorText(e)));

@@ -1,8 +1,8 @@
+import { storeOf, enabledStores, scanKey } from "./stores.js";
 import {
   STORAGE_KEYS,
   MAX_HISTORY_ITEMS,
   MAX_LATEST_ITEMS,
-  PROMO_TYPES,
 } from "./constants.js";
 import {
   buildPromotionIdentity,
@@ -15,6 +15,7 @@ import {
   getHistoryEntries,
   getLatestPromotionEntries,
   mergePromotionEntries,
+  sanitizePromotionEntry,
   countUnreadActive,
 } from "./history.js";
 import { createPromotionNotifications } from "./notifications.js";
@@ -45,6 +46,7 @@ export function visibleEntries(entries, settings, actions, now = Date.now()) {
     entries.filter(
       (e) =>
         e.status === "active" &&
+        (!e.startsAt || e.startsAt <= now) &&
         (!e.endsAt || e.endsAt > now) &&
         (e.region || "US") === settings.region &&
         !actionState(e, actions, now),
@@ -91,7 +93,7 @@ export function assignCampaigns(promotions, existing, now) {
 async function performPromotionCheck(trigger) {
   const started = Date.now();
   const settings = await getSettings();
-  if (!settings.trackFreeToKeep) {
+  if (!settings.trackFreeToKeep || !enabledStores(settings).length) {
     const runtimeState = await mutate(() =>
       setRuntimeState({
         checkInProgress: false,
@@ -114,13 +116,12 @@ async function performPromotionCheck(trigger) {
   try {
     const known = await getLatestPromotionEntries();
     const result = await fetchPromotionsFromProviders(settings, known);
-    if (!result.hadSuccess)
-      throw new Error(result.warnings.join("; ") || "No source available");
+
     return await mutate(async () => {
       const currentSettings = await getSettings();
       if (
         !currentSettings.trackFreeToKeep ||
-        currentSettings.region !== settings.region
+        scanKey(currentSettings) !== scanKey(settings)
       ) {
         const runtimeState = await setRuntimeState({
           checkInProgress: false,
@@ -129,6 +130,18 @@ async function performPromotionCheck(trigger) {
         return { ok: true, discarded: true, runtimeState };
       }
       const now = Date.now();
+      const previousDiagnostics = await readKey("diagnostics", {});
+      const storeResults = { ...previousDiagnostics.storeResults };
+      for (const [store, state] of Object.entries(result.storeResults)) {
+        storeResults[store] = { ...state, region: settings.region,
+          lastSuccessAt: state.ok ? now : previousDiagnostics.storeResults?.[store]?.region === settings.region
+            ? previousDiagnostics.storeResults[store].lastSuccessAt || 0 : 0 };
+      }
+      if (!result.hadSuccess) {
+        await writeLocal({ diagnostics: { checkedAt: now, region: settings.region, complete: false,
+          sources: result.sources, storeResults, warnings: result.warnings, found: 0, rejected: [] } });
+        throw new Error(result.warnings.join("; ") || "No source available");
+      }
       const [history, latest, actions] = await Promise.all([
         getHistoryEntries(),
         getLatestPromotionEntries(),
@@ -142,6 +155,7 @@ async function performPromotionCheck(trigger) {
       const mergeOptions = {
         retentionDays: currentSettings.historyRetentionDays,
         complete: result.complete,
+        storeResults: result.storeResults,
         confirmedEnded: result.confirmedEnded,
       };
       let nextLatest = mergePromotionEntries(latest, promotions, now, {
@@ -180,9 +194,17 @@ async function performPromotionCheck(trigger) {
       let sent = 0;
       const notificationErrors = [];
       // Persist the scan before optional OS delivery; OS errors must not erase a valid result.
+      const previousUpcoming = await readKey("upcomingPromotions", []);
+      const upcomingById = new Map(previousUpcoming.filter((p) =>
+        p.region === settings.region && p.startsAt > now && !result.storeResults[storeOf(p)]?.complete,
+      ).map((p) => [p.stableId, { ...p, stale: true }]));
+      for (const p of result.upcoming) upcomingById.set(p.stableId, sanitizePromotionEntry({
+        ...p, id: buildPromotionIdentity(p), status: "upcoming", firstSeenAt: now, lastCheckedAt: now,
+      }));
       await writeLocal({
         history: nextHistory,
         latestPromotions: nextLatest,
+        upcomingPromotions: [...upcomingById.values()].slice(0, MAX_LATEST_ITEMS),
         metadataCache: result.metadataCache,
       });
       if (currentSettings.notificationsEnabled && !quiet) {
@@ -248,6 +270,7 @@ async function performPromotionCheck(trigger) {
         complete: result.complete,
         durationMs: now - started,
         sources: result.sources,
+        storeResults,
         warnings: [...result.warnings, ...notificationErrors],
         found: promotions.length,
         rejected: filterResult.rejected.map(({ promotion, reason }) => ({
@@ -288,7 +311,7 @@ async function performPromotionCheck(trigger) {
       const currentSettings = await getSettings();
       if (
         !currentSettings.trackFreeToKeep ||
-        currentSettings.region !== settings.region
+        scanKey(currentSettings) !== scanKey(settings)
       ) {
         const runtimeState = await setRuntimeState({
           checkInProgress: false,

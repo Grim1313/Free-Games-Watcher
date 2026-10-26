@@ -201,7 +201,7 @@ export async function checkNativePopup({ context, worker, page, out, scale }) {
               assert.ok(!geometry.horizontalOverflow, label);
               assert.equal(geometry.theme, theme, label);
               for (const cover of geometry.covers) {
-                assert.equal(cover.fit, "contain", label);
+                assert.equal(cover.fit, "cover", label);
                 assert.equal(cover.width, 120, label);
                 assert.equal(cover.height, 56, label);
                 assert.equal(cover.naturalWidth, 460, label);

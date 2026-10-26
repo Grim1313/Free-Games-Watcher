@@ -1,3 +1,4 @@
+import { STORE_IDS, STORE_NAMES, storeOf, storeUrl, enabledStores } from "../lib/stores.js";
 import {
   t,
   localize,
@@ -102,6 +103,7 @@ function fill(settings) {
     if (input.type === "checkbox") input.checked = value;
     else input.value = Array.isArray(value) ? value.join("\n") : value;
   }
+  for (const store of STORE_IDS) $("store-" + store).checked = enabledStores(settings).includes(store);
   for (const p of ["windows", "mac", "linux"])
     $(`platform-${p}`).checked = settings.filters.platforms.includes(p);
   for (const option of $("checkIntervalMinutes").options)
@@ -120,6 +122,7 @@ function collect() {
         : $(key).value;
   return {
     ...Object.fromEntries(fields.map((k) => [k, read(k)])),
+    enabledStores: STORE_IDS.filter((store) => $("store-" + store).checked),
     filters: {
       ...Object.fromEntries(filters.map((k) => [k, read(k)])),
       platforms: ["windows", "mac", "linux"].filter(
@@ -144,12 +147,12 @@ async function refresh() {
   for (const [stableId, record] of Object.entries(data.userActions)) {
     const entry = data.latestPromotions.find(
       (e) => e.stableId === stableId,
-    ) || { stableId, title: record.title, fingerprint: record.hiddenCampaign };
+    ) || { stableId, url: record.url, title: record.title, fingerprint: record.hiddenCampaign };
     const state = actionState(entry, data.userActions);
     if (!state) continue;
     const row = el("article", "ignored-item");
     const link = el("a", "ignored-title", entry.title);
-    link.href = buildSteamUrlFromStableId(stableId);
+    link.href = storeUrl(entry);
     link.target = "_blank";
     link.rel = "noreferrer";
     row.append(
@@ -157,7 +160,7 @@ async function refresh() {
       el(
         "span",
         "ignored-meta",
-        t(state) +
+        STORE_NAMES[storeOf(stableId)] + " · " + t(state) +
           (state === "snoozed" ? ` · ${date(record.snoozedUntil)}` : ""),
       ),
       button(t("restore"), () => action(entry, "restore"), "secondary-button"),
@@ -173,7 +176,7 @@ async function refresh() {
       el(
         "li",
         "note",
-        `${t(source.id)}: ${t(!source.ok ? "failed" : !source.complete || source.coverageLimited ? "limited" : "complete")}`,
+        `${t(source.id)}: ${t(!source.ok ? "failed" : !source.complete || source.coverageLimited ? "limited" : "complete")} · ${t("lastSuccess")}: ${date(data.diagnostics.storeResults?.[source.store]?.lastSuccessAt)}`,
       ),
     );
   if (!data.diagnostics.sources?.length)
@@ -276,7 +279,7 @@ on("export-backup", async () => {
   );
   const link = el("a");
   link.href = url;
-  link.download = "steam-promo-watch-backup.json";
+  link.download = "free-games-watcher-backup.json";
   document.body.append(link);
   link.click();
   link.remove();

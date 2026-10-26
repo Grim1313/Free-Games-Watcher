@@ -1,3 +1,4 @@
+import { scanKey, enabledStores, storeOf } from "./lib/stores.js";
 import { CHECK_ALARM_NAME, FOLLOWUP_ALARM_NAME } from "./lib/constants.js";
 import { updateBadge } from "./lib/badge.js";
 import { getHistoryEntries, getLatestPromotionEntries } from "./lib/history.js";
@@ -71,6 +72,7 @@ async function getData() {
     historyEntries,
     userActions,
     diagnostics,
+    upcomingPromotions,
   ] = await Promise.all([
     getSettings(),
     recoverInterruptedCheckState(),
@@ -78,6 +80,7 @@ async function getData() {
     getHistoryEntries(),
     getActions(),
     readKey("diagnostics", {}),
+    readKey("upcomingPromotions", []),
   ]);
   return {
     ok: true,
@@ -87,6 +90,8 @@ async function getData() {
     historyEntries,
     userActions,
     diagnostics,
+    upcomingPromotions: upcomingPromotions.filter((p) => p.region === settings.region && p.startsAt > Date.now()
+      && enabledStores(settings).includes(storeOf(p))),
     visiblePromotions: visibleEntries(latestPromotions, settings, userActions),
   };
 }
@@ -152,11 +157,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           scheduleChanged =
             next.checkIntervalMinutes !== old.checkIntervalMinutes ||
             next.trackFreeToKeep !== old.trackFreeToKeep ||
-            next.region !== old.region;
+            scanKey(next) !== scanKey(old);
           checkSoon =
-            next.trackFreeToKeep &&
-            (!old.trackFreeToKeep || next.region !== old.region);
-          if (next.region !== old.region) {
+            next.trackFreeToKeep && enabledStores(next).length > 0 &&
+            (!old.trackFreeToKeep || scanKey(next) !== scanKey(old));
+          if (scanKey(next) !== scanKey(old)) {
             await writeLocal({ metadataCache: {} });
             await setRuntimeState({
               lastSuccessAt: 0,

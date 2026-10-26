@@ -1,7 +1,7 @@
 export const DEBUG = false;
 
-export const APP_NAME = "Steam Promo Watch";
-export const STORAGE_SCHEMA_VERSION = 2;
+export const APP_NAME = "Free Games Watcher";
+export const STORAGE_SCHEMA_VERSION = 3;
 export const CHECK_ALARM_NAME = "steam-promo-check";
 export const FOLLOWUP_ALARM_NAME = "steam-promo-followup";
 export const NOTIFICATION_PREFIX = "steam-promo-watch";
@@ -18,6 +18,7 @@ export const STORAGE_KEYS = Object.freeze({
   notificationLinks: "notificationLinks",
   userActions: "userActions",
   diagnostics: "diagnostics",
+  upcomingPromotions: "upcomingPromotions",
 });
 
 export const CHECK_INTERVAL_OPTIONS = Object.freeze([

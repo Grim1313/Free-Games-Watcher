@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
-    <title>Steam Promo Watch</title>
+    <title>Free Games Watcher</title>
     <link rel="stylesheet" href="theme.css" />
     <link rel="stylesheet" href="shared.css" />
     <link rel="stylesheet" href="popup.css" />
@@ -18,7 +18,7 @@
             alt=""
             width="30"
             height="30"
-          /><span>Steam Promo Watch</span>
+          /><span>Free Games Watcher</span>
         </div>
         <button
           id="check-now"
@@ -58,6 +58,7 @@
           <span id="unread-pill" class="pill hidden"></span>
         </div>
         <div class="view-controls">
+          <label class="store-selector"><select id="store-filter" data-i18n-aria="stores"><option value="all" data-i18n="allStores"></option><option value="steam">Steam</option><option value="epic">Epic Games Store</option><option value="gog">GOG</option></select></label>
           <label
             ><span class="sr-only" data-i18n="sortBy"></span
             ><select id="sort-by">
@@ -76,6 +77,10 @@
         <div class="promotion-scroll">
           <p id="empty-state" class="empty-state hidden"></p>
           <ul id="promotion-list" class="promotion-list"></ul>
+          <details id="upcoming-section" class="upcoming-section" hidden>
+            <summary data-i18n="upcoming"></summary>
+            <ul id="upcoming-list"></ul>
+          </details>
         </div>
         <div class="list-footer">
           <button
@@ -114,7 +119,7 @@
           data-i18n="settings"
         ></a>
         <a
-          href="https://github.com/Grim1313/steam-promo-watch/releases/latest"
+          href="https://github.com/Grim1313/Free-Games-Watcher/releases/latest"
           target="_blank"
           rel="noreferrer"
           data-i18n="githubVersions"

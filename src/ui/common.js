@@ -1,3 +1,5 @@
+import { STORE_NAMES, storeOf, storeUrl } from "../lib/stores.js";
+export { STORE_NAMES, storeOf, storeUrl };
 import { getTranslator } from "../lib/i18n.js";
 import { getPromotionCoverUrls } from "../lib/utils.js";
 export let t = (key) => key;
@@ -141,15 +143,15 @@ export function preserveListInteraction(container) {
     if (scroller) scroller.scrollTop = scrollTop;
   };
 }
-export function steamLink(entry, text, className = "") {
+export function storeLink(entry, text, className = "") {
   const node = el("a", className, text);
-  node.href = entry.url;
+  node.href = storeUrl(entry);
   node.target = "_blank";
   node.rel = "noreferrer";
   return node;
 }
 export function artwork(entry, history = false) {
-  const link = steamLink(
+  const link = storeLink(
     entry,
     "",
     history ? "history-entry-preview" : "promotion-media",
@@ -174,7 +176,7 @@ export function artwork(entry, history = false) {
   image.addEventListener("load", () => {
     placeholder.hidden = true;
   });
-  link.setAttribute("aria-label", `${t("openSteam")}: ${entry.title}`);
+  link.setAttribute("aria-label", `${t("openStore")} (${STORE_NAMES[storeOf(entry)]}): ${entry.title}`);
   link.append(placeholder, image);
   loadNext();
   return link;
@@ -183,7 +185,7 @@ export async function action(entry, type, payload = {}) {
   const result = await send("SET_ACTION", {
     stableId: entry.stableId,
     action: type,
-    payload: { title: entry.title, fingerprint: entry.fingerprint, ...payload },
+    payload: { title: entry.title, url: entry.url, fingerprint: entry.fingerprint, ...payload },
   });
   announce(t("actionSaved"));
   const feedback = document.querySelector("#feedback");

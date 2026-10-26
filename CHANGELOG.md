@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.0
+
+### What's new
+
+- Renamed Steam Promo Watch to **Free Games Watcher**.
+- Added **multi-store support** for Steam, Epic Games Store and GOG, with store selection, filters and independent source diagnostics.
+- Added a separate list of upcoming Epic giveaways without early notifications.
+- Preserved settings, personal marks and backup compatibility for existing Steam Promo Watch users.
+
 ## 1.0.0
 
 ### What's new

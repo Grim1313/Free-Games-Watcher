@@ -1,3 +1,5 @@
+import { epicFeed, gogPage, gogGiveaway } from "../tests/multistore-fixtures.mjs";
+import { checkMultistore } from "./multistore-ui-checks.mjs";
 import { cp, mkdir, readFile, writeFile, mkdtemp } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -20,13 +22,19 @@ const extension = await mkdtemp(join(out, "extension-"));
 for (const name of ["manifest.json", "src", "resources", "_locales"])
   await cp(join(root, name), join(extension, name), { recursive: true });
 const bootstrap = `
+const epicFixture = ${epicFeed.toString()};
+const gogPageFixture = ${gogPage.toString()};
+const gogGiveawayFixture = ${gogGiveaway.toString()};
 const originalFetch = globalThis.fetch;
 const count = 12;
 const row = i => '<a href="https://store.steampowered.com/app/'+i+'/" class="search_result_row" data-price-final="0"><span class="title">Test giveaway '+i+'</span><div class="discount_original_price">$9.99</div><div class="discount_final_price">$0.00</div></a>';
 globalThis.fetch = async (url, options) => {
  url=String(url);
  let payload;
- if(url.includes('/search/results/'))payload={total_count:count,results_html:Array.from({length:count},(_,i)=>row(100+i)).join('')};
+ if(url.includes('freeGamesPromotions')){if(globalThis.failEpic)throw new Error('Epic offline');payload=epicFixture();}
+ else if(url.includes('sections.gog.com'))payload=url.includes('/sections/')?gogGiveawayFixture():gogPageFixture();
+ else if(url.includes('catalog.gog.com'))payload={productCount:0,products:[]};
+ else if(url.includes('/search/results/'))payload={total_count:count,results_html:Array.from({length:count},(_,i)=>row(100+i)).join('')};
  else if(url.includes('/api/appdetails')){const id=new URL(url).searchParams.get('appids');payload={[id]:{success:true,data:{name:'Test giveaway '+id,type:'game',genres:[{description:'Action'}],platforms:{windows:true,linux:true},header_image:'https://shared.akamai.steamstatic.com/test.png',price_overview:{initial:999,final:0,initial_formatted:'$9.99'}}}};}
  else if(url.includes('/appreviews/'))payload={success:1,query_summary:{total_reviews:100,total_positive:85,total_negative:15}};
  else if(url.includes('IStoreBrowseService')){const input=JSON.parse(new URL(url).searchParams.get('input_json'));payload={response:{store_items:input.ids.map(({appid})=>({appid,best_purchase_option:{is_free_to_keep:true,free_to_keep_ends:Math.floor(Date.now()/1000)+12*3600}}))}};}
@@ -71,7 +79,7 @@ try {
     page.on("pageerror", (e) => errors.push(e.message)),
   );
   await context.route("https://**/*", async (route) => {
-    if (route.request().url().includes("steamstatic.com"))
+    if (/steamstatic\.com|cdn1\.epicgames\.com|images\.gog-statics\.com/.test(route.request().url()))
       await route.fulfill({
         contentType: "image/svg+xml",
         body: headerArtwork,
@@ -235,6 +243,7 @@ try {
     out,
   });
   checks += await checkNativePopup({ context, worker, page, out });
+  checks += await checkMultistore({ worker, page, options, history, out });
   // Settings used for display must not postpone the scheduled scan.
   const before = await worker.evaluate(
     async () => (await chrome.alarms.get("steam-promo-check")).scheduledTime,

@@ -1,9 +1,9 @@
 {
   "extensionName": {
-    "message": "Steam Promo Watch: Free Game Alerts"
+    "message": "Free Games Watcher - Steam, Epic & GOG"
   },
   "extensionDescription": {
-    "message": "Find limited-time free Steam games and get giveaway alerts. No Steam login required."
+    "message": "Find free-to-keep giveaways on Steam, Epic Games Store and GOG. Local alerts without connecting store accounts."
   },
   "freeToKeep": {
     "message": "Free to Keep"
@@ -147,7 +147,7 @@
     "message": "Newest first"
   },
   "sort_rating": {
-    "message": "Highest rated"
+    "message": "Steam rating"
   },
   "sort_title": {
     "message": "Title"
@@ -198,10 +198,10 @@
     "message": "General"
   },
   "region": {
-    "message": "Steam store country code"
+    "message": "Store country code"
   },
   "regionNote": {
-    "message": "Two-letter code, for example US, RU, DE or GB. Choose your actual Steam store country; this does not bypass regional restrictions."
+    "message": "Two-letter code: US, RU, DE or GB. Applies to enabled stores. Listings do not guarantee eligibility and do not bypass regional restrictions."
   },
   "language": {
     "message": "Interface language"
@@ -219,7 +219,7 @@
     "message": "Filters"
   },
   "filterNote": {
-    "message": "Filters apply to the list and notifications. Unknown metadata is excluded by genre/platform filters; review handling is configurable."
+    "message": "Filters apply to the list and notifications. Rating, review count and unrated policy apply only to Steam; Epic and GOG have no comparable review data. Genre/platform filters exclude unknown metadata."
   },
   "ignoreDlc": {
     "message": "Hide DLC"
@@ -237,19 +237,19 @@
     "message": "Hide packages"
   },
   "minRating": {
-    "message": "Minimum positive reviews, %"
+    "message": "Steam: minimum positive reviews, %"
   },
   "minReviews": {
-    "message": "Minimum number of reviews"
+    "message": "Steam: minimum review count"
   },
   "includeUnrated": {
-    "message": "Include games with no review data"
+    "message": "Steam: include games with no review data"
   },
   "genres": {
     "message": "Genres, one per line (any match)"
   },
   "genresNote": {
-    "message": "Use Steam English genre names, for example Action, Adventure, RPG, Strategy, Simulation, Indie. Leave empty for all."
+    "message": "English genre names, for example Action, Adventure, RPG, Strategy. Leave empty for all. Epic currently has no verified genre/platform metadata."
   },
   "platforms": {
     "message": "Platforms (any match; none selected = all)"
@@ -550,5 +550,38 @@
   },
   "recordCount": {
     "message": "Records: {count}"
+  },
+  "stores": {
+    "message": "Stores"
+  },
+  "allStores": {
+    "message": "All stores"
+  },
+  "storesNote": {
+    "message": "Choose stores to check. Existing installations keep Steam enabled; enable Epic and GOG here. No selection pauses checks."
+  },
+  "noStoresSelected": {
+    "message": "Choose a store in Settings to start checking."
+  },
+  "noOffersInStore": {
+    "message": "No visible giveaways in this store."
+  },
+  "openStore": {
+    "message": "Open store"
+  },
+  "upcoming": {
+    "message": "Upcoming giveaways"
+  },
+  "startsAt": {
+    "message": "Starts {value}"
+  },
+  "epic_promotions": {
+    "message": "Epic Games Store promotions"
+  },
+  "gog_giveaways": {
+    "message": "GOG giveaways"
+  },
+  "store_disabled": {
+    "message": "Store disabled"
   }
 }

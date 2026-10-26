@@ -13,7 +13,7 @@ export async function updateBadge(runtimeState, settings) {
   if (chrome.action.setTitle) {
     const t = await getTranslator(settings.language);
     await chrome.action.setTitle({
-      title: `Steam Promo Watch · ${t("badgeTitle", { active: runtimeState.activeFreeToKeepCount || 0, unread: runtimeState.unreadCount || 0 })}`,
+      title: `Free Games Watcher · ${t("badgeTitle", { active: runtimeState.activeFreeToKeepCount || 0, unread: runtimeState.unreadCount || 0 })}`,
     });
   }
   if (!settings.badgeEnabled) {

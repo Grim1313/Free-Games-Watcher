@@ -1,3 +1,4 @@
+import { storeOf, enabledStores } from "./stores.js";
 import {
   CONTENT_TYPES,
   ENTRY_STATUS,
@@ -23,7 +24,9 @@ export function applyPromotionFilters(promotions, settings) {
     const numericId = promotion.appId || promotion.packageId || 0;
 
     let reason = "";
-    if (
+    if (!enabledStores(settings).includes(storeOf(promotion))) {
+      reason = "store-disabled";
+    } else if (
       settings.trackFreeToKeep === false &&
       promotion.promoType === PROMO_TYPES.FREE_TO_KEEP
     ) {
@@ -53,7 +56,7 @@ export function applyPromotionFilters(promotions, settings) {
       contentType === CONTENT_TYPES.PACKAGE
     ) {
       reason = "package-filter";
-    } else if (blockedIds.has(numericId)) {
+    } else if (storeOf(promotion) === "steam" && blockedIds.has(numericId)) {
       reason = "id-blocklist";
     } else if (blockedKeywords.some((keyword) => title.includes(keyword))) {
       reason = "keyword-blocklist";
@@ -64,7 +67,7 @@ export function applyPromotionFilters(promotions, settings) {
       reason = "not-confirmed-free-to-keep";
     }
 
-    if (!reason) {
+    if (!reason && storeOf(promotion) === "steam") {
       if (!promotion.reviewTotal) {
         if (!settings.filters.includeUnrated) reason = "rating-unknown";
       } else if (promotion.reviewTotal < settings.filters.minReviews)

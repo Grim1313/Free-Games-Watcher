@@ -1,3 +1,4 @@
+import { validStableId, storeUrl } from "./stores.js";
 import { STORAGE_KEYS } from "./constants.js";
 import { readKey, writeLocal } from "./storage.js";
 import { mutate } from "./queue.js";
@@ -7,11 +8,12 @@ export function sanitizeActions(raw = {}) {
     Object.entries(raw || {})
       .filter(
         ([id, v]) =>
-          /^(app|sub):[1-9]\d*$/.test(id) && v && typeof v === "object",
+          validStableId(id) && v && typeof v === "object",
       )
       .map(([id, v]) => [
         id,
         {
+          url: storeUrl({ stableId: id, url: v.url }),
           claimed: v.claimed === true,
           ignored: v.ignored === true,
           snoozePending: v.snoozePending === true,
@@ -40,7 +42,7 @@ export function actionState(entry, actions, now = Date.now()) {
   return "";
 }
 export async function changeAction(stableId, action, payload = {}) {
-  if (!/^(app|sub):[1-9]\d*$/.test(stableId || ""))
+  if (!validStableId(stableId))
     throw new Error("invalidData");
   return mutate(async () => {
     const actions = await getActions();
@@ -48,6 +50,7 @@ export async function changeAction(stableId, action, payload = {}) {
     const next = {
       ...previous,
       title: payload.title || previous?.title || stableId,
+      url: storeUrl({ stableId, url: payload.url || previous?.url }),
       updatedAt: Date.now(),
     };
     if (action === "claim") next.claimed = true;

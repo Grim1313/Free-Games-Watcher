@@ -181,10 +181,6 @@ body {
   gap: 10px;
   align-items: start;
 }
-.promotion-media {
-  width: 120px;
-  height: 56px;
-}
 .promotion-overview:not(:has(.promotion-media)) {
   grid-template-columns: 1fr;
 }
@@ -307,3 +303,12 @@ body {
     flex: 1 0 210px;
   }
 }
+
+.view-controls { flex-wrap: nowrap; gap: 6px; }
+.view-controls .store-selector { width: 114px; flex-shrink: 0; }
+.view-controls select { width: 100%; min-width: 0; padding: 4px 5px; }
+.view-controls label:nth-child(2) { flex: 1; min-width: 0; }
+.view-controls label:last-child { white-space: nowrap; }
+.upcoming-section { padding: 12px 16px; font-size: 12px; border-top: 1px solid var(--border); }
+.upcoming-section ul { list-style: none; padding: 0; }
+.upcoming-item { display: grid; gap: 4px; padding: 8px 0; }

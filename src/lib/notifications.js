@@ -1,3 +1,4 @@
+import { storeOf, storeUrl, safeStoreUrl, STORE_NAMES } from "./stores.js";
 import {
   APP_NAME,
   MAX_NOTIFICATION_LINKS,
@@ -10,11 +11,9 @@ import { readKey, writeLocal } from "./storage.js";
 import {
   createHash,
   buildSteamHeaderImageUrl,
-  buildSteamUrlFromStableId,
   formatPromotionDeadlineStatus,
   formatSteamReviewNotificationSummary,
   getPromotionImageUrl,
-  sanitizeSteamUrl,
 } from "./utils.js";
 import { getPromotionTypeLabel } from "./filters.js";
 import { getTranslator } from "./i18n.js";
@@ -34,7 +33,7 @@ function sanitizeNotificationLinks(raw = {}) {
       url:
         value.url === chrome.runtime.getURL("src/ui/history.html")
           ? value.url
-          : sanitizeSteamUrl(value.url),
+          : safeStoreUrl(value.url) || chrome.runtime.getURL("src/ui/history.html"),
       createdAt: Number(value.createdAt) || 0,
     };
   }
@@ -94,12 +93,12 @@ export async function createPromotionNotifications(promotions, config = {}) {
           : promotion.title,
       message: summary
         ? t("notificationSummary", { count: group.length })
-        : `${t("freeToKeep")}. ${deadline}.`,
+        : `${STORE_NAMES[storeOf(promotion)]} · ${t("freeToKeep")}. ${deadline}.`,
       priority: 0,
       silent: false,
     };
     if (imageUrl) options.imageUrl = imageUrl;
-    if (!summary && promotion.reviewTotal)
+    if (!summary && storeOf(promotion) === "steam" && promotion.reviewTotal)
       options.contextMessage = t("reviewSummary", {
         percent: promotion.reviewPercent,
         count: promotion.reviewTotal,
@@ -116,9 +115,7 @@ export async function createPromotionNotifications(promotions, config = {}) {
       links[notificationId] = {
         url: summary
           ? chrome.runtime.getURL("src/ui/history.html")
-          : sanitizeSteamUrl(
-              promotion.url || buildSteamUrlFromStableId(promotion.stableId),
-            ),
+          : storeUrl({ ...promotion, url: promotion.claimUrl || promotion.url }),
         createdAt: nowTs,
       };
       await writeLocal({

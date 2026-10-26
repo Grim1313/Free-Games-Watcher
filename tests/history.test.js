@@ -209,6 +209,8 @@ test("sanitizePromotionEntry preserves normalized review summary fields", () => 
       total_reviews: 49353,
     }),
     {
+      store: "steam",
+      claimUrl: "https://store.steampowered.com/",
       campaignId: "",
       genres: [],
       platforms: [],

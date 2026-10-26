@@ -15,7 +15,7 @@
   color: var(--muted);
   min-width: 0;
 }
-.toolbar label:first-child {
+.toolbar label:has(#search) {
   flex: 1;
   min-width: 180px;
 }
@@ -68,10 +68,6 @@
 }
 .history-entry:not(:has(.history-entry-preview)) {
   grid-template-columns: 1fr;
-}
-.history-entry-preview {
-  width: 120px;
-  height: 56px;
 }
 .title-cell > .game-link {
   display: block;

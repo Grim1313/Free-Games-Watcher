@@ -290,6 +290,8 @@ textarea {
 }
 .promotion-media,
 .history-entry-preview {
+  width: 120px;
+  height: 56px;
   display: block;
   position: relative;
   overflow: hidden;
@@ -301,7 +303,8 @@ textarea {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
 }
 .artwork-placeholder {
   position: absolute;
@@ -366,3 +369,5 @@ pre {
     scroll-behavior: auto !important;
   }
 }
+
+.store-tag { font-weight: 600; }

@@ -49,7 +49,7 @@ export async function checkArtworkInterface({
               appId: scenario === "absent" ? 0 : entry.appId,
               stableId: scenario === "absent" ? `sub:${i + 1}` : entry.stableId,
               title: [
-                "Wide header — full artwork at both edges",
+                "Wide header — uniform thumbnail frame",
                 "Capsule fallback — all details retained",
               ][i],
               headerImage:
@@ -150,7 +150,7 @@ export async function checkArtworkInterface({
               assert.equal(detail.natural, null);
               assert.equal(detail.placeholder, true);
             } else {
-              assert.equal(detail.fit, "contain");
+              assert.equal(detail.fit, "cover");
               assert.deepEqual(
                 detail.natural,
                 scenario === "header" ? [460, 215] : [462, 174],

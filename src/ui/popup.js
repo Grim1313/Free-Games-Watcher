@@ -1,3 +1,4 @@
+import { enabledStores } from "../lib/stores.js";
 import {
   t,
   localize,
@@ -7,7 +8,9 @@ import {
   announce,
   date,
   deadline,
-  steamLink,
+  storeLink,
+  storeOf,
+  STORE_NAMES,
   artwork,
   action,
   sortEntries,
@@ -25,12 +28,13 @@ async function refresh() {
   await localize(data.settings);
   if (id !== refreshId) return;
   const state = data.runtimeState;
+  const paused = !data.settings.trackFreeToKeep || !enabledStores(data.settings).length;
   $("#app-version").textContent = t("version", {
     value: chrome.runtime.getManifest().version,
   });
   $("#check-now").disabled =
-    state.checkInProgress || !data.settings.trackFreeToKeep;
-  $("#status-text").textContent = !data.settings.trackFreeToKeep
+    state.checkInProgress || paused;
+  $("#status-text").textContent = paused
     ? t("paused")
     : state.checkInProgress
       ? t("checking")
@@ -44,7 +48,7 @@ async function refresh() {
     ? date(state.nextCheckAt)
     : t("notScheduled");
   $("#status-region").textContent = data.settings.region;
-  $(".status-panel").dataset.state = !data.settings.trackFreeToKeep
+  $(".status-panel").dataset.state = paused
     ? "paused"
     : !state.lastSuccessAt && state.lastCheckOutcome !== "error"
       ? "pending"
@@ -66,13 +70,23 @@ async function refresh() {
   list.classList.toggle("compact", data.settings.compactView);
   const restoreInteraction = preserveListInteraction(list);
   list.replaceChildren();
-  const entries = sortEntries(data.visiblePromotions, data.settings.sortBy);
+  const selectedStore = $("#store-filter").value;
+  const entries = sortEntries(data.visiblePromotions.filter((e) => selectedStore === "all" || storeOf(e) === selectedStore), data.settings.sortBy);
+  $("#upcoming-list").replaceChildren();
+  const upcoming = data.upcomingPromotions.filter((p) => selectedStore === "all" || storeOf(p) === selectedStore);
+  $("#upcoming-section").hidden = !upcoming.length;
+  for (const p of upcoming.slice(0, 10)) {
+    const row = el("li", "upcoming-item");
+    row.append(storeLink(p, p.title), el("span", "meta-line", `${STORE_NAMES[storeOf(p)]} · ${t("startsAt", { value: date(p.startsAt) })}`));
+    if (p.stale) row.append(el("span", "meta-line", t("stale")));
+    $("#upcoming-list").append(row);
+  }
   const unread = entries.filter((e) => e.unread).length;
   $("#unread-pill").textContent = t("newCount", { count: unread });
   $("#unread-pill").classList.toggle("hidden", !unread);
   $("#mark-all-read").disabled = !unread;
   $("#empty-state").classList.toggle("hidden", entries.length > 0);
-  $("#empty-state").textContent = !data.settings.trackFreeToKeep
+  $("#empty-state").textContent = !enabledStores(data.settings).length ? t("noStoresSelected") : selectedStore !== "all" && !entries.length ? t("noOffersInStore") : !data.settings.trackFreeToKeep
     ? t("paused")
     : !state.lastSuccessAt
       ? state.lastCheckOutcome === "error"
@@ -93,7 +107,7 @@ async function refresh() {
     overview.append(artwork(entry));
     const copy = el("div", "card-copy");
     const head = el("div", "promotion-head");
-    head.append(steamLink(entry, entry.title, "promotion-title"));
+    head.append(storeLink(entry, entry.title, "promotion-title"));
     if (entry.unread) head.append(el("span", "pill", t("new")));
     const end = el("div", "deadline-line", deadline(entry, true));
     end.title = entry.endsAt ? date(entry.endsAt) : t("endUnknown");
@@ -103,7 +117,7 @@ async function refresh() {
     copy.append(end);
     if (entry.stale) copy.append(el("p", "meta-line", t("stale")));
     const tags = el("div", "meta-tags");
-    tags.append(el("span", "tag", t(entry.contentType)));
+    tags.append(el("span", "tag store-tag", STORE_NAMES[storeOf(entry)]), el("span", "tag", t(entry.contentType)));
     if (entry.reviewTotal)
       copy.append(
         el(
@@ -126,7 +140,7 @@ async function refresh() {
     copy.append(tags);
     const actions = el("div", "card-actions");
     actions.append(
-      steamLink(entry, t("openSteam"), "primary-button"),
+      storeLink({ ...entry, url: entry.claimUrl || entry.url }, t("openStore"), "primary-button"),
       button(t("claim"), () => action(entry, "claim")),
     );
     const extra = [
@@ -181,6 +195,7 @@ for (const [id, key] of [
       announce(errorText(e));
     }
   });
+$("#store-filter").addEventListener("change", () => refresh().catch((e) => announce(errorText(e))));
 watch(refresh);
 refresh().catch((e) => announce(errorText(e)));
 // Refresh relative deadlines only while this view is alive; no background polling.

@@ -6,8 +6,8 @@ const manifest = JSON.parse(
   await readFile(new URL("../manifest.json", import.meta.url), "utf8"),
 );
 
-test("manifest version is prepared for the 1.0.0 release", () => {
-  assert.equal(manifest.version, "1.0.0");
+test("manifest version identifies the local multi-store preview", () => {
+  assert.equal(manifest.version, "2.0.0");
 });
 
 test("manifest uses the Chrome Web Store release name and summary", () => {

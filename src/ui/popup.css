@@ -190,6 +190,7 @@ body {
   min-width: 0;
 }
 .promotion-head {
+  position: relative;
   display: flex;
   gap: 6px;
   align-items: start;
@@ -204,6 +205,15 @@ body {
 .promotion-head .pill {
   font-size: 11px;
   padding: 2px 5px;
+}
+.promotion-head .new-marker {
+  position: static;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  line-height: 1.35;
+}
+.promotion-head .new-marker:hover {
+  border-color: var(--accent);
 }
 .meta-tags {
   display: flex;
@@ -220,11 +230,10 @@ body {
   font-size: 12px;
 }
 .promotion-item .card-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto repeat(3, 30px);
   gap: 6px;
   margin-top: 6px;
-}
-.promotion-item .card-actions > .primary-button {
-  flex: 1;
 }
 .promotion-item .card-actions > a,
 .promotion-item .card-actions > button {
@@ -232,11 +241,49 @@ body {
   min-height: 30px;
   padding: 4px 9px;
 }
-.promotion-item .more-actions summary {
-  min-height: 30px;
+.promotion-item .card-actions > .icon-action {
+  width: 30px;
+  height: 30px;
+  padding: 0;
 }
-.promotion-item .more-actions {
-  margin-left: auto;
+.icon-action svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tooltip-action {
+  position: relative;
+}
+.tooltip-action::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 2;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--panel);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+}
+.tooltip-action:hover::after,
+.tooltip-action:focus-visible::after {
+  visibility: visible;
+}
+.new-marker::after {
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: 0;
+  right: auto;
 }
 .compact .promotion-overview {
   grid-template-columns: 1fr;

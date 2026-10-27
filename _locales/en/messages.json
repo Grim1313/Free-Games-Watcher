@@ -65,6 +65,9 @@
   "markRead": {
     "message": "Mark as read"
   },
+  "markReadHint": {
+    "message": "Mark as read"
+  },
   "showAll": {
     "message": "Show all {count}"
   },
@@ -249,7 +252,7 @@
     "message": "Genres, one per line (any match)"
   },
   "genresNote": {
-    "message": "English genre names, for example Action, Adventure, RPG, Strategy. Leave empty for all. Epic currently has no verified genre/platform metadata."
+    "message": "English genre names, for example Action, Adventure, RPG, Strategy. Leave empty for all."
   },
   "platforms": {
     "message": "Platforms (any match; none selected = all)"
@@ -286,6 +289,12 @@
   },
   "testSent": {
     "message": "Notification requested. If you cannot see it, check your browser and OS notification settings."
+  },
+  "testSending": {
+    "message": "Sending test notification…"
+  },
+  "notificationsBlocked": {
+    "message": "The browser has blocked notifications. Allow them in browser settings and try again."
   },
   "clearHistory": {
     "message": "Clear archive"
@@ -351,7 +360,7 @@
     "message": "Diagnostics"
   },
   "diagnosticsNote": {
-    "message": "Search coverage is limited by Steam responses and a request budget. Complete means all requested search pages succeeded, not that every Steam giveaway is guaranteed to be found."
+    "message": "Results below cover sources for the selected stores: Steam, Epic Games Store and GOG. Coverage depends on available data and request limits. A successful check does not guarantee that every giveaway has been found."
   },
   "copyReport": {
     "message": "Copy diagnostic report"
@@ -447,7 +456,10 @@
     "message": "Discard unsaved settings changes?"
   },
   "notificationTestTitle": {
-    "message": "Test notification: Graveyard Keeper"
+    "message": "Free Games Watcher — notification test"
+  },
+  "notificationTestMessage": {
+    "message": "This is a test notification. Click to open the extension settings."
   },
   "badgeTitle": {
     "message": "{active} active giveaways · {unread} new"
@@ -558,7 +570,7 @@
     "message": "All stores"
   },
   "storesNote": {
-    "message": "Choose stores to check. Existing installations keep Steam enabled; enable Epic and GOG here. No selection pauses checks."
+    "message": "Choose stores to check. No selection pauses checks."
   },
   "noStoresSelected": {
     "message": "Choose a store in Settings to start checking."
@@ -577,6 +589,12 @@
   },
   "epic_promotions": {
     "message": "Epic Games Store promotions"
+  },
+  "epic_catalog": {
+    "message": "Epic Games Store catalog"
+  },
+  "epic_egdata": {
+    "message": "Epic catalog — EGData fallback"
   },
   "gog_giveaways": {
     "message": "GOG giveaways"

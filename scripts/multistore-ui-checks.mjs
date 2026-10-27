@@ -84,6 +84,27 @@ export async function checkMultistore({ worker, page, options, history, out }) {
     await history.screenshot({ path: join(out, "multistore-history-narrow.png"), fullPage: true });
     assert.equal(await history.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     checks++;
+    // Save actual form controls and verify both popup counts and rendered cards.
+    // Fixture Steam games support Windows/Linux; GOG supports Windows; Epic metadata is unknown.
+    await options.locator('[data-section="filters"]').click();
+    for (const [genre, platforms, count, gogCount] of [
+      ["Action", ["windows"], 13, null], ["Action", ["linux"], 12, 0],
+      ["Action", ["mac"], 0, 0], ["RPG", ["windows"], 0, 0], ["", [], 14, null],
+    ]) {
+      await options.locator("#genres").fill(genre);
+      for (const platform of ["windows", "mac", "linux"])
+        await options.locator(`#platform-${platform}`).setChecked(platforms.includes(platform));
+      await options.locator("#save-settings").click();
+      await page.waitForFunction(async (count) => {
+        const data = await chrome.runtime.sendMessage({ type: "GET_POPUP_DATA" });
+        return data.visiblePromotions.length === count && data.runtimeState.activeFreeToKeepCount === count;
+      }, count);
+      await page.waitForFunction((count) => document.querySelectorAll(".promotion-item").length === Math.min(10, count), count);
+      if (gogCount !== null)
+        assert.equal(await page.locator(".store-tag").filter({ hasText: "GOG" }).count(), gogCount);
+      checks++;
+    }
+    await options.locator('[data-section="general"]').click();
     for (const store of ["steam", "epic", "gog"]) await options.locator(`#store-${store}`).uncheck();
     await options.locator("#save-settings").click();
     await page.waitForFunction(() => document.querySelector(".status-panel").dataset.state === "paused");

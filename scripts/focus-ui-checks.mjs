@@ -201,22 +201,10 @@ export async function checkFocusInterface({
   await options.locator("#quietHoursEnd").fill("08:00");
   await save();
 
-  // Menu and keyboard focus survive a data rerender; Escape returns to its trigger.
-  const menu = page.locator(".more-actions").first();
-  await menu.locator("summary").focus();
-  await page.keyboard.press("Enter");
-  await menu
-    .getByRole("button", { name: "Прочитано", exact: true })
-    .count()
-    .then(async (n) => {
-      if (n)
-        await menu
-          .getByRole("button", { name: "Прочитано", exact: true })
-          .focus();
-      else await menu.locator("button").first().focus();
-    });
+  // Icon-button focus survives a data rerender, even if the New button disappears.
+  await page.locator('.icon-action[data-focus-key="snooze"]').first().focus();
   const activeLabel = await page.evaluate(
-    () => document.activeElement.textContent,
+    () => document.activeElement.getAttribute("aria-label"),
   );
   const previousRow = await page
     .locator(".promotion-item")
@@ -228,19 +216,18 @@ export async function checkFocusInterface({
     await chrome.storage.local.set({
       latestPromotions: latestPromotions.map((entry) => ({
         ...entry,
+        unread: false,
         lastCheckedAt: Date.now(),
       })),
     });
   });
   await page.waitForFunction((row) => !row.isConnected, previousRow);
   await previousRow.dispose();
-  assert.equal(await menu.evaluate((el) => el.open), true);
   assert.equal(
-    await page.evaluate(() => document.activeElement.textContent),
+    await page.evaluate(() => document.activeElement.getAttribute("aria-label")),
     activeLabel,
   );
-  await page.keyboard.press("Escape");
-  assert.equal(await menu.evaluate((el) => el.open), false);
+  assert.equal(await page.locator(".more-actions").count(), 0);
   checks++;
 
   // All secondary actions and undo still travel through the real service worker.
@@ -249,7 +236,6 @@ export async function checkFocusInterface({
     "Скрыть эту раздачу",
     "Игнорировать игру",
   ]) {
-    await page.locator(".more-actions summary").first().click();
     await page
       .getByRole("button", { name: label, exact: true })
       .first()

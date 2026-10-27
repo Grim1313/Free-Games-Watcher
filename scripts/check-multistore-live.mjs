@@ -7,6 +7,8 @@ import assert from "node:assert/strict";
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE
   ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : "playwright");
 const out = resolve("dist/multistore-live");
+// Optional assertion while a particular real giveaway is active; no permanent game-name special case.
+const expectedEpicSlug = process.argv.find((arg) => arg.startsWith("--expect-epic-slug="))?.split("=")[1];
 await mkdir(out, { recursive: true });
 const extension = await mkdtemp(join(out, "extension-"));
 for (const name of ["manifest.json", "src", "resources", "_locales"])
@@ -41,6 +43,14 @@ try {
     const checked = await send("CHECK_NOW");
     assert.equal(checked.ok, true, JSON.stringify(checked));
     const data = await send("GET_POPUP_DATA");
+    const expected = expectedEpicSlug ? data.visiblePromotions.filter((p) =>
+      p.store === "epic" && p.url.endsWith(`/p/${expectedEpicSlug}`)) : [];
+    if (expectedEpicSlug) {
+      assert.equal(expected.length, 1, `${region}: expected Epic catalog game`);
+      assert.ok(expected[0].endsAt > Date.now());
+      assert.ok(expected[0].basePriceFormatted);
+      assert.equal(data.diagnostics.storeResults.epic.complete, true);
+    }
     for (const store of ["steam", "epic", "gog"])
       assert.equal(data.diagnostics.storeResults[store].ok, true, `${region}: ${store}`);
     reports.push({ checkedAt: new Date().toISOString(), region, diagnostics: data.diagnostics,
@@ -48,6 +58,24 @@ try {
     await page.reload();
     await page.waitForFunction(() => document.documentElement.lang === "ru");
     await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+    if (expectedEpicSlug) {
+      if (await page.locator("#show-all").isVisible()) await page.locator("#show-all").click();
+      assert.equal(await page.locator(".promotion-title").filter({ hasText: expected[0].title }).count(), 1);
+      await page.locator(".promotion-title").filter({ hasText: expected[0].title }).scrollIntoViewIfNeeded();
+      await page.waitForFunction((title) => {
+        const card = [...document.querySelectorAll(".promotion-item")].find((item) => item.textContent.includes(title));
+        return card && [...card.querySelectorAll("img")].some((img) => img.complete && img.naturalWidth > 0);
+      }, expected[0].title);
+      const history = await context.newPage();
+      await history.goto(new URL("ui/history.html", worker.url()).href);
+      await history.locator("#search").fill(expected[0].title);
+      await history.waitForFunction(() => document.querySelectorAll("#history-body tr").length === 1);
+      assert.ok((await history.locator("#history-body").innerText()).includes(expected[0].title));
+      await history.waitForFunction(() => [...document.querySelectorAll("#history-body img")]
+        .some((img) => img.complete && img.naturalWidth > 0));
+      await history.screenshot({ path: join(out, `epic-catalog-history-${region}.png`), fullPage: true });
+      await history.close();
+    }
     for (const colorScheme of ["light", "dark"]) {
       await page.emulateMedia({ colorScheme });
       await page.screenshot({ path: join(out, `popup-${region}-${colorScheme}.png`), fullPage: true });

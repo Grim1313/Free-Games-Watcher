@@ -1,0 +1,96 @@
+{
+  "checkedAt": "2026-10-27T13:55:14.997Z",
+  "note": "Reduced public appdetails/catalog responses. These games were not giveaways; tests use synthetic sale windows.",
+  "steam": [
+    {
+      "id": 620,
+      "data": {
+        "name": "Portal 2",
+        "type": "game",
+        "genres": [
+          {
+            "id": "1",
+            "description": "Action"
+          },
+          {
+            "id": "25",
+            "description": "Adventure"
+          }
+        ],
+        "platforms": {
+          "windows": true,
+          "mac": false,
+          "linux": true
+        }
+      }
+    },
+    {
+      "id": 292030,
+      "data": {
+        "name": "The Witcher 3: Wild Hunt — Remastered",
+        "type": "game",
+        "genres": [
+          {
+            "id": "3",
+            "description": "RPG"
+          }
+        ],
+        "platforms": {
+          "windows": true,
+          "mac": false,
+          "linux": false
+        }
+      }
+    }
+  ],
+  "gog": [
+    {
+      "id": "1453375253",
+      "title": "Stardew Valley",
+      "slug": "stardew_valley",
+      "productType": "game",
+      "genres": [
+        {
+          "name": "Simulation",
+          "slug": "simulation"
+        },
+        {
+          "name": "Managerial",
+          "slug": "managerial"
+        },
+        {
+          "name": "Role-playing",
+          "slug": "rpg"
+        }
+      ],
+      "operatingSystems": [
+        "windows",
+        "linux",
+        "osx"
+      ]
+    },
+    {
+      "id": "1640424747",
+      "title": "The Witcher 3: Wild Hunt — Remastered",
+      "slug": "the_witcher_3_wild_hunt_game_of_the_year_edition",
+      "productType": "pack",
+      "genres": [
+        {
+          "name": "Role-playing",
+          "slug": "rpg"
+        },
+        {
+          "name": "Adventure",
+          "slug": "adventure"
+        },
+        {
+          "name": "Fantasy",
+          "slug": "fantasy"
+        }
+      ],
+      "operatingSystems": [
+        "windows"
+      ]
+    }
+  ]
+}

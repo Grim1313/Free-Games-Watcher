@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.1.0
+
+### New features
+
+- More Epic giveaways, including 100% discounts outside the weekly selection.
+- Genre and platform filters for Epic games.
+- Compact action buttons with tooltips in giveaway cards.
+- Click the **New** badge to mark a giveaway as read.
+
+### Fixes
+
+- More reliable Epic discovery when the store catalog is unavailable.
+- Consistent RPG filtering across Steam, Epic and GOG.
+- Faster test notifications that work on repeated clicks, with clear feedback.
+- Stable card button layout and clearer reminder settings.
+- Updated settings hints and diagnostics for all supported stores.
+
 ## 2.0.0
 
 ### What's new

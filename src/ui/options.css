@@ -105,6 +105,15 @@ html {
 .toggle input {
   margin-right: 4px;
 }
+.reminder-settings {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 20px 0 8px;
+  padding: 0 16px;
+}
+.reminder-settings .field-grid > label {
+  border-bottom: 0;
+}
 fieldset {
   border: 1px solid var(--border);
   border-radius: 8px;

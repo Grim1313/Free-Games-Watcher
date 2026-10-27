@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "minimum_chrome_version": "120",
   "permissions": [
     "alarms",
@@ -14,6 +14,8 @@
     "https://store.steampowered.com/*",
     "https://*.steamstatic.com/*",
     "https://store-site-backend-static.ak.epicgames.com/*",
+    "https://store.epicgames.com/*",
+    "https://api.egdata.app/*",
     "https://cdn1.epicgames.com/*",
     "https://sections.gog.com/*",
     "https://catalog.gog.com/*",

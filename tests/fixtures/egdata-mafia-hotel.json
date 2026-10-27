@@ -1,0 +1,171 @@
+{
+  "id": "7813a97e72ed4a49be807e6de8bc4f2c",
+  "namespace": "c102cb63a52643d1a4c3ca009439eece",
+  "title": "MAFIA HOTEL",
+  "offerType": "BASE_GAME",
+  "effectiveDate": "2026-09-17T16:00:00.000Z",
+  "creationDate": "2026-09-02T09:15:59.902Z",
+  "lastModifiedDate": "2026-10-25T23:34:13.061Z",
+  "isCodeRedemptionOnly": false,
+  "keyImages": [
+    {
+      "type": "OfferImageWide",
+      "url": "https://cdn1.epicgames.com/spt-assets/f050bad3cfcd406f94bad85c0aa10177/mafia-hotel-1lkct.png",
+      "md5": "f3361f2e750967c9c96f0944e6a59cab"
+    }
+  ],
+  "productSlug": null,
+  "offerMappings": [
+    {
+      "pageSlug": "mafia-hotel-eaea4c",
+      "pageType": "productHome"
+    }
+  ],
+  "urlSlug": "cf1ff7a111834fe785907dbedc69bc49",
+  "url": null,
+  "tags": [
+    {
+      "id": "1296",
+      "name": "Casual"
+    },
+    {
+      "id": "1216",
+      "name": "Action"
+    },
+    {
+      "id": "29088",
+      "name": "Online Multiplayer"
+    },
+    {
+      "id": "19847",
+      "name": "Achievements"
+    },
+    {
+      "id": "22776",
+      "name": "Cross Platform"
+    },
+    {
+      "id": "9547",
+      "name": "Windows"
+    },
+    {
+      "id": "1116",
+      "name": "Comedy"
+    }
+  ],
+  "categories": [
+    "games/edition/base",
+    "games/edition",
+    "games"
+  ],
+  "prePurchase": null,
+  "releaseDate": "2026-09-17T16:00:00.000Z",
+  "pcReleaseDate": "2026-09-16T00:00:00.000Z",
+  "viewableDate": "2026-09-08T22:49:29.000Z",
+  "countriesBlacklist": null,
+  "countriesWhitelist": null,
+  "refundType": "SELF_REFUNDABLE",
+  "price": {
+    "_id": "6aa0ae6e03040501927dbe3e",
+    "offerId": "7813a97e72ed4a49be807e6de8bc4f2c",
+    "country": "US",
+    "namespace": "c102cb63a52643d1a4c3ca009439eece",
+    "__v": 0,
+    "appliedRules": [
+      {
+        "discountSetting": {
+          "discountPercentage": 0,
+          "discountType": "PERCENTAGE",
+          "_id": "6ade949a4d36c02ce86c15ab",
+          "discountValue": null
+        },
+        "endDate": "2026-11-01T17:02:00.000Z",
+        "saleType": "REGULAR",
+        "name": "Mafia Hotel -Limited-time free promotion",
+        "namespace": "c102cb63a52643d1a4c3ca009439eece",
+        "regionIds": [
+          "AE",
+          "AFRICA",
+          "ANZ",
+          "AR",
+          "AU",
+          "BG",
+          "BR2",
+          "CA",
+          "CH",
+          "CIS",
+          "CL2",
+          "CN2",
+          "CO2",
+          "CR2",
+          "CZ",
+          "DK",
+          "EAST",
+          "EURO",
+          "GB",
+          "HK2",
+          "HU",
+          "ID2",
+          "IL",
+          "IN2",
+          "JP",
+          "KR2",
+          "KZ",
+          "LATAM",
+          "MIDEAST",
+          "MX2",
+          "MY2",
+          "NO",
+          "NZ",
+          "PE2",
+          "PH2",
+          "PL",
+          "QA",
+          "RO",
+          "ROW",
+          "RU",
+          "SA",
+          "SE",
+          "SEA",
+          "SG2",
+          "TH2",
+          "TR",
+          "TW2",
+          "UA",
+          "US",
+          "UY2",
+          "VN2",
+          "ZA2"
+        ],
+        "id": "75e4cc21e960400d872aa7e765f4a3c8",
+        "promotionSetting": {
+          "promotionType": "SIMPLE",
+          "discountOffers": [
+            {
+              "offerId": "7813a97e72ed4a49be807e6de8bc4f2c",
+              "_id": "6ade949a4d36c02ce86c15ad"
+            }
+          ],
+          "_id": "6ade949a4d36c02ce86c15ac"
+        },
+        "_id": "6ade949a4d36c02ce86c15aa",
+        "startDate": "2026-10-24T18:01:00.000Z",
+        "promotionStatus": "ACTIVE"
+      }
+    ],
+    "price": {
+      "currencyCode": "USD",
+      "discount": 199,
+      "discountPrice": 0,
+      "originalPrice": 199,
+      "basePayoutCurrencyCode": "USD",
+      "basePayoutPrice": 0,
+      "payoutCurrencyExchangeRate": 1,
+      "_id": "6ade949a4d36c02ce86c15a9"
+    },
+    "region": "US",
+    "updatedAt": "2026-10-25T23:45:30.458Z"
+  },
+  "locale": "en-US",
+  "localeStatus": "canonical"
+}

@@ -32,6 +32,8 @@ globalThis.fetch = async (url, options) => {
  url=String(url);
  let payload;
  if(url.includes('freeGamesPromotions')){if(globalThis.failEpic)throw new Error('Epic offline');payload=epicFixture();}
+ else if(url.includes('store.epicgames.com/graphql')){if(globalThis.failEpic)throw new Error('Epic offline');payload={data:{Catalog:{searchStore:{elements:[],paging:{total:0}}}}};}
+ else if(url.includes('api.egdata.app'))throw new Error('EGData offline in fixture');
  else if(url.includes('sections.gog.com'))payload=url.includes('/sections/')?gogGiveawayFixture():gogPageFixture();
  else if(url.includes('catalog.gog.com'))payload={productCount:0,products:[]};
  else if(url.includes('/search/results/'))payload={total_count:count,results_html:Array.from({length:count},(_,i)=>row(100+i)).join('')};
@@ -113,11 +115,7 @@ try {
     () => document.querySelector("#show-all").textContent === "Show all 12",
   );
   checks++;
-  await page.locator(".more-actions summary").first().click();
-  await page
-    .getByRole("button", { name: "Mark as read", exact: true })
-    .first()
-    .click();
+  await page.locator(".new-marker").first().click();
   await page.waitForFunction(
     () => document.querySelector("#unread-pill").textContent === "11 new",
   );

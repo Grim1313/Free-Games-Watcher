@@ -16,10 +16,35 @@ import {
   sortEntries,
   watch,
   errorText,
-  moreActions,
   preserveListInteraction,
 } from "./common.js";
 const $ = (selector) => document.querySelector(selector);
+const ACTION_ICONS = {
+  snooze: ["M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0", "M12 7v5l3 2"],
+  hide: ["m3 3 18 18", "M10.6 10.6a2 2 0 0 0 2.8 2.8", "M9.9 5.2A10 10 0 0 1 12 5c6 0 10 7 10 7a19 19 0 0 1-3 3.8", "M6.2 6.2A21 21 0 0 0 2 12s4 7 10 7a10 10 0 0 0 5-1.4"],
+  ignore: ["m3 3 18 18", "M10 4.3a5 5 0 0 1 7 4.6V12", "M7 7v5l-2 5h12", "M10 21h4"],
+};
+function tooltip(control, label, key) {
+  control.classList.add("tooltip-action");
+  control.dataset.tooltip = label;
+  control.dataset.focusKey = key;
+  control.setAttribute("aria-label", label);
+  return control;
+}
+function iconAction(entry, key) {
+  const control = tooltip(button("", () => action(entry, key), "ghost-button icon-action"), t(key), key);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+  for (const d of ACTION_ICONS[key]) {
+    const path = document.createElementNS(svg.namespaceURI, "path");
+    path.setAttribute("d", d);
+    svg.append(path);
+  }
+  control.append(svg);
+  return control;
+}
 let refreshId = 0;
 async function refresh() {
   const id = ++refreshId;
@@ -108,7 +133,12 @@ async function refresh() {
     const copy = el("div", "card-copy");
     const head = el("div", "promotion-head");
     head.append(storeLink(entry, entry.title, "promotion-title"));
-    if (entry.unread) head.append(el("span", "pill", t("new")));
+    if (entry.unread) {
+      const markRead = tooltip(button(t("new"), () => send("MARK_READ", { ids: [entry.id] }),
+        "pill new-marker"), t("markReadHint"), "mark-read");
+      markRead.setAttribute("aria-label", `${t("new")}: ${t("markReadHint")}`);
+      head.append(markRead);
+    }
     const end = el("div", "deadline-line", deadline(entry, true));
     end.title = entry.endsAt ? date(entry.endsAt) : t("endUnknown");
     end.setAttribute("aria-label", deadline(entry));
@@ -143,16 +173,9 @@ async function refresh() {
       storeLink({ ...entry, url: entry.claimUrl || entry.url }, t("openStore"), "primary-button"),
       button(t("claim"), () => action(entry, "claim")),
     );
-    const extra = [
-      button(t("snooze"), () => action(entry, "snooze")),
-      button(t("hide"), () => action(entry, "hide")),
-      button(t("ignore"), () => action(entry, "ignore")),
-    ];
-    if (entry.unread)
-      extra.unshift(
-        button(t("markRead"), () => send("MARK_READ", { ids: [entry.id] })),
-      );
-    actions.append(moreActions(entry, extra));
+    actions.children[0].dataset.focusKey = "store";
+    actions.children[1].dataset.focusKey = "claim";
+    for (const key of ["snooze", "hide", "ignore"]) actions.append(iconAction(entry, key));
     overview.append(copy);
     item.append(head, overview, actions);
     list.append(item);

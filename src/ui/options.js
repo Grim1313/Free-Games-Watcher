@@ -245,8 +245,14 @@ function on(id, handler) {
   });
 }
 on("test-notification", async () => {
-  await send("TEST_NOTIFICATION");
-  announce(t("testSent"));
+  const status = $("notification-test-status");
+  status.textContent = t("testSending");
+  try {
+    await send("TEST_NOTIFICATION");
+    status.textContent = t("testSent");
+  } catch (error) {
+    status.textContent = errorText(error);
+  }
 });
 on("check-now", async () => {
   await send("CHECK_NOW");

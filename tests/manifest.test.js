@@ -6,8 +6,8 @@ const manifest = JSON.parse(
   await readFile(new URL("../manifest.json", import.meta.url), "utf8"),
 );
 
-test("manifest version identifies the local multi-store preview", () => {
-  assert.equal(manifest.version, "2.0.0");
+test("manifest version identifies the current release", () => {
+  assert.equal(manifest.version, "2.1.0");
 });
 
 test("manifest uses the Chrome Web Store release name and summary", () => {
@@ -25,4 +25,11 @@ test("manifest allows Steam Store API deadline lookups", () => {
   assert.ok(
     manifest.host_permissions.includes("https://api.steampowered.com/*"),
   );
+});
+
+test("manifest permits only the specific Epic catalog and EGData fallback hosts", () => {
+  assert.ok(manifest.host_permissions.includes("https://store.epicgames.com/*"));
+  assert.ok(manifest.host_permissions.includes("https://api.egdata.app/*"));
+  assert.ok(!manifest.host_permissions.includes("<all_urls>"));
+  assert.ok(!manifest.permissions.includes("cookies"));
 });

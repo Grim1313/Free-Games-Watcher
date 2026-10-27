@@ -19,6 +19,7 @@ function createChromeMock() {
       },
     },
     notifications: {
+      getPermissionLevel: async () => "granted",
       async create(id, options) {
         notificationCalls.push([id, options]);
       },
@@ -89,7 +90,7 @@ test("createPromotionNotifications uses image notifications when artwork is avai
   assert.ok(storageState[STORAGE_KEYS.notificationLinks]);
 });
 
-test("sendTestNotification includes review summary text", async (t) => {
+test("sendTestNotification uses local assets and a neutral message", async (t) => {
   const { notificationCalls } = createChromeMock();
   t.after(() => {
     delete globalThis.chrome;
@@ -98,10 +99,10 @@ test("sendTestNotification includes review summary text", async (t) => {
   await sendTestNotification();
 
   assert.equal(notificationCalls.length, 1);
-  assert.equal(
-    notificationCalls[0][1].contextMessage,
-    "86% positive · 49353 reviews",
-  );
+  assert.equal(notificationCalls[0][1].type, "basic");
+  assert.equal(notificationCalls[0][1].imageUrl, undefined);
+  assert.equal(notificationCalls[0][1].contextMessage, undefined);
+  assert.match(notificationCalls[0][1].message, /test notification/);
 });
 
 test("createPromotionNotifications keeps deadline status visible when no end time was parsed", async (t) => {

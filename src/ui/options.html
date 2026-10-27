@@ -162,21 +162,24 @@
                 ><input type="checkbox" id="badgeEnabled" /><span
                   data-i18n="badgeEnabled"
                 ></span></label
-              ><label class="toggle"
-                ><input type="checkbox" id="remindersEnabled" /><span
-                  data-i18n="remindersEnabled"
-                ></span
-              ></label>
-              <div class="field-grid">
-                <label
-                  ><span data-i18n="reminderHours"></span
-                  ><input
-                    id="reminderHours"
-                    type="number"
-                    min="1"
-                    max="72"
-                    required
-                /></label>
+              >
+              <div class="reminder-settings" role="group" aria-labelledby="reminder-label">
+                <label class="toggle"
+                  ><input type="checkbox" id="remindersEnabled" /><span
+                    id="reminder-label" data-i18n="remindersEnabled"
+                  ></span
+                ></label>
+                <div class="field-grid">
+                  <label
+                    ><span data-i18n="reminderHours"></span
+                    ><input
+                      id="reminderHours"
+                      type="number"
+                      min="1"
+                      max="72"
+                      required
+                  /></label>
+                </div>
               </div>
               <label class="toggle"
                 ><input type="checkbox" id="quietHoursEnabled" /><span
@@ -201,6 +204,7 @@
                   data-i18n="testNotification"
                 ></button>
               </div>
+              <p id="notification-test-status" class="note" role="status" aria-live="polite" aria-atomic="true"></p>
             </section>
             <section
               id="filters"

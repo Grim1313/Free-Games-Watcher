@@ -22,7 +22,8 @@ function sources(now = Date.now(), fail = "", calls = []) {
     if (url.includes("epicgames.com")) {
       assert.equal(options.credentials, "omit");
       if (fail === "epic") throw new Error("Epic offline");
-      return response(epicFeed(now));
+      return response(url.includes("/graphql")
+        ? { data: { Catalog: { searchStore: { elements: [], paging: { total: 0 } } } } } : epicFeed(now));
     }
     if (url.includes("sections.gog.com")) return response(url.includes("/sections/") ? gogGiveaway(now) : gogPage());
     if (url.includes("catalog.gog.com")) return response({ productCount: 0, products: [] });
@@ -117,7 +118,7 @@ test("disabled stores are not fetched or notified; selected stores changing mid-
   globalThis.fetch = sources(Date.now(), "", calls);
   env.data.settings.enabledStores = ["epic"];
   await runPromotionCheck();
-  assert.equal(calls.length, 1);
+  assert.equal(calls.length, 2);
   assert.equal(env.notifications.length, 1);
   globalThis.fetch = async () => { env.data.settings.enabledStores = ["gog"]; return response(epicFeed()); };
   assert.equal((await runPromotionCheck()).discarded, true);

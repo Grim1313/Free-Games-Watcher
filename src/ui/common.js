@@ -116,6 +116,7 @@ export function preserveListInteraction(container) {
   const active = document.activeElement;
   const row = active?.closest("[data-entry-id]");
   const focused = row && container.contains(row);
+  const focusKey = focused ? active.dataset.focusKey : "";
   const index = focused
     ? [...row.querySelectorAll("a, button, summary")].indexOf(active)
     : -1;
@@ -134,7 +135,9 @@ export function preserveListInteraction(container) {
       const controls = [
         ...(current || container).querySelectorAll("a, button, summary"),
       ];
-      const preferred = current && controls[index];
+      const preferred = current && (focusKey
+        ? controls.find((control) => control.dataset.focusKey === focusKey)
+        : controls[index]);
       const target = preferred?.getClientRects().length
         ? preferred
         : controls.find((control) => control.getClientRects().length);

@@ -7,7 +7,14 @@ import {
 } from "./constants.js";
 import { getContentTypeLabel, getPromotionTypeLabel } from "./utils.js";
 
+function genreKey(value) {
+  const key = typeof value === "string" ? value.trim().toLowerCase() : "";
+  // GOG labels this genre "Role-playing"; Steam and Epic label it "RPG".
+  return key === "role-playing" ? "rpg" : key;
+}
+
 export function applyPromotionFilters(promotions, settings) {
+  const genres = new Set((settings.filters.genres || []).map(genreKey));
   const blockedIds = new Set(
     (settings.filters.blockedAppIds || []).map((value) => Number(value)),
   );
@@ -77,10 +84,8 @@ export function applyPromotionFilters(promotions, settings) {
     }
     if (
       !reason &&
-      settings.filters.genres?.length &&
-      !settings.filters.genres.some((g) =>
-        (promotion.genres || []).some((v) => v.toLowerCase() === g),
-      )
+      genres.size &&
+      !(promotion.genres || []).some((value) => genres.has(genreKey(value)))
     )
       reason = "genre-filter";
     if (

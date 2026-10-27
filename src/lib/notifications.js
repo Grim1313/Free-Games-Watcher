@@ -10,13 +10,14 @@ import {
 import { readKey, writeLocal } from "./storage.js";
 import {
   createHash,
-  buildSteamHeaderImageUrl,
   formatPromotionDeadlineStatus,
   formatSteamReviewNotificationSummary,
   getPromotionImageUrl,
 } from "./utils.js";
 import { getPromotionTypeLabel } from "./filters.js";
 import { getTranslator } from "./i18n.js";
+
+const TEST_NOTIFICATION_PREFIX = `${NOTIFICATION_PREFIX}:test:`;
 
 function getNotificationIconUrl() {
   return chrome.runtime.getURL("resources/icons/icon128.png");
@@ -132,6 +133,10 @@ export async function createPromotionNotifications(promotions, config = {}) {
 }
 
 export async function openNotificationTarget(notificationId) {
+  if (notificationId.startsWith(TEST_NOTIFICATION_PREFIX)) {
+    await chrome.tabs.create({ url: chrome.runtime.getURL("src/ui/options.html#notifications") });
+    return;
+  }
   const links = await getNotificationLinks();
   const target = links[notificationId];
   const url = target?.url || "https://store.steampowered.com/";
@@ -139,6 +144,7 @@ export async function openNotificationTarget(notificationId) {
 }
 
 export async function clearNotificationTarget(notificationId) {
+  if (notificationId.startsWith(TEST_NOTIFICATION_PREFIX)) return;
   const links = await getNotificationLinks();
   delete links[notificationId];
   await writeLocal({
@@ -147,25 +153,17 @@ export async function clearNotificationTarget(notificationId) {
 }
 
 export async function sendTestNotification(settings = {}) {
+  if (await chrome.notifications.getPermissionLevel() !== "granted")
+    throw new Error("notificationsBlocked");
   const t = await getTranslator(settings.language);
-  const promotion = {
-    id: "test-notification",
-    stableId: "app:599140",
-    appId: 599140,
+  // A user-requested test is a new event each time, unlike deduplicated giveaways.
+  // Local assets avoid store requests and image-download delays.
+  return chrome.notifications.create(`${TEST_NOTIFICATION_PREFIX}${crypto.randomUUID()}`, {
+    type: "basic",
+    iconUrl: getNotificationIconUrl(),
     title: t("notificationTestTitle"),
-    promoType: "free-to-keep",
-    reviewScore: 8,
-    reviewScoreDesc: "Very Positive",
-    reviewPositive: 42320,
-    reviewNegative: 7033,
-    reviewTotal: 49353,
-    reviewPercent: 86,
-    endsAt: Date.now() + 24 * 60 * 60 * 1000,
-    headerImage: buildSteamHeaderImageUrl(599140),
-    capsuleImage: "",
-    screenshotThumbnail: "",
-    screenshotFull: "",
-    url: "https://store.steampowered.com/app/599140/Graveyard_Keeper/",
-  };
-  await createPromotionNotifications([promotion], { settings });
+    message: t("notificationTestMessage"),
+    priority: 0,
+    silent: false,
+  });
 }

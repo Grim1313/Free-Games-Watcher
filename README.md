@@ -1,4 +1,4 @@
-# Free Games Watcher
+# Free Games Watcher - Steam, Epic & GOG
 
 ![GitHub Release](https://img.shields.io/github/v/release/Grim1313/Free-Games-Watcher) ![GitHub Release Date](https://img.shields.io/github/release-date/Grim1313/Free-Games-Watcher) ![GitHub Downloads](https://img.shields.io/github/downloads/Grim1313/Free-Games-Watcher/total)
 

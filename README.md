@@ -4,17 +4,15 @@
 
 A lightweight Chrome / Edge extension that finds limited-time **Free to Keep** giveaways in Steam, Epic Games Store and GOG and notifies you about new offers. No account connection or API key is required for discovery. Settings, history and personal marks stay in your browser.
 
-[![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png)](https://chromewebstore.google.com/detail/steam-promo-watch-free-ga/aahjgnocdbhipkfcmhkhlkneonhkafji)
+[![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png)](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji)
 
 ![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/aahjgnocdbhipkfcmhkhlkneonhkafji) ![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/aahjgnocdbhipkfcmhkhlkneonhkafji)
 
 [Download on GitHub](https://github.com/Grim1313/Free-Games-Watcher/releases/latest) · [Changelog](CHANGELOG.md)
 
-Screenshots of the previous Steam Promo Watch 1.0 interface (core layout retained):
-
-<img width="30%" alt="01-free-games" src="https://github.com/user-attachments/assets/6d544bcc-74be-4014-b7d9-f4732c68c48f" />
-<img width="30%" alt="02-your-preferences" src="https://github.com/user-attachments/assets/0c821fd6-709f-48b9-96df-d7267ce98d96" />
-<img width="30%" alt="03-history-and-marks" src="https://github.com/user-attachments/assets/ed55e157-3c74-4a0a-b31c-59471ae25fad" />
+<img width="30%" alt="free games watcher steam epic and gog 01 giveaways" src="https://github.com/user-attachments/assets/e9f1fe2f-a690-4fce-aae9-5db974696911" />
+<img width="30%" alt="free games watcher steam epic and gog 02 preferences" src="https://github.com/user-attachments/assets/b212bd40-8146-493d-abdf-18987e386147" />
+<img width="30%" alt="free games watcher steam epic and gog 03 history" src="https://github.com/user-attachments/assets/b806e1cf-fbc8-4d2d-9cda-b15c0394c2f0" />
 
 ## What's new in 2.1.0
 
@@ -48,7 +46,7 @@ Requires Chrome 120+ or a compatible Chromium-based browser such as Microsoft Ed
 
 ### Chrome Web Store
 
-Open [Steam Promo Watch in the Chrome Web Store](https://chromewebstore.google.com/detail/steam-promo-watch-free-ga/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. This is the existing Chrome Web Store listing; it may still use the old name/version until updated separately. The GitHub release provides version 2.1.0.
+Open [Steam Promo Watch in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. This is the existing Chrome Web Store listing; it may still use the old name/version until updated separately. The GitHub release provides version 2.1.0.
 
 ### Manual installation from GitHub
 

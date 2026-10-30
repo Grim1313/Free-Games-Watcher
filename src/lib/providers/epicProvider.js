@@ -48,6 +48,8 @@ export function parseEpicFeed(data, region, now = Date.now()) {
     const { stableId } = base;
     const price = item.price?.totalPrice;
     const original = price?.originalPrice, final = price?.discountPrice;
+    // Epic also promotes permanently free games; these are not paid-to-free offers.
+    if (original === 0) continue;
     for (const [key, future] of [["promotionalOffers", false], ["upcomingPromotionalOffers", true]]) {
       for (const group of rows(item.promotions?.[key] ?? [], "promotion groups")) {
         for (const offer of rows(group.promotionalOffers, "promotion windows")) {
@@ -55,8 +57,8 @@ export function parseEpicFeed(data, region, now = Date.now()) {
           if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || endsAt <= startsAt)
             throw new Error("Invalid Epic dates");
           if (offer.discountSetting?.discountType !== "PERCENTAGE" || offer.discountSetting.discountPercentage !== 0) continue;
-          if (!(typeof original === "number" && original > 0)) {
-            warnings.push(`Epic ${item.id}: unknown/non-paid original price`);
+          if (!(Number.isSafeInteger(original) && original > 0)) {
+            warnings.push(`Epic ${item.id}: unknown/invalid original price`);
             continue;
           }
           if (endsAt <= now) { confirmedEnded.add(stableId); continue; }

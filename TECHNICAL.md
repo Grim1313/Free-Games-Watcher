@@ -1,4 +1,4 @@
-# Free Games Watcher — technical details, 2.1.0
+# Free Games Watcher — technical details, 2.1.1
 
 ## Runtime and architecture
 
@@ -18,6 +18,8 @@ Manifest V3, Chrome/Edge 120+, ES modules, no runtime/npm dependencies. Developm
 **Steam:** two paginated search strategies, up to six pages of 100 results each, with featured offers as a limited fallback. Up to 100 previously known missing offers are verified against StoreBrowse purchase options. App details/reviews are cached for seven days; imminent deadlines refresh hourly, other deadlines/negative results after six hours. Country changes clear metadata. Requests omit credentials except the existing age-gate deadline fallback, which may reuse browser cookies.
 
 **Epic Games Store:** the anonymous regional `freeGamesPromotions` feed runs alongside Browse's `searchStoreQuery` at `store.epicgames.com/graphql`. The catalog query uses `onSale: true`, `priceRange: "[0,0]"`, region restrictions and at most five pages of 40 offers. Its persisted-query hash was observed on 27 October 2026 and may need maintenance if Epic changes the storefront. Catalog offers require a positive original price, a zero final price, a matching full discount, no personal voucher and a valid product link. Applied percentage-discount rules must provide a future deadline; their missing start time stays unknown (0). Catalog categories supply the content type, including offer-specific DLC links.
+
+The weekly feed skips offers with an explicitly numeric zero original price, including upcoming promotions for permanently free games. These entries do not generate warnings or make the scan incomplete. Missing or invalid original prices still produce an incomplete result; paid-to-free offers require a positive integer original price in minor currency units.
 
 If the direct catalog fails or is incomplete, a bounded anonymous `POST https://api.egdata.app/search/v2/search` supplies a third-party fallback. It searches discounted offers in ascending regional final-price order, at most five pages of 40, stopping after the zero-price segment. EGData records must have desktop platform tags and a public game/DLC category, pass country whitelist/blacklist checks, and match their price record's offer/namespace. Only active, dated, simple 100% discount rules for that offer and pricing region qualify. Old/undated prices, mobile SKUs and internal test products are excluded. Currency formatting uses the returned currency's minor units. EGData is an indexed mirror and can lag behind Epic; its source is recorded as `epic-egdata` in diagnostics.
 
@@ -67,7 +69,7 @@ npm run pack
 pwsh -File scripts/get-release-notes.ps1
 ```
 
-No npm install is required. Packaging copies only manifest, source, locales, license and icons into `dist/Free-Games-Watcher`, then builds `dist/Free-Games-Watcher-2.1.0.zip`. It validates required archive entries and version and restricts cleanup to resolved build outputs inside `dist`.
+No npm install is required. Packaging copies only manifest, source, locales, license and icons into `dist/Free-Games-Watcher`, then builds `dist/Free-Games-Watcher-2.1.1.zip`. It validates required archive entries and version and restricts cleanup to resolved build outputs inside `dist`.
 
 Browser checks use a separately installed Playwright/Chromium. Set `PLAYWRIGHT_MODULE` to an existing `playwright/index.mjs` and `PLAYWRIGHT_BROWSERS_PATH` to the matching browser directory:
 
@@ -88,12 +90,14 @@ The focused notification check uses an isolated profile, blocks external request
 1. Update manifest/package version, localized branding and the matching `CHANGELOG.md` section. Run unit/browser/package checks.
 2. Commit with the maintainer's configured Git identity and push the branch. Wait for the `Tests` workflow.
 3. For a release attributed to the maintainer, create a **draft release in GitHub's UI under that account**, with the intended tag, title and changelog text, before pushing the tag.
-4. Push the matching `v2.1.0` tag. The `Release` workflow validates version, runs tests and builds the ZIP. When a draft exists, it updates notes/assets but leaves it unpublished and keeps its author. Without an existing release, the workflow retains its automatic publication behavior.
+4. Push the matching `v2.1.1` tag. The `Release` workflow validates version, runs tests and builds the ZIP. When a draft exists, it updates notes/assets but leaves it unpublished and keeps its author. Without an existing release, the workflow retains its automatic publication behavior.
 5. Verify the completed workflow and ZIP, then publish the draft from the maintainer's account and mark it latest. GitHub Actions supplies the archive; no locally built ZIP needs uploading.
 
 The workflows use `actions/checkout@v7`, `actions/setup-node@v7`, Node 24 and `windows-latest`. A branch push runs validation, not publication. Manual dispatch takes an existing tag. Reruns can update an existing release asset; inspect the selected revision before retrying. Chrome Web Store publication is separate.
 
 ## Validation record
+
+Version 2.1.1, 30 October 2026: 139 module tests and 162 browser checks passed. Regression tests cover current/upcoming permanently free Epic entries, mixed and all-free feeds, invalid/missing prices, and successful scan status without extra notifications. Live US/RU feed checks skipped Idle Champions of the Forgotten Realms without warnings. A clean Chromium profile running the production worker completed all three store checks successfully in both regions, still found Mafia Hotel, and displayed the popup without the incomplete-check warning. Local release packaging passed validation.
 
 Version 2.1.0, 27 October 2026: 136 module tests, 162 general browser checks and 12 focused notification-button checks passed. Local packaging validates the release manifest, required files and exclusion of development fixtures. The real Mafia Hotel response is covered by reduced Epic and EGData fixtures, including prices, deadlines, deduplication, source recovery, pagination, country restrictions and rejection of mobile/test/conditional offers. A clean Chromium profile running the production MV3 worker found five current Epic games in both US and RU: Mafia Hotel, GetHigh.EXE, Terraspace, Home and Sker Ritual. Mafia Hotel's original price was $1.99 / RUB 60.00 and its deadline was 1 November 2026 at 17:02 UTC. Popup/history presence and loaded artwork were checked. Run `node scripts/check-multistore-live.mjs --expect-epic-slug=mafia-hotel-eaea4c` while this giveaway remains active; reports and screenshots are in `dist/multistore-live`.
 

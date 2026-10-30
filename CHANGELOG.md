@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.1
+
+### Fixes
+
+- Permanently free Epic games no longer trigger an incomplete-check warning and are excluded from current and upcoming giveaways.
+
 ## 2.1.0
 
 ### New features

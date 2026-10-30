@@ -7,7 +7,7 @@ const manifest = JSON.parse(
 );
 
 test("manifest version identifies the current release", () => {
-  assert.equal(manifest.version, "2.1.0");
+  assert.equal(manifest.version, "2.1.1");
 });
 
 test("manifest uses the Chrome Web Store release name and summary", () => {

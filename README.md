@@ -14,7 +14,11 @@ A lightweight Chrome / Edge extension that finds limited-time **Free to Keep** g
 <img width="30%" alt="free games watcher steam epic and gog 02 preferences" src="https://github.com/user-attachments/assets/b212bd40-8146-493d-abdf-18987e386147" />
 <img width="30%" alt="free games watcher steam epic and gog 03 history" src="https://github.com/user-attachments/assets/b806e1cf-fbc8-4d2d-9cda-b15c0394c2f0" />
 
-## What's new in 2.1.0
+## What's new in 2.1.1
+
+- Fixed a false incomplete-check warning caused by permanently free Epic games. These games are skipped in both current and upcoming giveaways.
+
+### Highlights from 2.1.0
 
 - **More Epic giveaways:** finds 100% discounts beyond the weekly selection, with a fallback when the store catalog is unavailable.
 - **Epic genre and platform filters**, plus consistent RPG filtering across stores.
@@ -46,12 +50,12 @@ Requires Chrome 120+ or a compatible Chromium-based browser such as Microsoft Ed
 
 ### Chrome Web Store
 
-Open [Steam Promo Watch in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. This is the existing Chrome Web Store listing; it may still use the old name/version until updated separately. The GitHub release provides version 2.1.0.
+Open [Steam Promo Watch in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. This is the existing Chrome Web Store listing; it may still use the old name/version until updated separately. The GitHub release provides version 2.1.1.
 
 ### Manual installation from GitHub
 
 1. Open [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
-2. Download **Free-Games-Watcher-2.1.0.zip** (or the corresponding ZIP for a newer release).
+2. Download **Free-Games-Watcher-2.1.1.zip** (or the corresponding ZIP for a newer release).
 3. Extract it to a permanent local folder.
 4. Open `chrome://extensions/` or `edge://extensions/`.
 5. Enable **Developer mode**, select **Load unpacked**, and choose the extracted folder containing `manifest.json`.
@@ -103,6 +107,6 @@ npm test
 npm run pack
 ```
 
-For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. The ZIP is written to `dist/`, which is excluded from Git. On GitHub, pushing a version tag such as **v2.1.0** runs the release workflow: it checks the version, runs tests, builds the ZIP, and creates or updates the GitHub release with that asset. An existing draft remains unpublished so its owner can verify the asset and publish it under their own account. The release description is extracted from the matching section of **CHANGELOG.md**. Committing alone does not generate a changelog or publish a release.
+For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. The ZIP is written to `dist/`, which is excluded from Git. On GitHub, pushing a version tag such as **v2.1.1** runs the release workflow: it checks the version, runs tests, builds the ZIP, and creates or updates the GitHub release with that asset. An existing draft remains unpublished so its owner can verify the asset and publish it under their own account. The release description is extracted from the matching section of **CHANGELOG.md**. Committing alone does not generate a changelog or publish a release.
 
 See [TECHNICAL.md](TECHNICAL.md) for architecture, browser checks, troubleshooting and release maintenance.

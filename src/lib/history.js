@@ -16,6 +16,7 @@ import {
   safeArray,
   safeNumber,
   sanitizeSteamReviewSummary,
+  sanitizeGogRating,
 } from "./utils.js";
 
 function getPromotionMatchKey(promotion) {
@@ -72,6 +73,7 @@ export function sanitizePromotionEntry(raw = {}) {
     screenshotThumbnail: storeAsset(source.screenshotThumbnail, source),
     screenshotFull: storeAsset(source.screenshotFull, source),
     ...reviewSummary,
+    ...sanitizeGogRating(storeOf(source) === "gog" ? source : {}),
     sourceId: typeof source.sourceId === "string" ? source.sourceId : "",
     sourceFingerprint:
       typeof source.sourceFingerprint === "string"
@@ -84,6 +86,7 @@ export function sanitizePromotionEntry(raw = {}) {
     lastCheckedAt: safeNumber(source.lastCheckedAt, 0),
     lastNotifiedAt: safeNumber(source.lastNotifiedAt, 0),
     unread: Boolean(source.unread),
+    importedAt: safeNumber(source.importedAt, 0),
     status:
       typeof source.status === "string" ? source.status : ENTRY_STATUS.ACTIVE,
     notificationStatus:
@@ -131,20 +134,20 @@ export function mergePromotionEntries(
     const next = sanitizePromotionEntry({
       ...existing,
       ...promotion,
-      firstSeenAt: isChangedCycle ? nowTs : existing?.firstSeenAt || nowTs,
+      firstSeenAt: promotion.importedAt ? promotion.firstSeenAt || nowTs : isChangedCycle ? nowTs : existing?.firstSeenAt || nowTs,
       lastSeenAt: nowTs,
       lastCheckedAt: nowTs,
       lastStateChangeAt: isChangedCycle
         ? nowTs
         : existing?.lastStateChangeAt || nowTs,
-      unread: isChangedCycle ? true : Boolean(existing?.unread),
+      unread: promotion.importedAt ? false : isChangedCycle ? true : Boolean(existing?.unread),
       status:
         promotion.endsAt > 0 && promotion.endsAt <= nowTs
           ? ENTRY_STATUS.EXPIRED
           : ENTRY_STATUS.ACTIVE,
       stale: false,
       missingCount: 0,
-      notificationStatus: isChangedCycle
+      notificationStatus: promotion.importedAt ? promotion.notificationStatus || NOTIFICATION_STATUS.NONE : isChangedCycle
         ? NOTIFICATION_STATUS.PENDING
         : existing?.notificationStatus || NOTIFICATION_STATUS.PENDING,
     });

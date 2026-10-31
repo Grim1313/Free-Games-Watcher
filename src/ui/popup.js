@@ -12,6 +12,7 @@ import {
   storeOf,
   STORE_NAMES,
   artwork,
+  ratingSummary,
   action,
   sortEntries,
   watch,
@@ -132,7 +133,9 @@ async function refresh() {
     overview.append(artwork(entry));
     const copy = el("div", "card-copy");
     const head = el("div", "promotion-head");
-    head.append(storeLink(entry, entry.title, "promotion-title"));
+    const title = storeLink(entry, entry.title, "promotion-title");
+    title.title = entry.title;
+    head.append(title);
     if (entry.unread) {
       const markRead = tooltip(button(t("new"), () => send("MARK_READ", { ids: [entry.id] }),
         "pill new-marker"), t("markReadHint"), "mark-read");
@@ -145,28 +148,27 @@ async function refresh() {
     if (entry.endsAt > Date.now() && entry.endsAt - Date.now() < 86400000)
       end.classList.add("urgent");
     copy.append(end);
-    if (entry.stale) copy.append(el("p", "meta-line", t("stale")));
+    const facts = el("div", "card-facts");
+    facts.append(ratingSummary(entry));
+    if (entry.stale) {
+      const stale = el("span", "stale-indicator", "⚠");
+      stale.title = t("stale");
+      stale.setAttribute("aria-label", t("stale"));
+      stale.tabIndex = 0;
+      stale.dataset.focusKey = "stale";
+      facts.append(stale);
+    }
+    copy.append(facts);
     const tags = el("div", "meta-tags");
-    tags.append(el("span", "tag store-tag", STORE_NAMES[storeOf(entry)]), el("span", "tag", t(entry.contentType)));
-    if (entry.reviewTotal)
-      copy.append(
-        el(
-          "span",
-          "meta-line review-summary",
-          t("reviewSummary", {
-            percent: entry.reviewPercent,
-            count: entry.reviewTotal,
-          }),
-        ),
-      );
-    if (entry.basePriceFormatted)
-      tags.append(
-        el(
-          "span",
-          "tag base-price-tag",
-          t("basePrice", { value: entry.basePriceFormatted }),
-        ),
-      );
+    const store = el("span", `tag store-tag store-tag--${storeOf(entry)}`, storeOf(entry) === "epic" ? "Epic" : STORE_NAMES[storeOf(entry)]);
+    store.title = STORE_NAMES[storeOf(entry)];
+    tags.append(store, el("span", "tag content-tag", t(entry.contentType)));
+    if (entry.basePriceFormatted) {
+      const price = el("s", "tag base-price-tag", entry.basePriceFormatted);
+      price.title = t("basePrice", { value: entry.basePriceFormatted });
+      price.setAttribute("aria-label", price.title);
+      tags.append(price);
+    }
     copy.append(tags);
     const actions = el("div", "card-actions");
     actions.append(

@@ -1,0 +1,112 @@
+{
+  "observedOn": "2026-10-31",
+  "region": "US",
+  "page": {
+    "config": {
+      "pageId": "601d37e7-2381-4b4e-a042-a662eb52a706"
+    },
+    "sections": [
+      {
+        "sectionId": "5fc1d634-cb15-4288-a390-3d4da7d981b6",
+        "sectionType": "GIVEAWAY_SECTION",
+        "isPersonalized": false,
+        "hideOnLoad": false,
+        "loadOnEmbed": true,
+        "ignoreOs": null,
+        "contentSourceType": "static",
+        "visibilityControl": "ALL"
+      }
+    ]
+  },
+  "section": {
+    "properties": {
+      "endDate": "2026-11-02T17:00:59+03:00",
+      "product": {
+        "id": "1207659150",
+        "title": "A New Beginning: Final Cut",
+        "slug": "a_new_beginning",
+        "productType": "game",
+        "coverHorizontal": "https://images.gog-statics.com/89b5917e554aa64633003fe9da2f8f9425a2cfdc9cb4972a61b4ee57ed09a8ed.png",
+        "operatingSystems": [
+          "windows",
+          "osx"
+        ],
+        "tags": [
+          {
+            "name": "Adventure",
+            "slug": "adventure"
+          },
+          {
+            "name": "Indie",
+            "slug": "indie"
+          },
+          {
+            "name": "Atmospheric",
+            "slug": "atmospheric"
+          },
+          {
+            "name": "2D",
+            "slug": "two-dimensional"
+          },
+          {
+            "name": "Puzzle",
+            "slug": "puzzle"
+          },
+          {
+            "name": "Classic",
+            "slug": "classic"
+          },
+          {
+            "name": "Science",
+            "slug": "science"
+          },
+          {
+            "name": "Female Protagonist",
+            "slug": "female-protagonist"
+          },
+          {
+            "name": "Great Soundtrack",
+            "slug": "great-soundtrack"
+          },
+          {
+            "name": "Visual Novel",
+            "slug": "visual-novel"
+          },
+          {
+            "name": "Point&Click",
+            "slug": "point-and-click"
+          },
+          {
+            "name": "Post-apocalyptic",
+            "slug": "post-apocalyptic"
+          },
+          {
+            "name": "Modern",
+            "slug": "modern"
+          }
+        ],
+        "price": {
+          "base": "$9.99",
+          "final": "$0.99",
+          "discount": "-90%",
+          "finalMoney": {
+            "amount": "0.99",
+            "currency": "USD",
+            "discount": "9.00"
+          },
+          "baseMoney": {
+            "amount": "9.99",
+            "currency": "USD"
+          }
+        },
+        "reviewsRating": 36,
+        "reviewsCount": 649
+      }
+    },
+    "colors": []
+  },
+  "catalog": {
+    "productCount": 0,
+    "products": []
+  }
+}

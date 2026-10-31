@@ -74,6 +74,7 @@ export const METADATA_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const PROMOTION_DEADLINE_TTL_MS = 6 * 60 * 60 * 1000;
 export const NOTIFICATION_LINK_TTL_MS = 2 * 24 * 60 * 60 * 1000;
 export const MAX_HISTORY_ITEMS = 400;
+export const MAX_BACKUP_BYTES = 5 * 1024 * 1024;
 export const MAX_LATEST_ITEMS = 400;
 export const MAX_NOTIFIED_ITEMS = 500;
 export const MAX_DISMISSED_ITEMS = 200;

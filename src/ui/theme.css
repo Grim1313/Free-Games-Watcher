@@ -21,6 +21,12 @@
   --warn-text: #834400;
   --media-placeholder: #e3eaf3;
   --shadow-panel: #17233112;
+  --store-steam-text: #185fa7;
+  --store-steam-bg: #e3effb;
+  --store-gog-text: #27713c;
+  --store-gog-bg: #e6f3e7;
+  --store-epic-text: #08738a;
+  --store-epic-bg: #dcf3fa;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -44,5 +50,11 @@
     --warn-text: #ffd09a;
     --media-placeholder: #273448;
     --shadow-panel: #00000026;
+    --store-steam-text: #91c4ff;
+    --store-steam-bg: #23466a;
+    --store-gog-text: #8cdda0;
+    --store-gog-bg: #234e32;
+    --store-epic-text: #78d5ec;
+    --store-epic-bg: #164e60;
   }
 }

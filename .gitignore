@@ -134,3 +134,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Local website and Chrome Web Store working materials
+/website/
+/docs/store-assets/

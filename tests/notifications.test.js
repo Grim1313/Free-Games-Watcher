@@ -82,15 +82,15 @@ test("createPromotionNotifications uses image notifications when artwork is avai
     notificationCalls[0][1].imageUrl,
     "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/599140/header.jpg",
   );
-  assert.match(notificationCalls[0][1].message, /^Steam · Free to Keep\. Ends .+\.$/);
+  assert.equal(notificationCalls[0][1].message, "Steam · 100% off until 01.01.2026");
   assert.equal(
     notificationCalls[0][1].contextMessage,
-    "86% positive · 49353 reviews",
+    "Steam: 86% · 49,353 reviews",
   );
   assert.ok(storageState[STORAGE_KEYS.notificationLinks]);
 });
 
-test("sendTestNotification uses local assets and a neutral message", async (t) => {
+test("sendTestNotification previews a fictional giveaway with local artwork and rating", async (t) => {
   const { notificationCalls } = createChromeMock();
   t.after(() => {
     delete globalThis.chrome;
@@ -99,13 +99,14 @@ test("sendTestNotification uses local assets and a neutral message", async (t) =
   await sendTestNotification();
 
   assert.equal(notificationCalls.length, 1);
-  assert.equal(notificationCalls[0][1].type, "basic");
-  assert.equal(notificationCalls[0][1].imageUrl, undefined);
-  assert.equal(notificationCalls[0][1].contextMessage, undefined);
-  assert.match(notificationCalls[0][1].message, /test notification/);
+  assert.equal(notificationCalls[0][1].type, "image");
+  assert.match(notificationCalls[0][1].imageUrl, /notification-demo\.png$/);
+  assert.equal(notificationCalls[0][1].contextMessage, "Steam: 94% · 12,345 reviews");
+  assert.equal(notificationCalls[0][1].title, "Starfall Courier — test");
+  assert.match(notificationCalls[0][1].message, /^100% off until \d{2}\.\d{2}\.\d{4}\n\$19\.99 → \$0$/);
 });
 
-test("createPromotionNotifications keeps deadline status visible when no end time was parsed", async (t) => {
+test("createPromotionNotifications omits an unavailable deadline", async (t) => {
   const { notificationCalls } = createChromeMock();
   t.after(() => {
     delete globalThis.chrome;
@@ -124,6 +125,6 @@ test("createPromotionNotifications keeps deadline status visible when no end tim
   assert.equal(notificationCalls.length, 1);
   assert.equal(
     notificationCalls[0][1].message,
-    "Steam · Free to Keep. End time unavailable.",
+    "Steam · 100% off",
   );
 });

@@ -12,6 +12,7 @@ import {
   STORE_NAMES,
   storeUrl,
   artwork,
+  ratingSummary,
   action,
   sortEntries,
   watch,
@@ -88,18 +89,9 @@ function render() {
       title.append(end);
     }
     if (entry.stale) title.append(el("div", "meta-line", t("stale")));
-    if (entry.reviewTotal)
-      title.append(
-        el(
-          "div",
-          "meta-line",
-          t("reviewSummary", {
-            percent: entry.reviewPercent,
-            count: entry.reviewTotal,
-          }),
-        ),
-      );
-    title.append(el("span", "tag store-tag", STORE_NAMES[storeOf(entry)]));
+    const rating = ratingSummary(entry);
+    if (rating.textContent) title.append(rating);
+    title.append(el("span", `tag store-tag store-tag--${storeOf(entry)}`, STORE_NAMES[storeOf(entry)]));
     const personal = actionState(entry, data.userActions);
     const status =
       entry.endsAt && entry.endsAt <= Date.now() ? "expired" : entry.status;

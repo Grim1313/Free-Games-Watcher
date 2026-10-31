@@ -97,7 +97,7 @@ export function getFollowupTime(
     if (settings.remindersEnabled) {
       for (const e of visibleEntries(entries, settings, actions, now)) {
         if (
-          !e.endsAt ||
+          e.importedAt || !e.endsAt ||
           e.endsAt <= now ||
           notified[e.id]?.fingerprint !== e.fingerprint ||
           notified[`${e.id}:reminder`]?.fingerprint === e.fingerprint

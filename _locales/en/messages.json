@@ -122,6 +122,15 @@
   "reviewSummary": {
     "message": "{percent}% positive · {count} reviews"
   },
+  "steamNotificationRatingSummary": {
+    "message": "Steam: {percent}% · {count} reviews"
+  },
+  "gogRatingSummary": {
+    "message": "GOG rating: {rating} out of 5 · {count} ratings"
+  },
+  "gogNotificationRatingSummary": {
+    "message": "GOG: {rating}/5 · {count} ratings"
+  },
   "notificationSummary": {
     "message": "{count} more giveaways. Open the list to view them."
   },
@@ -336,10 +345,10 @@
     "message": "Backup and transfer"
   },
   "backupNote": {
-    "message": "Includes settings, exclusions and personal marks. The archive and notification delivery records are not included. Import replaces settings and marks."
+    "message": "One file for settings, personal marks and optional history. Cache and operational data are excluded."
   },
   "exportBackup": {
-    "message": "Export settings and marks"
+    "message": "Export file"
   },
   "importBackup": {
     "message": "Import backup"
@@ -456,10 +465,13 @@
     "message": "Discard unsaved settings changes?"
   },
   "notificationTestTitle": {
-    "message": "Free Games Watcher — notification test"
+    "message": "Starfall Courier — test"
   },
-  "notificationTestMessage": {
-    "message": "This is a test notification. Click to open the extension settings."
+  "notificationDiscount": {
+    "message": "100% off"
+  },
+  "notificationDiscountUntil": {
+    "message": "100% off until {date}"
   },
   "badgeTitle": {
     "message": "{active} active giveaways · {unread} new"
@@ -601,5 +613,47 @@
   },
   "store_disabled": {
     "message": "Store disabled"
+  },
+  "backupContents": {
+    "message": "Backup contents"
+  },
+  "backupFull": {
+    "message": "Settings, personal marks and history"
+  },
+  "backupSettings": {
+    "message": "Settings and personal marks"
+  },
+  "backupHistoryCount": {
+    "message": "History records: {count}. Keeps up to {limit} most recent records."
+  },
+  "backupPreview": {
+    "message": "Backup contents"
+  },
+  "backupPreviewDetails": {
+    "message": "Created: {date}\nSettings: included · country: {region}\nPersonal marks: {count}\nHistory: {history}"
+  },
+  "backupDateUnknown": {
+    "message": "date not provided"
+  },
+  "backupRecordCount": {
+    "message": "{count} records"
+  },
+  "backupNoHistory": {
+    "message": "not included"
+  },
+  "backupRestoreHistory": {
+    "message": "Restore history from this file"
+  },
+  "backupMergeWarning": {
+    "message": "Settings and personal marks will be replaced. History will be merged without duplicates; local records take precedence. Keeps up to {limit} most recent records. Old giveaways will not trigger notifications."
+  },
+  "backupReplaceWarning": {
+    "message": "Settings and personal marks will be replaced. Current history will remain unchanged."
+  },
+  "backupApply": {
+    "message": "Restore from file"
+  },
+  "backupCancel": {
+    "message": "Cancel"
   }
 }

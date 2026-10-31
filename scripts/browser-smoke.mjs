@@ -72,6 +72,7 @@ const context = await chromium.launchPersistentContext(profile, {
   ],
 });
 const errors = [];
+context.setDefaultTimeout(20000);
 let checks = 0;
 const headerArtwork = await readFile(
   new URL("./fixtures/header.svg", import.meta.url),

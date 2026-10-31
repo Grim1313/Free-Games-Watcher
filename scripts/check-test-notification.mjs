@@ -43,7 +43,7 @@ const context = await chromium.launchPersistentContext(await mkdtemp(join(out, "
 let worker;
 const errors = [], externalRequests = [];
 try {
-  // The test must work offline, with only the extension's own icon and translations.
+  // The test must work offline, including its bundled fictional artwork.
   await context.route("https://**/*", (route) => { externalRequests.push(route.request().url()); return route.abort(); });
   worker = context.serviceWorkers()[0] || await context.waitForEvent("serviceworker");
   const page = await context.newPage();
@@ -84,12 +84,21 @@ try {
     const calls = (await state()).calls;
     assert.equal(calls.length, 3);
     assert.equal(new Set(calls.map((c) => c.id)).size, 3);
-    assert.ok(calls.every((c) => c.options.type === "basic" && !c.options.imageUrl));
+    assert.ok(calls.every((c) => c.options.type === "image"
+      && c.options.imageUrl.endsWith("/src/ui/assets/notification-demo.png")
+      && c.options.contextMessage.includes("94%")
+      && c.options.message.startsWith("Скидка 100% до ")));
+    assert.equal(await page.evaluate(async (url) => {
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      return image.naturalWidth === 720 && image.naturalHeight === 360;
+    }, calls[0].options.imageUrl), true);
     await mode("denied"); await button.click(); await waitStatus("Браузер запретил");
     assert.equal((await state()).calls.length, 3);
     await mode("fail"); await button.click(); await waitStatus("Не удалось");
     await mode("success"); await button.click(); await waitStatus("отправлено браузеру");
-    assert.equal((await state()).calls.length, 5);
+    assert.equal((await state()).calls.length, 6);
     for (const colorScheme of ["light", "dark"]) {
       await page.emulateMedia({ colorScheme });
       await page.screenshot({ path: join(out, `feedback-${colorScheme}.png`), fullPage: true });

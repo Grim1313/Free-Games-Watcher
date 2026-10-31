@@ -166,10 +166,12 @@ body {
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
 }
 .promotion-item {
   position: relative;
+  min-width: 0;
   padding: 6px 8px;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -180,27 +182,52 @@ body {
   grid-template-columns: 120px minmax(0, 1fr);
   gap: 10px;
   align-items: start;
+  height: 56px;
 }
 .promotion-overview:not(:has(.promotion-media)) {
   grid-template-columns: 1fr;
 }
 .card-copy {
   display: grid;
-  gap: 2px;
+  grid-template-rows: 18px 18px 18px;
+  gap: 1px;
+  height: 56px;
   min-width: 0;
+}
+.card-copy .deadline-line {
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-facts {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+.stale-indicator {
+  color: var(--urgent);
+  font-size: 12px;
+  line-height: 18px;
 }
 .promotion-head {
   position: relative;
   display: flex;
   gap: 6px;
-  align-items: start;
-  flex-wrap: wrap;
-  row-gap: 0;
+  align-items: center;
+  flex-wrap: nowrap;
+  height: 20px;
   margin-bottom: 3px;
 }
 .promotion-title {
   font-size: 14px;
   line-height: 1.35;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .promotion-head .pill {
   font-size: 11px;
@@ -211,6 +238,8 @@ body {
   border: 1px solid transparent;
   border-radius: 5px;
   line-height: 1.35;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 .promotion-head .new-marker:hover {
   border-color: var(--accent);
@@ -219,15 +248,23 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 .meta-tags .tag {
-  padding: 2px 5px;
+  padding: 1px 4px;
   font-size: 11px;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+.meta-tags .store-tag { flex-shrink: 0; }
 .base-price-tag {
   color: var(--muted);
   font-size: 12px;
+  margin-left: auto;
+  background: none;
 }
 .promotion-item .card-actions {
   display: grid;
@@ -287,6 +324,7 @@ body {
 }
 .compact .promotion-overview {
   grid-template-columns: 1fr;
+  height: 38px;
 }
 .compact .promotion-media {
   display: none;
@@ -295,8 +333,12 @@ body {
   padding: 6px 8px;
 }
 .compact .card-copy {
+  height: 38px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 18px 18px;
   gap: 2px;
 }
+.compact .meta-tags { grid-column: 1 / -1; }
 .list-footer {
   display: flex;
   align-items: center;

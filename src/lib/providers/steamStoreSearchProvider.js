@@ -5,6 +5,7 @@ import {
   decodeHtmlEntities,
   fetchJsonWithTimeout,
   normalizeWhitespace,
+  sanitizeSteamReviewSummary,
   stripHtml,
 } from "../utils.js";
 
@@ -166,12 +167,25 @@ export function parseSearchRows(html, options = {}) {
       sourceId: SOURCE_IDS.STORE_SEARCH,
       sourceFingerprint: createHash(row),
       basePriceFormatted: getOriginalPriceText(row),
+      ...parseSearchReviews(row),
       endsAt: parseDiscountExpiration(row),
       rowText,
     });
   }
 
   return promotions;
+}
+
+// English is requested by buildSearchUrl. Search already contains this summary,
+// so the fallback adds no requests and does not invent positive/negative counts.
+export function parseSearchReviews(row) {
+  const tooltip = /<span\b[^>]*class="[^"]*\bsearch_review_summary\b[^"]*"[^>]*>/i.exec(row)?.[0];
+  const text = decodeHtmlEntities(/data-tooltip-html="([^"]*)"/i.exec(tooltip || "")?.[1] || "");
+  const match = /\b(\d{1,3})% of the ([\d,]+) user reviews for this game are positive\./i.exec(text);
+  if (!match) return {};
+  const percent = Number(match[1]), count = Number(match[2].replaceAll(",", ""));
+  if (percent > 100 || !Number.isSafeInteger(count) || count <= 0) return {};
+  return sanitizeSteamReviewSummary({ reviewPercent: percent, reviewTotal: count });
 }
 
 export const steamStoreSearchProvider = {

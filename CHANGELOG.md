@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.2.0
+
+### New features
+
+- Compact Steam and GOG ratings with explanatory tooltips in giveaway cards and history.
+- GOG ratings in individual giveaway notifications and reminders.
+- Full notification preview with a fictional game, artwork, price, deadline and rating.
+- Color-coded store labels in giveaway cards and history, adapted to light and dark themes.
+- Optional history transfer in a single backup file, with an import preview and duplicate-free merging.
+
+### Fixes
+
+- Restored missing Steam ratings when the review service is unavailable.
+- Uniform popup card heights, with compact prices and full-title tooltips.
+- Shorter rating lines in Windows notifications so review counts remain visible.
+- Clearer notification text: 100% discount with a compact end date.
+
 ## 2.1.1
 
 ### Fixes

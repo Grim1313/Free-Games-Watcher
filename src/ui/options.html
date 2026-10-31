@@ -324,6 +324,14 @@
             >
               <h2 id="backup-heading" data-i18n="backup"></h2>
               <p class="note" data-i18n="backupNote"></p>
+              <label class="backup-choice" for="backup-scope">
+                <span data-i18n="backupContents"></span>
+                <select id="backup-scope">
+                  <option value="full" data-i18n="backupFull"></option>
+                  <option value="settings" data-i18n="backupSettings"></option>
+                </select>
+              </label>
+              <p id="backup-history-count" class="note"></p>
               <div class="button-row">
                 <button
                   type="button"
@@ -339,6 +347,19 @@
                   type="file"
                   accept="application/json,.json"
               /></label>
+              <div id="backup-preview" class="backup-preview" hidden aria-labelledby="backup-preview-heading">
+                <h3 id="backup-preview-heading" data-i18n="backupPreview"></h3>
+                <p id="backup-preview-details" class="note"></p>
+                <label id="backup-restore-history-label" class="toggle">
+                  <input type="checkbox" id="backup-restore-history" checked />
+                  <span data-i18n="backupRestoreHistory"></span>
+                </label>
+                <p id="backup-import-warning" class="note"></p>
+                <div class="button-row">
+                  <button type="button" id="apply-backup" class="primary-button" data-i18n="backupApply"></button>
+                  <button type="button" id="cancel-backup" class="secondary-button" data-i18n="backupCancel"></button>
+                </div>
+              </div>
             </section>
             <section
               id="diagnostics"

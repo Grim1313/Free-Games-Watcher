@@ -89,6 +89,7 @@ export function buildPromotionFingerprint(promotion) {
 }
 
 export function shouldNotifyPromotion(promotion, notifiedMap, settings, nowTs) {
+  if (promotion.importedAt) return { shouldNotify: false, reason: "imported-history" };
   const record = notifiedMap[promotion.id];
   if (!record) {
     return { shouldNotify: true, reason: "new" };

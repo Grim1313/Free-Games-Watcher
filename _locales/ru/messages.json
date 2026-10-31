@@ -122,6 +122,15 @@
   "reviewSummary": {
     "message": "{percent}% положительных · отзывов: {count}"
   },
+  "steamNotificationRatingSummary": {
+    "message": "Steam: {percent}% · {count} отзывов"
+  },
+  "gogRatingSummary": {
+    "message": "Оценка GOG: {rating} из 5 · оценок: {count}"
+  },
+  "gogNotificationRatingSummary": {
+    "message": "GOG: {rating}/5 · {count} оценок"
+  },
   "notificationSummary": {
     "message": "Ещё раздач: {count}. Откройте список, чтобы посмотреть их."
   },
@@ -336,10 +345,10 @@
     "message": "Резервная копия и перенос"
   },
   "backupNote": {
-    "message": "Включает настройки, исключения и личные отметки. Архив и сведения об отправке уведомлений не включены. Импорт заменяет настройки и отметки."
+    "message": "Один файл для переноса настроек, личных отметок и, по желанию, истории. Кэш и служебные данные не включаются."
   },
   "exportBackup": {
-    "message": "Экспорт настроек и отметок"
+    "message": "Экспортировать файл"
   },
   "importBackup": {
     "message": "Импорт резервной копии"
@@ -456,10 +465,13 @@
     "message": "Отменить несохранённые изменения настроек?"
   },
   "notificationTestTitle": {
-    "message": "Free Games Watcher — проверка уведомлений"
+    "message": "Starfall Courier — тест"
   },
-  "notificationTestMessage": {
-    "message": "Тестовое уведомление. Нажмите, чтобы открыть настройки расширения."
+  "notificationDiscount": {
+    "message": "Скидка 100%"
+  },
+  "notificationDiscountUntil": {
+    "message": "Скидка 100% до {date}"
   },
   "badgeTitle": {
     "message": "Активных раздач: {active} · новых: {unread}"
@@ -601,5 +613,47 @@
   },
   "store_disabled": {
     "message": "Магазин отключён"
+  },
+  "backupContents": {
+    "message": "Что включить в копию"
+  },
+  "backupFull": {
+    "message": "Настройки, личные отметки и история"
+  },
+  "backupSettings": {
+    "message": "Настройки и личные отметки"
+  },
+  "backupHistoryCount": {
+    "message": "Записей истории: {count}. Сохраняются до {limit} последних записей."
+  },
+  "backupPreview": {
+    "message": "Состав резервной копии"
+  },
+  "backupPreviewDetails": {
+    "message": "Создана: {date}\nНастройки: включены · страна: {region}\nЛичные отметки: {count}\nИстория: {history}"
+  },
+  "backupDateUnknown": {
+    "message": "дата не указана"
+  },
+  "backupRecordCount": {
+    "message": "{count} записей"
+  },
+  "backupNoHistory": {
+    "message": "не включена"
+  },
+  "backupRestoreHistory": {
+    "message": "Восстановить историю из файла"
+  },
+  "backupMergeWarning": {
+    "message": "Настройки и личные отметки будут заменены. История объединится без дублей; при совпадении останется местная запись. Сохраняются до {limit} последних записей. Старые раздачи не вызовут уведомлений."
+  },
+  "backupReplaceWarning": {
+    "message": "Настройки и личные отметки будут заменены. Текущая история останется без изменений."
+  },
+  "backupApply": {
+    "message": "Восстановить из файла"
+  },
+  "backupCancel": {
+    "message": "Отмена"
   }
 }

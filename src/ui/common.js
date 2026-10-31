@@ -118,7 +118,7 @@ export function preserveListInteraction(container) {
   const focused = row && container.contains(row);
   const focusKey = focused ? active.dataset.focusKey : "";
   const index = focused
-    ? [...row.querySelectorAll("a, button, summary")].indexOf(active)
+    ? [...row.querySelectorAll('a, button, summary, [tabindex="0"]')].indexOf(active)
     : -1;
   const scroller = container.closest(".promotion-scroll");
   const scrollTop = scroller?.scrollTop;
@@ -133,7 +133,7 @@ export function preserveListInteraction(container) {
         (current) => current.dataset.entryId === row.dataset.entryId,
       );
       const controls = [
-        ...(current || container).querySelectorAll("a, button, summary"),
+        ...(current || container).querySelectorAll('a, button, summary, [tabindex="0"]'),
       ];
       const preferred = current && (focusKey
         ? controls.find((control) => control.dataset.focusKey === focusKey)
@@ -151,6 +151,30 @@ export function storeLink(entry, text, className = "") {
   node.href = storeUrl(entry);
   node.target = "_blank";
   node.rel = "noreferrer";
+  return node;
+}
+export function ratingSummary(entry) {
+  const node = el("span", "rating-summary");
+  const store = storeOf(entry);
+  if (store === "steam" && entry.reviewTotal > 0) {
+    node.textContent = `👍 ${entry.reviewPercent}%`;
+    node.title = t("reviewSummary", {
+      percent: entry.reviewPercent,
+      count: new Intl.NumberFormat(t.locale).format(entry.reviewTotal),
+    });
+  } else if (store === "gog" && entry.gogRating > 0 && entry.gogRatingCount > 0) {
+    const rating = new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(entry.gogRating);
+    node.textContent = `★ ${rating}/5`;
+    node.title = t("gogRatingSummary", {
+      rating,
+      count: new Intl.NumberFormat(t.locale).format(entry.gogRatingCount),
+    });
+  }
+  if (node.title) {
+    node.tabIndex = 0;
+    node.dataset.focusKey = "rating";
+    node.setAttribute("aria-label", node.title);
+  }
   return node;
 }
 export function artwork(entry, history = false) {

@@ -176,7 +176,8 @@ async function fetchMissingMetadata(cache, appIds, region) {
           detailsPayload: detailsResponse?.[appId],
           reviewsPayload: reviewsResponse?.query_summary || null,
           hadReviewsResponse: Boolean(
-            reviewsResponse && typeof reviewsResponse === "object",
+            reviewsResponse?.success === 1 && reviewsResponse.query_summary
+              && Number.isFinite(reviewsResponse.query_summary.total_reviews),
           ),
         };
       }),
@@ -245,22 +246,7 @@ async function fetchMissingMetadata(cache, appIds, region) {
           data && typeof data.price_overview?.final_formatted === "string"
             ? data.price_overview.final_formatted
             : existing.priceFinalFormatted || "",
-        reviewScore:
-          reviewSummary.reviewScore || safeNumber(existing.reviewScore, 0),
-        reviewScoreDesc:
-          reviewSummary.reviewScoreDesc || existing.reviewScoreDesc || "",
-        reviewPositive:
-          reviewSummary.reviewPositive ||
-          safeNumber(existing.reviewPositive, 0),
-        reviewNegative:
-          reviewSummary.reviewNegative ||
-          safeNumber(existing.reviewNegative, 0),
-        reviewTotal:
-          reviewSummary.reviewTotal || safeNumber(existing.reviewTotal, 0),
-        reviewPercent:
-          reviewSummary.reviewTotal > 0
-            ? reviewSummary.reviewPercent
-            : safeNumber(existing.reviewPercent, 0),
+        ...(hadReviewsResponse ? reviewSummary : sanitizeSteamReviewSummary(existing)),
         reviewUpdatedAt: hadReviewsResponse
           ? nowTs
           : safeNumber(existing.reviewUpdatedAt, 0),
@@ -692,6 +678,11 @@ export async function enrichPromotions(
 
   const enriched = promotions.map((promotion) => {
     const metadata = metadataCache[promotion.stableId];
+    const cachedReviews = sanitizeSteamReviewSummary(metadata);
+    const searchReviews = sanitizeSteamReviewSummary(promotion);
+    const reviews = cachedReviews.reviewTotal > 0
+      && (Date.now() - (metadata?.reviewUpdatedAt || 0) < METADATA_TTL_MS || !searchReviews.reviewTotal)
+      ? cachedReviews : searchReviews;
     const priceInitial = safeNumber(metadata?.priceInitial, -1);
     const priceFinal = safeNumber(metadata?.priceFinal, -1);
     const priceDiscountPercent = safeNumber(metadata?.priceDiscountPercent, 0);
@@ -714,12 +705,7 @@ export async function enrichPromotions(
       capsuleImage: metadata?.capsuleImage || "",
       screenshotThumbnail: metadata?.screenshotThumbnail || "",
       screenshotFull: metadata?.screenshotFull || "",
-      reviewScore: safeNumber(metadata?.reviewScore, 0),
-      reviewScoreDesc: metadata?.reviewScoreDesc || "",
-      reviewPositive: safeNumber(metadata?.reviewPositive, 0),
-      reviewNegative: safeNumber(metadata?.reviewNegative, 0),
-      reviewTotal: safeNumber(metadata?.reviewTotal, 0),
-      reviewPercent: safeNumber(metadata?.reviewPercent, 0),
+      ...reviews,
       contentType: inferContentType(promotion, metadataCache),
       endsAt:
         safeNumber(promotion.endsAt, 0) ||

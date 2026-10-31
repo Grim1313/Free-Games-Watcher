@@ -83,8 +83,14 @@ export function assignCampaigns(promotions, existing, now) {
     const campaignId = newCycle ? `${id}:${now}` : old?.campaignId || id;
     return {
       ...p,
+      ...(old?.importedAt && !newCycle ? {
+        firstSeenAt: old.firstSeenAt,
+        lastNotifiedAt: old.lastNotifiedAt,
+        notificationStatus: old.notificationStatus,
+      } : {}),
       id,
       campaignId,
+      importedAt: newCycle ? 0 : old?.importedAt || 0,
       fingerprint: buildPromotionFingerprint({ ...p, campaignId }),
       confirmedEnded: false,
     };
@@ -183,6 +189,7 @@ async function performPromotionCheck(trigger) {
       const reminders = currentSettings.remindersEnabled
         ? fresh.filter(
             (e) =>
+              !e.importedAt &&
               !pendingIds.has(e.id) &&
               e.endsAt > now &&
               e.endsAt - now <= currentSettings.reminderHours * 3600000 &&

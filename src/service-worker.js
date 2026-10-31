@@ -194,17 +194,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         await sendTestNotification(await getSettings());
         return { ok: true };
       case "EXPORT_BACKUP":
-        return { ok: true, data: await exportBackup() };
+        return { ok: true, data: await exportBackup({ includeHistory: message.includeHistory !== false }) };
       case "VALIDATE_BACKUP": {
         const data = validateBackup(message.data);
         return {
           ok: true,
           count: Object.keys(data.userActions).length,
           region: data.settings.region,
+          exportedAt: data.exportedAt,
+          hasHistory: data.hasHistory,
+          historyCount: data.history.length,
         };
       }
       case "IMPORT_BACKUP": {
-        const result = await importBackup(message.data);
+        const result = await importBackup(message.data, { includeHistory: message.includeHistory !== false });
         await resetCheckAlarm(result.settings);
         await updateDerived();
         return result;

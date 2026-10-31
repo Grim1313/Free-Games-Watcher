@@ -143,7 +143,7 @@ test("schema 2 migration preserves campaign fingerprints, actions and delivery r
 test("backup v2 retains cross-store marks and URLs; backup v1 remains importable", async (t) => {
   environment(t, { settings: all() });
   await changeAction("epic:ns:123", "claim", { title: "Game", url: "https://store.epicgames.com/en-US/p/game" });
-  const exported = await exportBackup(); assert.equal(exported.version, 2);
+  const exported = await exportBackup(); assert.equal(exported.version, 3);
   assert.equal(validateBackup(exported).userActions["epic:ns:123"].claimed, true);
   assert.equal(validateBackup(exported).userActions["epic:ns:123"].url, "https://store.epicgames.com/en-US/p/game");
   assert.deepEqual(validateBackup({ format: "steam-promo-watch", version: 1, settings: {}, userActions: { "app:123": { ignored: true } } }).settings.enabledStores, ["steam"]);

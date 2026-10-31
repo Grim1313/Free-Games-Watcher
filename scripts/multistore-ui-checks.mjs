@@ -16,7 +16,7 @@ export async function checkMultistore({ worker, page, options, history, out }) {
     await page.locator("#check-now").click();
     await page.waitForFunction(() => document.querySelectorAll(".promotion-item").length === 2);
     assert.deepEqual(await worker.evaluate(async () => (await chrome.storage.local.get("settings")).settings.enabledStores), ["epic", "gog"]);
-    assert.equal(await page.locator(".store-tag").filter({ hasText: "Epic Games Store" }).count(), 1);
+    assert.equal(await page.locator('.store-tag[title="Epic Games Store"]').filter({ hasText: "Epic" }).count(), 1);
     assert.equal(await page.locator(".store-tag").filter({ hasText: "GOG" }).count(), 1);
     assert.equal(await page.locator('a.primary-button[href="https://www.gog.com/en/"]').count(), 1);
     assert.equal(await page.locator('a.promotion-title[href="https://www.gog.com/en/game/test_game"]').count(), 1);

@@ -1,5 +1,5 @@
 // Synthetic offers using field names observed in the public store responses/code.
-// GOG's positive giveaway section has not yet been observed during a live giveaway.
+// A real GOG giveaway response is also covered by fixtures/gog-a-new-beginning.json.
 export function epicFeed(now = Date.now()) {
   const item = (id, future) => ({
     id, namespace: "test-namespace", title: future ? "Future game" : "Test game", offerType: "BASE_GAME",

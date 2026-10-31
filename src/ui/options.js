@@ -13,6 +13,7 @@ import {
 } from "./common.js";
 import { actionState } from "../lib/actions.js";
 import { buildSteamUrlFromStableId } from "../lib/utils.js";
+import { MAX_BACKUP_BYTES, MAX_HISTORY_ITEMS } from "../lib/constants.js";
 const $ = (id) => document.getElementById(id);
 const fields = [
   "region",
@@ -139,6 +140,11 @@ async function refresh() {
     $("form-status").textContent = t("saved");
   }
   loaded = true;
+  const historyCount = Math.min(MAX_HISTORY_ITEMS, new Set(
+    [...data.historyEntries, ...data.latestPromotions].map((entry) => `${entry.stableId}|${entry.promoType}`),
+  ).size);
+  $("backup-history-count").textContent = t("backupHistoryCount", { count: historyCount, limit: MAX_HISTORY_ITEMS });
+  renderBackupPreview();
   $("app-version").textContent = t("version", {
     value: chrome.runtime.getManifest().version,
   });
@@ -199,7 +205,8 @@ async function refresh() {
   $("check-now").disabled =
     data.runtimeState.checkInProgress || !data.settings.trackFreeToKeep;
 }
-$("settings-form").addEventListener("input", () => {
+$("settings-form").addEventListener("input", (event) => {
+  if (event.target.closest("#backup")) return;
   $("quietHoursEnd").setCustomValidity(
     $("quietHoursEnabled").checked &&
       $("quietHoursStart").value === $("quietHoursEnd").value
@@ -277,7 +284,7 @@ on("copy-report", async () => {
   announce(t("copied"));
 });
 on("export-backup", async () => {
-  const result = await send("EXPORT_BACKUP");
+  const result = await send("EXPORT_BACKUP", { includeHistory: $("backup-scope").value === "full" });
   const url = URL.createObjectURL(
     new Blob([JSON.stringify(result.data, null, 2)], {
       type: "application/json",
@@ -291,24 +298,72 @@ on("export-backup", async () => {
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
+let pendingBackup = null;
+let backupSelection = 0;
+function renderBackupPreview() {
+  $("backup-preview").hidden = !pendingBackup;
+  if (!pendingBackup) return;
+  const preview = pendingBackup.preview;
+  $("backup-preview-details").textContent = t("backupPreviewDetails", {
+    date: preview.exportedAt ? date(Date.parse(preview.exportedAt)) : t("backupDateUnknown"),
+    region: preview.region,
+    count: preview.count,
+    history: preview.hasHistory ? t("backupRecordCount", { count: preview.historyCount }) : t("backupNoHistory"),
+  });
+  $("backup-restore-history-label").hidden = !preview.hasHistory;
+  $("backup-restore-history").disabled = !preview.hasHistory;
+  $("backup-import-warning").textContent = t(
+    preview.hasHistory && $("backup-restore-history").checked ? "backupMergeWarning" : "backupReplaceWarning",
+    { limit: MAX_HISTORY_ITEMS },
+  );
+}
+function clearBackupPreview() {
+  pendingBackup = null;
+  backupSelection++;
+  $("import-backup").value = "";
+  renderBackupPreview();
+}
+$("backup-restore-history").addEventListener("change", renderBackupPreview);
+$("cancel-backup").addEventListener("click", clearBackupPreview);
 $("import-backup").addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
+  pendingBackup = null;
+  renderBackupPreview();
+  const selection = ++backupSelection;
   if (!file) return;
   try {
-    if (file.size > 1024 * 1024) throw new Error("invalidBackup");
+    if (file.size > MAX_BACKUP_BYTES) throw new Error("invalidBackup");
     const data = await file.text();
     const preview = await send("VALIDATE_BACKUP", { data });
-    if (confirm(t("importConfirm", preview))) {
-      await send("IMPORT_BACKUP", { data });
-      dirty = false;
-      await refresh();
-      announce(t("imported"));
-    }
+    if (selection !== backupSelection) return;
+    pendingBackup = { data, preview };
+    $("backup-restore-history").checked = preview.hasHistory;
+    renderBackupPreview();
+    $("apply-backup").focus();
   } catch (e) {
-    announce(errorText(e));
+    if (selection === backupSelection) announce(errorText(e));
   } finally {
-    event.target.value = "";
+    if (selection === backupSelection && !pendingBackup) event.target.value = "";
   }
+});
+on("apply-backup", async () => {
+  if (!pendingBackup) return;
+  const selected = pendingBackup;
+  const includeHistory = selected.preview.hasHistory && $("backup-restore-history").checked;
+  if (!confirm(`${t("importConfirm", selected.preview)}\n${t(includeHistory ? "backupMergeWarning" : "backupReplaceWarning", { limit: MAX_HISTORY_ITEMS })}`)) return;
+  $("import-backup").disabled = true;
+  $("cancel-backup").disabled = true;
+  try {
+    await send("IMPORT_BACKUP", { data: selected.data, includeHistory });
+    clearBackupPreview();
+    dirty = false;
+    await refresh();
+    announce(t("imported"));
+  } finally {
+    $("import-backup").disabled = false;
+    $("cancel-backup").disabled = false;
+  }
+  $("import-backup").focus();
 });
 watch(refresh);
 refresh().catch((e) => announce(errorText(e)));

@@ -191,6 +191,12 @@ textarea {
   color: var(--accent);
   font-weight: 600;
 }
+.rating-summary {
+  color: var(--text);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
 .deadline-line.urgent {
   color: var(--urgent);
 }
@@ -371,3 +377,15 @@ pre {
 }
 
 .store-tag { font-weight: 600; }
+.store-tag--steam {
+  color: var(--store-steam-text);
+  background: var(--store-steam-bg);
+}
+.store-tag--gog {
+  color: var(--store-gog-text);
+  background: var(--store-gog-bg);
+}
+.store-tag--epic {
+  color: var(--store-epic-text);
+  background: var(--store-epic-bg);
+}

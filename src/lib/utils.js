@@ -261,7 +261,7 @@ export function sanitizeSteamReviewSummary(raw = {}) {
     -1,
   );
   const reviewPercent =
-    reviewTotal > 0
+    reviewPositive + reviewNegative > 0
       ? clamp(Math.round((reviewPositive / reviewTotal) * 100), 0, 100)
       : explicitPercent >= 0
         ? clamp(Math.round(explicitPercent), 0, 100)
@@ -279,6 +279,12 @@ export function sanitizeSteamReviewSummary(raw = {}) {
 
 export function hasSteamReviewSummary(raw = {}) {
   return sanitizeSteamReviewSummary(raw).reviewTotal > 0;
+}
+
+export function sanitizeGogRating(raw = {}) {
+  const rating = safeNumber(raw.gogRating, 0), count = safeNumber(raw.gogRatingCount, 0);
+  const valid = rating > 0 && rating <= 5 && Number.isSafeInteger(count) && count > 0;
+  return { gogRating: valid ? Math.round(rating * 10) / 10 : 0, gogRatingCount: valid ? count : 0 };
 }
 
 export function getSteamReviewTone(raw = {}) {

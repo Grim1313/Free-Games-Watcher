@@ -14,28 +14,24 @@ A lightweight Chrome / Edge extension that finds limited-time **Free to Keep** g
 <img width="30%" alt="free games watcher steam epic and gog 02 preferences" src="https://github.com/user-attachments/assets/b212bd40-8146-493d-abdf-18987e386147" />
 <img width="30%" alt="free games watcher steam epic and gog 03 history" src="https://github.com/user-attachments/assets/b806e1cf-fbc8-4d2d-9cda-b15c0394c2f0" />
 
-## What's new in 2.1.1
+## What's new in 2.2.0
 
-- Fixed a false incomplete-check warning caused by permanently free Epic games. These games are skipped in both current and upcoming giveaways.
-
-### Highlights from 2.1.0
-
-- **More Epic giveaways:** finds 100% discounts beyond the weekly selection, with a fallback when the store catalog is unavailable.
-- **Epic genre and platform filters**, plus consistent RPG filtering across stores.
-- **Quick action buttons** with tooltips; click **New** to mark a giveaway as read.
-- **Reliable repeat test notifications** with visible sending/error feedback.
-- Clearer reminder settings, store hints and diagnostics.
+- **Steam and GOG ratings** in giveaway cards and history, plus GOG ratings in notifications.
+- **History transfer** in one backup file, with optional history, an import preview and duplicate-free merging.
+- **Full test notifications** with a fictional game, artwork, price, deadline and rating; works offline.
+- **Color-coded store labels** and uniform card heights in light/dark and compact views.
+- Restored missing Steam ratings and shortened notification text so ratings and review counts stay readable.
 
 Free Games Watcher was formerly Steam Promo Watch. Steam, Epic Games Store and GOG can be selected independently; existing settings, personal marks and backups remain compatible. Installations upgraded from Steam Promo Watch keep Steam selected; new installations select all three stores.
 
-GOG integration is experimental: its active-giveaway parsing has been tested with fixtures, while live checks have so far returned no active giveaway section. A zero catalog price alone is not accepted as a giveaway.
+GOG giveaways are confirmed through the public giveaway section on its homepage. A zero catalog price alone is not accepted as a giveaway.
 
 ## Features
 
 - Automatic background checks and an on-demand **Check now** action.
 - Store filters in popup/history, independent source diagnostics and a separate list of upcoming Epic giveaways.
 - Browser notifications, quiet hours and a toolbar badge for active offers.
-- Giveaway deadlines, original prices and Steam review summaries when available.
+- Giveaway deadlines, original prices, Steam positive-review percentages and GOG ratings out of five when available. Hover over a rating for its count and explanation.
 - Light and dark themes that follow your system, plus an optional compact view.
 - Sorting by ending time, discovery date, rating or title.
 - Content filters for DLC, soundtracks, demos, tools and packages; exclusions by title or Steam ID.
@@ -50,12 +46,12 @@ Requires Chrome 120+ or a compatible Chromium-based browser such as Microsoft Ed
 
 ### Chrome Web Store
 
-Open [Steam Promo Watch in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. This is the existing Chrome Web Store listing; it may still use the old name/version until updated separately. The GitHub release provides version 2.1.1.
+Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. Chrome Web Store updates are published separately. The GitHub release provides version 2.2.0.
 
 ### Manual installation from GitHub
 
 1. Open [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
-2. Download **Free-Games-Watcher-2.1.1.zip** (or the corresponding ZIP for a newer release).
+2. Download **Free-Games-Watcher-2.2.0.zip** (or the corresponding ZIP for a newer release).
 3. Extract it to a permanent local folder.
 4. Open `chrome://extensions/` or `edge://extensions/`.
 5. Enable **Developer mode**, select **Load unpacked**, and choose the extracted folder containing `manifest.json`.
@@ -69,7 +65,9 @@ Use the named release ZIP, rather than GitHub's **Source code (zip)** or **Sourc
 2. Replace the extension files in the **same folder** used for the previous installation.
 3. Open `chrome://extensions/` or `edge://extensions/` and click **Reload** on Free Games Watcher.
 
-Updating in place with the same extension ID preserves browser storage. Version 2.0.0 retains legacy Steam campaign IDs, settings and marks; renaming the product does not require a fresh installation. Avoid removing the extension to update it, as removal can erase its local data. In version 1.0.0 and later, you can also export settings and personal marks before moving to another browser, computer or installation folder. Backups do not include the full detection history.
+Updating in place with the same extension ID preserves browser storage. Version 2.0.0 retains legacy Steam campaign IDs, settings and marks; renaming the product does not require a fresh installation. Avoid removing the extension to update it, as removal can erase its local data.
+
+In **Settings → Data transfer**, export one backup file containing saved settings and personal marks, with or without history. Full transfer is selected by default. Before importing, review the creation date, country, personal-mark count and history count; you can exclude history or cancel. Import replaces settings and marks and merges selected history without duplicates, preserving local versions of matching records and keeping up to 400 recent entries. Restored offers are checked by the normal store scan and do not trigger old giveaway notifications. Older settings-only backups remain supported.
 
 ## Getting started
 
@@ -107,6 +105,6 @@ npm test
 npm run pack
 ```
 
-For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. The ZIP is written to `dist/`, which is excluded from Git. On GitHub, pushing a version tag such as **v2.1.1** runs the release workflow: it checks the version, runs tests, builds the ZIP, and creates or updates the GitHub release with that asset. An existing draft remains unpublished so its owner can verify the asset and publish it under their own account. The release description is extracted from the matching section of **CHANGELOG.md**. Committing alone does not generate a changelog or publish a release.
+For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. The ZIP is written to `dist/`, which is excluded from Git. On GitHub, pushing a version tag such as **v2.2.0** runs the release workflow: it checks the version, runs tests, builds the ZIP, and creates or updates the GitHub release with that asset. An existing draft remains unpublished so its owner can verify the asset and publish it under their own account. The release description is extracted from the matching section of **CHANGELOG.md**. Committing alone does not generate a changelog or publish a release.
 
 See [TECHNICAL.md](TECHNICAL.md) for architecture, browser checks, troubleshooting and release maintenance.

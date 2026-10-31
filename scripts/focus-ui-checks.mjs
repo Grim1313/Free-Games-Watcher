@@ -280,6 +280,10 @@ export async function checkFocusInterface({
   checks++;
 
   // Backup export/import uses the visible controls and browser confirmation.
+  await page.waitForFunction(async () => {
+    const data = await chrome.runtime.sendMessage({ type: "GET_POPUP_DATA" });
+    return !data.settings.compactView && !document.getElementById("promotion-list").classList.contains("compact");
+  });
   await selectSection("backup");
   const [download] = await Promise.all([
     options.waitForEvent("download"),
@@ -305,6 +309,7 @@ export async function checkFocusInterface({
     mimeType: "application/json",
     buffer: Buffer.from(backup),
   });
+  await options.locator("#apply-backup").click();
   await options.waitForFunction(() =>
     document.getElementById("feedback").textContent.includes("импортирована"),
   );

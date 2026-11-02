@@ -8,9 +8,9 @@ A lightweight Chrome / Edge extension that finds limited-time **Free to Keep** g
 
 ![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/aahjgnocdbhipkfcmhkhlkneonhkafji) ![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/aahjgnocdbhipkfcmhkhlkneonhkafji)
 
-[Download on GitHub](https://github.com/Grim1313/Free-Games-Watcher/releases/latest) · [Changelog](CHANGELOG.md)
+[Download on GitHub](https://github.com/Grim1313/Free-Games-Watcher/releases/latest) · [Changelog](CHANGELOG.md) · [Website](https://fgw.bz/)
 
-<img width="30%" alt="free games watcher steam epic and gog 01 giveaways" src="https://github.com/user-attachments/assets/e9f1fe2f-a690-4fce-aae9-5db974696911" />
+<img width="30%" alt="free games watcher steam epic and gog 01 giveaways" src="https://github.com/user-attachments/assets/ed207776-6e24-49ee-a6d8-6a308d4cda93" />
 <img width="30%" alt="free games watcher steam epic and gog 02 preferences" src="https://github.com/user-attachments/assets/b212bd40-8146-493d-abdf-18987e386147" />
 <img width="30%" alt="free games watcher steam epic and gog 03 history" src="https://github.com/user-attachments/assets/b806e1cf-fbc8-4d2d-9cda-b15c0394c2f0" />
 
@@ -23,8 +23,6 @@ A lightweight Chrome / Edge extension that finds limited-time **Free to Keep** g
 - Restored missing Steam ratings and shortened notification text so ratings and review counts stay readable.
 
 Free Games Watcher was formerly Steam Promo Watch. Steam, Epic Games Store and GOG can be selected independently; existing settings, personal marks and backups remain compatible. Installations upgraded from Steam Promo Watch keep Steam selected; new installations select all three stores.
-
-GOG giveaways are confirmed through the public giveaway section on its homepage. A zero catalog price alone is not accepted as a giveaway.
 
 ## Features
 

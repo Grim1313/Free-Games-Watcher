@@ -1,8 +1,9 @@
+import { extensionApi } from "./browser-api.js";
 const catalogs = new Map();
 export function resolveLocale(language = "auto") {
   const preferred =
     language === "auto"
-      ? globalThis.chrome?.i18n?.getUILanguage?.() ||
+      ? extensionApi()?.i18n?.getUILanguage?.() ||
         globalThis.navigator?.language ||
         "en"
       : language;

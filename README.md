@@ -2,7 +2,9 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/Grim1313/Free-Games-Watcher) ![GitHub Release Date](https://img.shields.io/github/release-date/Grim1313/Free-Games-Watcher) ![GitHub Downloads](https://img.shields.io/github/downloads/Grim1313/Free-Games-Watcher/total)
 
-A lightweight Chrome / Edge extension that finds limited-time **Free to Keep** giveaways in Steam, Epic Games Store and GOG and notifies you about new offers. No account connection or API key is required for discovery. Settings, history and personal marks stay in your browser.
+A lightweight Chrome / Edge / Firefox extension that finds limited-time **Free to Keep** giveaways in Steam, Epic Games Store and GOG and notifies you about new offers. No account connection or API key is required for discovery. Settings, history and personal marks stay in your browser.
+
+Separate **Chrome / Edge 120+** and **Firefox Desktop 142+** packages are available in GitHub Releases. The Firefox package is unsigned and supports temporary installation; see [Firefox installation and details](docs/FIREFOX.md).
 
 [![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png)](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji)
 
@@ -14,15 +16,14 @@ A lightweight Chrome / Edge extension that finds limited-time **Free to Keep** g
 <img width="30%" alt="free games watcher steam epic and gog 02 preferences" src="https://github.com/user-attachments/assets/b212bd40-8146-493d-abdf-18987e386147" />
 <img width="30%" alt="free games watcher steam epic and gog 03 history" src="https://github.com/user-attachments/assets/b806e1cf-fbc8-4d2d-9cda-b15c0394c2f0" />
 
-## What's new in 2.2.0
+## What's new in 2.2.1
 
-- **Steam and GOG ratings** in giveaway cards and history, plus GOG ratings in notifications.
-- **History transfer** in one backup file, with optional history, an import preview and duplicate-free merging.
-- **Full test notifications** with a fictional game, artwork, price, deadline and rating; works offline.
-- **Color-coded store labels** and uniform card heights in light/dark and compact views.
-- Restored missing Steam ratings and shortened notification text so ratings and review counts stay readable.
+- **Firefox support** with the same stores, filters, ratings, history and backup transfer.
+- **All three stores enabled by default**: Steam, Epic Games Store and GOG. Your saved store selection is preserved.
+- Clearly named **Chrome** and **Firefox** downloads in each release.
+- Store-access diagnostics with a button to restore missing permissions.
 
-Free Games Watcher was formerly Steam Promo Watch. Steam, Epic Games Store and GOG can be selected independently; existing settings, personal marks and backups remain compatible. Installations upgraded from Steam Promo Watch keep Steam selected; new installations select all three stores.
+Free Games Watcher was formerly Steam Promo Watch. Settings, personal marks and backups remain compatible across versions. You can select each store independently or pause tracking by turning all stores off.
 
 ## Features
 
@@ -40,16 +41,16 @@ Only limited-time **Free to Keep** offers are tracked. Permanently free games, *
 
 ## Installation
 
-Requires Chrome 120+ or a compatible Chromium-based browser such as Microsoft Edge.
+Choose the archive for your browser. Chrome / Edge requires version 120+; Firefox Desktop requires version 142+.
 
 ### Chrome Web Store
 
-Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. Chrome Web Store updates are published separately. The GitHub release provides version 2.2.0.
+Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. Chrome Web Store updates are published separately. The GitHub release provides version 2.2.1.
 
-### Manual installation from GitHub
+### Chrome / Edge: manual installation from GitHub
 
 1. Open [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
-2. Download **Free-Games-Watcher-2.2.0.zip** (or the corresponding ZIP for a newer release).
+2. Download **Free-Games-Watcher-Chrome-2.2.1.zip** (or the corresponding ZIP for a newer release).
 3. Extract it to a permanent local folder.
 4. Open `chrome://extensions/` or `edge://extensions/`.
 5. Enable **Developer mode**, select **Load unpacked**, and choose the extracted folder containing `manifest.json`.
@@ -57,7 +58,15 @@ Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.
 
 Use the named release ZIP, rather than GitHub's **Source code (zip)** or **Source code (tar.gz)** downloads. Keep the extracted folder in place while the extension is installed.
 
-## Updating a manual installation
+### Firefox: temporary installation from GitHub
+
+1. Download **Free-Games-Watcher-Firefox-2.2.1.zip** from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
+2. Open `about:debugging#/runtime/this-firefox`.
+3. Choose **Load Temporary Add-on** and select the Firefox ZIP, or extract it and select its `manifest.json`.
+
+Firefox removes temporary add-ons when the browser closes. Export a backup before removing the test installation. Permanent installation in ordinary Firefox requires Mozilla signing; this release is not signed or listed on AMO. Firefox notifications retain the message and rating but do not show large artwork.
+
+## Updating a manual Chrome / Edge installation
 
 1. Download the new release ZIP and close any open extension pages.
 2. Replace the extension files in the **same folder** used for the previous installation.
@@ -103,6 +112,8 @@ npm test
 npm run pack
 ```
 
-For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. The ZIP is written to `dist/`, which is excluded from Git. On GitHub, pushing a version tag such as **v2.2.0** runs the release workflow: it checks the version, runs tests, builds the ZIP, and creates or updates the GitHub release with that asset. An existing draft remains unpublished so its owner can verify the asset and publish it under their own account. The release description is extracted from the matching section of **CHANGELOG.md**. Committing alone does not generate a changelog or publish a release.
+For Firefox development, run `npm ci`, `npm run pack:firefox`, `npm run lint:firefox` and `npm run test:firefox`. The Firefox ZIP and unpacked directory are written separately under `dist/`. Load its generated `manifest.json` using `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on**. Temporary installation ends when Firefox closes; export a backup before removing it. Permanent installation requires Mozilla signing, which is not part of the local build.
+
+For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. Both browser ZIPs are written to `dist/`, which is excluded from Git. On GitHub, pushing a version tag such as **v2.2.1** runs the release workflow: it checks the version, runs tests, builds both browser ZIPs, validates the Firefox package, and creates or updates the GitHub release with both assets. An existing draft remains unpublished so its owner can verify the asset and publish it under their own account. The release description is extracted from the matching section of **CHANGELOG.md**. Committing alone does not generate a changelog or publish a release.
 
 See [TECHNICAL.md](TECHNICAL.md) for architecture, browser checks, troubleshooting and release maintenance.

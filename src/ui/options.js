@@ -1,3 +1,4 @@
+import { extensionApi } from "../lib/browser-api.js";
 import { STORE_IDS, STORE_NAMES, storeOf, storeUrl, enabledStores } from "../lib/stores.js";
 import {
   t,
@@ -140,13 +141,16 @@ async function refresh() {
     $("form-status").textContent = t("saved");
   }
   loaded = true;
+  const missing = data.missingHostPermissions || [];
+  $("host-permissions-warning").hidden = missing.length === 0;
+  $("missing-hosts").replaceChildren(...missing.map((origin) => el("li", "note", origin)));
   const historyCount = Math.min(MAX_HISTORY_ITEMS, new Set(
     [...data.historyEntries, ...data.latestPromotions].map((entry) => `${entry.stableId}|${entry.promoType}`),
   ).size);
   $("backup-history-count").textContent = t("backupHistoryCount", { count: historyCount, limit: MAX_HISTORY_ITEMS });
   renderBackupPreview();
   $("app-version").textContent = t("version", {
-    value: chrome.runtime.getManifest().version,
+    value: extensionApi().runtime.getManifest().version,
   });
   const marks = $("personal-marks");
   marks.replaceChildren();
@@ -194,7 +198,7 @@ async function refresh() {
     );
   report = JSON.stringify(
     {
-      version: chrome.runtime.getManifest().version,
+      version: extensionApi().runtime.getManifest().version,
       runtime: data.runtimeState,
       diagnostics: data.diagnostics,
     },
@@ -283,6 +287,16 @@ on("copy-report", async () => {
   await navigator.clipboard.writeText(report);
   announce(t("copied"));
 });
+on("restore-host-permissions", async () => {
+  // Call directly from the click gesture; awaiting a message first loses it.
+  const granted = await extensionApi().permissions.request({
+    origins: extensionApi().runtime.getManifest().host_permissions,
+  });
+  await refresh();
+  if (!granted) announce(t("missingHostPermissions"));
+});
+extensionApi().permissions?.onAdded.addListener(() => refresh().catch(() => undefined));
+extensionApi().permissions?.onRemoved.addListener(() => refresh().catch(() => undefined));
 on("export-backup", async () => {
   const result = await send("EXPORT_BACKUP", { includeHistory: $("backup-scope").value === "full" });
   const url = URL.createObjectURL(

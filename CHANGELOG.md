@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.2.1
+
+### New features
+
+- Firefox support with the same Steam, Epic Games Store and GOG giveaways, ratings, filters, history and backup transfer.
+- All three stores enabled by default, including when restoring incomplete settings. Existing saved store selections are preserved.
+- Separate, clearly named Chrome and Firefox ZIP downloads.
+- Store-access diagnostics with a button to restore missing permissions.
+
+### Fixes
+
+- Firefox notifications retain rating and price text, support repeated previews and keep working links when clicked.
+- Popup width adapts to Firefox's extension panel.
+
+### Installation
+
+- **Free-Games-Watcher-Chrome-2.2.1.zip**: Chrome / Edge 120+, extract and load unpacked.
+- **Free-Games-Watcher-Firefox-2.2.1.zip**: Firefox Desktop 142+, load temporarily through `about:debugging`. The Firefox package is unsigned and is removed when Firefox closes; permanent installation requires Mozilla signing.
+
 ## 2.2.0
 
 ### New features

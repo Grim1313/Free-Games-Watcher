@@ -39,18 +39,26 @@ jobs:
           $version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
           if ($env:RELEASE_TAG -ne "v$version") { throw "Release tag and manifest version differ" }
 
+      - name: Install development tools
+        run: npm ci
+
       - name: Run tests
         run: npm test
 
-      - name: Build release archive
+      - name: Build browser archives
         id: build
         shell: pwsh
         run: |
-          $archivePath = & ./scripts/build-release.ps1
-          if (-not $archivePath) {
-            throw "build-release.ps1 did not return an archive path"
+          $chromePath = & ./scripts/build-release.ps1
+          $firefoxPath = & ./scripts/build-release.ps1 -Browser firefox
+          if (-not $chromePath -or -not $firefoxPath) {
+            throw "build-release.ps1 did not return both archive paths"
           }
-          "archive_path=$archivePath" >> $env:GITHUB_OUTPUT
+          "chrome_path=$chromePath" >> $env:GITHUB_OUTPUT
+          "firefox_path=$firefoxPath" >> $env:GITHUB_OUTPUT
+
+      - name: Validate Firefox package
+        run: npm run lint:firefox
 
       - name: Build release notes
         id: notes
@@ -73,7 +81,8 @@ jobs:
           $ErrorActionPreference = 'Stop'
 
           $tag = $env:RELEASE_TAG
-          $archivePath = "${{ steps.build.outputs.archive_path }}"
+          $chromePath = "${{ steps.build.outputs.chrome_path }}"
+          $firefoxPath = "${{ steps.build.outputs.firefox_path }}"
           $notesPath = "${{ steps.notes.outputs.notes_path }}"
 
           $PSNativeCommandUseErrorActionPreference = $false
@@ -82,17 +91,17 @@ jobs:
           $PSNativeCommandUseErrorActionPreference = $true
 
           if ($releaseViewExitCode -eq 0) {
-            gh release upload $tag $archivePath --clobber
+            gh release upload $tag $chromePath $firefoxPath --clobber
             $isDraft = gh release view $tag --json isDraft --jq '.isDraft'
             if ($LASTEXITCODE -ne 0) { throw "Could not inspect release draft state" }
             if ($isDraft -eq 'true') {
-              # Preserve the human-created draft and its author; publish from the UI after validation.
+              # Preserve the maintainer-created draft and author until validation completes.
               gh release edit $tag --title "Free Games Watcher $tag" --notes-file $notesPath
             } else {
               gh release edit $tag --title "Free Games Watcher $tag" --notes-file $notesPath --latest
             }
           } elseif ($releaseViewExitCode -eq 1) {
-            gh release create $tag $archivePath --title "Free Games Watcher $tag" --notes-file $notesPath --latest --verify-tag
+            gh release create $tag $chromePath $firefoxPath --title "Free Games Watcher $tag" --notes-file $notesPath --latest --verify-tag
           } else {
             throw "gh release view failed with exit code $releaseViewExitCode"
           }

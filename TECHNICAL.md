@@ -1,8 +1,10 @@
-# Free Games Watcher — technical details, 2.2.0
+# Free Games Watcher — technical details, 2.2.1
 
 ## Runtime and architecture
 
 Manifest V3, Chrome/Edge 120+, ES modules, no runtime/npm dependencies. Development uses Node.js 24 LTS and PowerShell 7; neither is required by extension users.
+
+The Firefox Desktop 142+ target uses the same modules in a nonpersistent background event page. `scripts/firefox-manifest.mjs` derives its manifest from the Chromium manifest; `build-release.ps1 -Browser firefox` produces a separate unsigned package. `browser-api.js` selects the native Promise namespace. Firefox notification payloads use basic notifications, append ratings to the body, and serialize delivery with a minimum one-second gap. Closed notification targets remain bounded/TTL-pruned on Firefox to handle close-before-click ordering. The preview checks `permissions.contains` because Firefox does not implement `notifications.getPermissionLevel`. See [Firefox development and verification](docs/FIREFOX.md).
 
 - `service-worker.js` registers listeners synchronously, gates entry points on initialization and restores alarms at worker start.
 - `queue.js` serializes storage mutations. Discovery runs outside the queue; commits re-read settings and user marks. Changes to country, tracking or enabled stores discard an in-flight result.
@@ -35,7 +37,7 @@ Product name: **Free Games Watcher**. Repository: `Grim1313/Free-Games-Watcher`.
 
 Store IDs remain `app:<id>` / `sub:<id>` for Steam, `epic:<namespace>:<offerId>` for Epic, and `gog:<productId>` for GOG. Campaign identity is independent of HTML, provider metadata and artwork. A new cycle needs a previously confirmed end or elapsed known deadline.
 
-Storage schema 3 preserves schema-2 campaign and delivery records. Legacy settings select Steam only; fresh settings select all three stores. The rename deliberately retains internal alarm names (`steam-promo-check`, `steam-promo-followup`), notification prefix (`steam-promo-watch`), storage keys and the backup format marker (`steam-promo-watch`). These are compatibility identifiers, not visible branding. Changing them requires a separate migration.
+Storage schema 3 preserves schema-2 campaign and delivery records. Missing store lists select all three stores; explicitly saved selections, including an empty list, are preserved. The rename deliberately retains internal alarm names (`steam-promo-check`, `steam-promo-followup`), notification prefix (`steam-promo-watch`), storage keys and the backup format marker (`steam-promo-watch`). These are compatibility identifiers, not visible branding. Changing them requires a separate migration.
 
 Backups export version 3 and accept versions 1, 2 and 3. One JSON file contains saved settings, personal marks and optional `history`; full export is selected by default. History combines current and archived entries with canonical store/offer/type IDs, deduplicates and keeps up to 400 most recent records. Export/import are serialized with storage mutations. Input is limited to 5 MiB of UTF-8, 2,000 marks and 400 history records, with validated identities, timestamps, campaign fields and safe store URLs/artwork. Invalid files write nothing, even when history is unchecked. Runtime caches, delivery maps, notification links and the receiving installation's import guard are not exported. The filename remains `free-games-watcher-backup.json`.
 
@@ -75,7 +77,9 @@ npm run pack
 pwsh -File scripts/get-release-notes.ps1
 ```
 
-No npm install is required. Packaging copies only manifest, source, locales, license and icons into `dist/Free-Games-Watcher`, then builds `dist/Free-Games-Watcher-2.2.0.zip`. It validates required archive entries and version and restricts cleanup to resolved build outputs inside `dist`.
+Packaging copies only manifest, source, locales, license and icons into `dist/Free-Games-Watcher`, then builds `dist/Free-Games-Watcher-Chrome-2.2.1.zip`. The Firefox target uses `dist/Free-Games-Watcher-Firefox` and creates `dist/Free-Games-Watcher-Firefox-2.2.1.zip`. It validates required archive entries and version and restricts cleanup to resolved build outputs inside `dist`.
+
+The module tests and PowerShell packaging still need no npm installation. Browser tests and Firefox linting use the pinned development tools from `npm ci`: web-ext 10.8.0, selenium-webdriver 4.51.0 and Playwright 1.65.0. Selenium 4.52.0 requires a newer Node patch than the local 24.14.1, so 4.51.0 is the latest compatible release used here. No development dependencies are shipped. Firefox test profiles and injected fixtures are isolated under `dist`; store discovery uses shared fixtures with the Chromium suite. CI checks the Firefox minimum major, ESR and stable and never signs or submits this target.
 
 Browser checks use a separately installed Playwright/Chromium. Set `PLAYWRIGHT_MODULE` to an existing `playwright/index.mjs` and `PLAYWRIGHT_BROWSERS_PATH` to the matching browser directory:
 
@@ -96,9 +100,9 @@ The focused notification check uses an isolated profile, blocks external request
 
 1. Update manifest/package version, localized branding and the matching `CHANGELOG.md` section. Run unit/browser/package checks.
 2. Commit with the maintainer's configured Git identity and push the branch. Wait for the `Tests` workflow.
-3. For a release attributed to the maintainer, create a **draft release in GitHub's UI under that account**, with the intended tag, title and changelog text, before pushing the tag.
-4. Push the matching `v2.2.0` tag. The `Release` workflow validates version, runs tests and builds the ZIP. When a draft exists, it updates notes/assets but leaves it unpublished and keeps its author. Without an existing release, the workflow retains its automatic publication behavior.
-5. Verify the completed workflow and ZIP, then publish the draft from the maintainer's account and mark it latest. GitHub Actions supplies the archive; no locally built ZIP needs uploading.
+3. For a release attributed to the maintainer, create a **draft release authenticated as that account**, with the intended tag, title and changelog text, before pushing the tag.
+4. Push the matching `v2.2.1` tag. The `Release` workflow validates version, runs tests, builds both browser ZIPs and lints the Firefox package. When a draft exists, it updates notes/assets but leaves it unpublished and keeps its author. Without an existing release, the workflow retains its automatic publication behavior.
+5. Verify the completed workflows and both ZIPs, then publish the draft from the maintainer's account and mark it latest. GitHub Actions supplies both archives; verify their manifests and contents against local builds.
 
 The workflows use `actions/checkout@v7`, `actions/setup-node@v7`, Node 24 and `windows-latest`. A branch push runs validation, not publication. Manual dispatch takes an existing tag. Reruns can update an existing release asset; inspect the selected revision before retrying. Chrome Web Store publication is separate.
 
@@ -106,7 +110,15 @@ The workflows use `actions/checkout@v7`, `actions/setup-node@v7`, Node 24 and `w
 
 A New Beginning: Final Cut (`gog:1207659150`) was discovered anonymously in both US/RU by the production MV3 worker. Popup/history presence, loaded artwork, the homepage claim destination and the exact deadline (2 November 2026, 14:00:59 UTC) were verified. Both scans completed successfully. The reduced real response in `tests/fixtures/gog-a-new-beginning.json` covers parsing, expiration at the deadline, storage and duplicate-notification prevention. GOG requires its own account/consent flow to claim; no game was claimed during verification. Details: [GOG live validation](docs/GOG_LIVE_VALIDATION.ru.md).
 
+## Version 2.2.1 behavior
+
+`DEFAULT_SETTINGS`, normalization of missing store lists and provider selection default to all three `STORE_IDS`. An explicit saved list, including an empty list, is preserved. Schema migration no longer inserts Steam-only settings when settings are absent. Reset selects all three stores; older backups without a store list use the new default. No storage schema or backup format change is required.
+
+The release adds the Firefox target described in [FIREFOX.md](docs/FIREFOX.md). GitHub publication does not sign the Firefox extension or publish to browser stores. Both packages contain only production files.
+
 ## Validation record
+
+Version 2.2.1: 168 module tests passed, and Mozilla lint reported zero errors, notices and warnings. The production Firefox ZIP was installed without test injection; fresh settings selected Steam, Epic and GOG in the actual settings UI. Both browser archives contain 51 production files and report version 2.2.1. The Firefox compatibility matrix and runtime scenarios are documented in [FIREFOX.md](docs/FIREFOX.md).
 
 Version 2.2.0 consolidates store-specific ratings, compact card geometry, themed store labels, complete offline notification previews, and optional history transfer with backup format 3. Storage schema, existing extension identity and permissions are unchanged. Imported campaign guards preserve historical discovery/delivery dates and prevent automatic duplicate alerts until a confirmed new giveaway cycle.
 

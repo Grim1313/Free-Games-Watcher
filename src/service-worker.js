@@ -1,3 +1,4 @@
+import { extensionApi, isFirefox, missingHostPermissions } from "./lib/browser-api.js";
 import { scanKey, enabledStores, storeOf } from "./lib/stores.js";
 import { CHECK_ALARM_NAME, FOLLOWUP_ALARM_NAME } from "./lib/constants.js";
 import { updateBadge } from "./lib/badge.js";
@@ -90,35 +91,39 @@ async function getData() {
     historyEntries,
     userActions,
     diagnostics,
+    missingHostPermissions: await missingHostPermissions(),
     upcomingPromotions: upcomingPromotions.filter((p) => p.region === settings.region && p.startsAt > Date.now()
       && enabledStores(settings).includes(storeOf(p))),
     visiblePromotions: visibleEntries(latestPromotions, settings, userActions),
   };
 }
-chrome.runtime.onInstalled.addListener(() => {
+extensionApi().runtime.onInstalled.addListener(() => {
   runAndReschedule("install").catch(() => undefined);
 });
-chrome.runtime.onStartup.addListener(() => {
+extensionApi().runtime.onStartup.addListener(() => {
   ready.catch(() => undefined);
 });
-chrome.alarms.onAlarm.addListener((alarm) => {
+extensionApi().alarms.onAlarm.addListener((alarm) => {
   if ([CHECK_ALARM_NAME, FOLLOWUP_ALARM_NAME].includes(alarm.name))
     runAndReschedule(
       alarm.name === FOLLOWUP_ALARM_NAME ? "followup" : "scheduled",
     ).catch(() => undefined);
 });
-chrome.notifications.onClicked.addListener((id) => {
+extensionApi().notifications.onClicked.addListener((id) => {
   openNotificationTarget(id)
-    .then(() => chrome.notifications.clear(id))
+    .then(() => extensionApi().notifications.clear(id))
     .then(() => mutate(() => clearNotificationTarget(id)))
     .catch(() => undefined);
 });
-chrome.notifications.onClosed.addListener((id) => {
+extensionApi().notifications.onClosed.addListener((id) => {
+  // Firefox may report close before click. Keep bounded, TTL-pruned targets until
+  // a click or the next notification batch rather than race the click handler.
+  if (isFirefox()) return;
   mutate(() => clearNotificationTarget(id)).catch(() => undefined);
 });
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+extensionApi().runtime.onMessage.addListener((message, sender, sendResponse) => {
   (async () => {
-    if (sender.id && sender.id !== chrome.runtime.id)
+    if (sender.id && sender.id !== extensionApi().runtime.id)
       throw new Error("invalidData");
     await ready;
     switch (message?.type) {

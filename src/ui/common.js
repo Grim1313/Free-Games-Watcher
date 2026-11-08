@@ -1,3 +1,4 @@
+import { extensionApi } from "../lib/browser-api.js";
 import { STORE_NAMES, storeOf, storeUrl } from "../lib/stores.js";
 export { STORE_NAMES, storeOf, storeUrl };
 import { getTranslator } from "../lib/i18n.js";
@@ -18,7 +19,7 @@ export async function localize(settings) {
   return t;
 }
 export async function send(type, payload = {}) {
-  const result = await chrome.runtime.sendMessage({ type, ...payload });
+  const result = await extensionApi().runtime.sendMessage({ type, ...payload });
   if (!result?.ok) throw new Error(result?.error || "operationFailed");
   return result;
 }
@@ -243,7 +244,7 @@ export function sortEntries(entries, sortBy = "ending") {
 }
 export function watch(refresh) {
   let timer;
-  chrome.storage.onChanged.addListener((changes, area) => {
+  extensionApi().storage.onChanged.addListener((changes, area) => {
     if (
       area !== "local" ||
       ![

@@ -1,3 +1,4 @@
+import { extensionApi } from "./browser-api.js";
 import { storeOf, enabledStores } from "./stores.js";
 import { CHECK_ALARM_NAME, FOLLOWUP_ALARM_NAME } from "./constants.js";
 import { getRuntimeState, setRuntimeState } from "./runtime-state.js";
@@ -12,9 +13,9 @@ import { getActions } from "./actions.js";
 import { visibleEntries } from "./promotions.js";
 import { readKey } from "./storage.js";
 
-export const getCheckAlarm = () => chrome.alarms.get(CHECK_ALARM_NAME);
+export const getCheckAlarm = () => extensionApi().alarms.get(CHECK_ALARM_NAME);
 export async function scheduleCheckAt(when) {
-  await chrome.alarms.create(CHECK_ALARM_NAME, { when });
+  await extensionApi().alarms.create(CHECK_ALARM_NAME, { when });
   await setRuntimeState({ nextCheckAt: when });
   return when;
 }
@@ -22,8 +23,8 @@ export const scheduleCheckIn = (delay) =>
   scheduleCheckAt(Date.now() + Math.max(delay, 30000));
 export async function ensureCheckAlarm(settings) {
   if (!settings.trackFreeToKeep || !enabledStores(settings).length) {
-    await chrome.alarms.clear(CHECK_ALARM_NAME);
-    await chrome.alarms.clear(FOLLOWUP_ALARM_NAME);
+    await extensionApi().alarms.clear(CHECK_ALARM_NAME);
+    await extensionApi().alarms.clear(FOLLOWUP_ALARM_NAME);
     await setRuntimeState({ nextCheckAt: 0, lastCheckOutcome: "paused" });
     return 0;
   }
@@ -127,7 +128,7 @@ export async function scheduleFollowup(settings) {
     readKey("upcomingPromotions", []),
   ]);
   const when = getFollowupTime([...entries, ...upcoming], settings, actions, notified, state);
-  if (when) await chrome.alarms.create(FOLLOWUP_ALARM_NAME, { when });
-  else await chrome.alarms.clear(FOLLOWUP_ALARM_NAME);
+  if (when) await extensionApi().alarms.create(FOLLOWUP_ALARM_NAME, { when });
+  else await extensionApi().alarms.clear(FOLLOWUP_ALARM_NAME);
   return when;
 }

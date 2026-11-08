@@ -1,3 +1,4 @@
+import { extensionApi } from "./browser-api.js";
 import { getTranslator } from "./i18n.js";
 
 const BADGE_COLORS = Object.freeze({
@@ -10,14 +11,14 @@ function formatBadgeCount(count) {
 }
 
 export async function updateBadge(runtimeState, settings) {
-  if (chrome.action.setTitle) {
+  if (extensionApi().action.setTitle) {
     const t = await getTranslator(settings.language);
-    await chrome.action.setTitle({
+    await extensionApi().action.setTitle({
       title: `Free Games Watcher · ${t("badgeTitle", { active: runtimeState.activeFreeToKeepCount || 0, unread: runtimeState.unreadCount || 0 })}`,
     });
   }
   if (!settings.badgeEnabled) {
-    await chrome.action.setBadgeText({ text: "" });
+    await extensionApi().action.setBadgeText({ text: "" });
     return;
   }
 
@@ -25,14 +26,14 @@ export async function updateBadge(runtimeState, settings) {
   const activeFreeToKeepCount =
     Number(runtimeState?.activeFreeToKeepCount) || 0;
   if (activeFreeToKeepCount <= 0) {
-    await chrome.action.setBadgeText({ text: "" });
+    await extensionApi().action.setBadgeText({ text: "" });
     return;
   }
 
-  await chrome.action.setBadgeBackgroundColor({
+  await extensionApi().action.setBadgeBackgroundColor({
     color: unreadCount > 0 ? BADGE_COLORS.unread : BADGE_COLORS.read,
   });
-  await chrome.action.setBadgeText({
+  await extensionApi().action.setBadgeText({
     text: formatBadgeCount(activeFreeToKeepCount),
   });
 }

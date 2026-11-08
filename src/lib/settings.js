@@ -19,7 +19,7 @@ import {
 export const DEFAULT_SETTINGS = Object.freeze({
   notificationsEnabled: true,
   region: "US",
-  enabledStores: ["steam", "epic", "gog"],
+  enabledStores: [...STORE_IDS],
   language: "auto",
   compactView: false,
   sortBy: "ending",
@@ -88,7 +88,7 @@ export function sanitizeSettings(raw = {}) {
   return {
     enabledStores: Array.isArray(source.enabledStores)
       ? STORE_IDS.filter((store) => source.enabledStores.includes(store))
-      : ["steam"],
+      : [...STORE_IDS],
     region: /^[A-Z]{2}$/.test(String(source.region || "").toUpperCase())
       ? String(source.region).toUpperCase()
       : "US",

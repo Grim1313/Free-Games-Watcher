@@ -1,3 +1,5 @@
+param([ValidateSet('chromium', 'firefox')][string]$Browser = 'chromium')
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
@@ -17,8 +19,10 @@ if ([string]::IsNullOrWhiteSpace($version)) {
 if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Expected a numeric release version' }
 
 $distDir = Join-Path $repoRoot 'dist'
-$stageDir = Join-Path $distDir 'Free-Games-Watcher'
-$archivePath = Join-Path $distDir ("Free-Games-Watcher-{0}.zip" -f $version)
+$suffix = if ($Browser -eq 'firefox') { '-Firefox' } else { '' }
+$stageDir = Join-Path $distDir ("Free-Games-Watcher{0}" -f $suffix)
+$browserLabel = if ($Browser -eq 'firefox') { 'Firefox' } else { 'Chrome' }
+$archivePath = Join-Path $distDir ("Free-Games-Watcher-{0}-{1}.zip" -f $browserLabel, $version)
 
 # Only remove build outputs resolved directly under this repository's dist folder.
 $resolvedDist = [IO.Path]::GetFullPath($distDir) + [IO.Path]::DirectorySeparatorChar
@@ -45,6 +49,10 @@ if (Test-Path -LiteralPath $archivePath) {
 New-Item -ItemType Directory -Path $stageDir -Force | Out-Null
 
 Copy-Item -LiteralPath $manifestPath -Destination (Join-Path $stageDir 'manifest.json') -Force
+if ($Browser -eq 'firefox') {
+    & node (Join-Path $PSScriptRoot 'firefox-manifest.mjs') (Join-Path $stageDir 'manifest.json')
+    if ($LASTEXITCODE -ne 0) { throw 'Firefox manifest generation failed' }
+}
 Copy-Item -LiteralPath (Join-Path $repoRoot 'LICENSE') -Destination (Join-Path $stageDir 'LICENSE') -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot 'src') -Destination (Join-Path $stageDir 'src') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot '_locales') -Destination (Join-Path $stageDir '_locales') -Recurse -Force
@@ -91,6 +99,11 @@ try {
     $reader = [IO.StreamReader]::new($manifestEntry.Open())
     try { $packedManifest = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
     if ($packedManifest.version -ne $version) { throw 'Packed manifest version differs from source' }
+    if ($Browser -eq 'firefox') {
+        if ($packedManifest.background.scripts -notcontains 'src/service-worker.js') { throw 'Missing Firefox background entry' }
+        if (-not $packedManifest.browser_specific_settings.gecko.id) { throw 'Missing stable Firefox ID' }
+        if ($packedManifest.PSObject.Properties.Name -contains 'minimum_chrome_version') { throw 'Chromium-only manifest key in Firefox package' }
+    }
 } finally {
     $archive.Dispose()
 }

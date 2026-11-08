@@ -655,5 +655,11 @@
   },
   "backupCancel": {
     "message": "Отмена"
+  },
+  "missingHostPermissions": {
+    "message": "Доступ к некоторым сайтам магазинов отозван. Восстановите доступ для проверки этих источников."
+  },
+  "restoreHostPermissions": {
+    "message": "Восстановить доступ к сайтам"
   }
 }

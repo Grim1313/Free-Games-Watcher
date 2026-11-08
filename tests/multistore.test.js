@@ -5,7 +5,7 @@ import { epicFeed, gogPage, gogGiveaway } from "./multistore-fixtures.mjs";
 import { parseEpicFeed } from "../src/lib/providers/epicProvider.js";
 import { parseGogGiveaway, fetchGogPromotions } from "../src/lib/providers/gogProvider.js";
 import { runPromotionCheck, visibleEntries } from "../src/lib/promotions.js";
-import { sanitizeSettings, getSettings } from "../src/lib/settings.js";
+import { sanitizeSettings, getSettings, saveSettings, resetSettings } from "../src/lib/settings.js";
 import { storeOf, validStableId, storeUrl, storeAsset } from "../src/lib/stores.js";
 import { sanitizePromotionEntry, mergePromotionEntries } from "../src/lib/history.js";
 import { changeAction } from "../src/lib/actions.js";
@@ -41,12 +41,19 @@ test("store identities and safe URLs cannot cross stores or accept hostile hosts
   assert.equal(storeAsset("https://cdn1.epicgames.com/a.png", "gog:123"), "");
   assert.equal(storeAsset("https://cdn1.epicgames.com/a.png", "epic:ns:123"), "https://cdn1.epicgames.com/a.png");
 });
-test("fresh install enables three stores; legacy settings retain Steam only", async (t) => {
+test("fresh and incomplete settings enable three stores; explicit selections are preserved", async (t) => {
   environment(t);
   assert.deepEqual((await getSettings()).enabledStores, ["steam", "epic", "gog"]);
   assert.deepEqual((await exportBackup()).settings.enabledStores, ["steam", "epic", "gog"]);
-  assert.deepEqual(sanitizeSettings({ region: "RU" }).enabledStores, ["steam"]);
+  assert.deepEqual(sanitizeSettings({ region: "RU" }).enabledStores, ["steam", "epic", "gog"]);
+  assert.deepEqual(sanitizeSettings({ enabledStores: [] }).enabledStores, []);
+  assert.deepEqual(sanitizeSettings({ enabledStores: ["steam"] }).enabledStores, ["steam"]);
   assert.deepEqual(sanitizeSettings({ enabledStores: ["gog", "unknown", "gog"] }).enabledStores, ["gog"]);
+  await saveSettings({ enabledStores: ["gog"] });
+  assert.deepEqual((await getSettings()).enabledStores, ["gog"]);
+  await saveSettings({ enabledStores: [] });
+  assert.deepEqual((await getSettings()).enabledStores, []);
+  assert.deepEqual((await resetSettings()).enabledStores, ["steam", "epic", "gog"]);
 });
 test("Epic separates future offers and rejects zero price without a dated paid-to-free offer", () => {
   const now = Date.now(), data = epicFeed(now);
@@ -138,7 +145,7 @@ test("schema 2 migration preserves campaign fingerprints, actions and delivery r
   delete data.settings;
   data.schemaVersion = 2;
   await ensureSchemaVersion();
-  assert.deepEqual((await getSettings()).enabledStores, ["steam"]);
+  assert.deepEqual((await getSettings()).enabledStores, ["steam", "epic", "gog"]);
 });
 test("backup v2 retains cross-store marks and URLs; backup v1 remains importable", async (t) => {
   environment(t, { settings: all() });
@@ -146,7 +153,7 @@ test("backup v2 retains cross-store marks and URLs; backup v1 remains importable
   const exported = await exportBackup(); assert.equal(exported.version, 3);
   assert.equal(validateBackup(exported).userActions["epic:ns:123"].claimed, true);
   assert.equal(validateBackup(exported).userActions["epic:ns:123"].url, "https://store.epicgames.com/en-US/p/game");
-  assert.deepEqual(validateBackup({ format: "steam-promo-watch", version: 1, settings: {}, userActions: { "app:123": { ignored: true } } }).settings.enabledStores, ["steam"]);
+  assert.deepEqual(validateBackup({ format: "steam-promo-watch", version: 1, settings: {}, userActions: { "app:123": { ignored: true } } }).settings.enabledStores, ["steam", "epic", "gog"]);
 });
 test("Steam review thresholds do not hide Epic/GOG; unknown genre/platform filters still apply", () => {
   const settings = all(); settings.filters.includeUnrated = false; settings.filters.minRating = 95;
@@ -161,5 +168,5 @@ test("store-specific merge does not mark disabled store checked, and future star
   assert.equal(result.entries[0].lastCheckedAt, now - 1000);
   const future = { stableId: "epic:ns:123", region: "US", status: "upcoming", startsAt: now + 3600000 };
   assert.equal(getFollowupTime([future], all(), {}, {}, {}, now), future.startsAt);
-  assert.equal(getFollowupTime([future], sanitizeSettings({}), {}, {}, {}, now), 0);
+  assert.equal(getFollowupTime([future], sanitizeSettings({ enabledStores: ["steam"] }), {}, {}, {}, now), 0);
 });

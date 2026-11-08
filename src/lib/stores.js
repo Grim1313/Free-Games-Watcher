@@ -18,7 +18,7 @@ export function validStableId(id) {
 }
 export function enabledStores(settings) {
   return Array.isArray(settings?.enabledStores)
-    ? STORE_IDS.filter((s) => settings.enabledStores.includes(s)) : ["steam"];
+    ? STORE_IDS.filter((s) => settings.enabledStores.includes(s)) : [...STORE_IDS];
 }
 export function scanKey(settings) {
   return `${settings.region}|${settings.trackFreeToKeep}|${enabledStores(settings).join(",")}`;

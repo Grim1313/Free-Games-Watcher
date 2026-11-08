@@ -12,8 +12,38 @@ jobs:
           node-version: "24"
           check-latest: true
           package-manager-cache: false
+      - run: npm ci
       - run: npm test
       - run: npm run pack
+      - run: npm run pack:firefox
+      - run: npm run lint:firefox
       - name: Verify release notes
         shell: pwsh
         run: ./scripts/get-release-notes.ps1
+  firefox:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['142', 'esr', 'stable']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run pack:firefox
+      - name: Prepare isolated Firefox binary
+        shell: pwsh
+        env:
+          FIREFOX_TEST_VERSION: ${{ matrix.version }}
+        run: |
+          $result = & node_modules/selenium-webdriver/bin/windows/selenium-manager.exe --browser firefox --browser-version $env:FIREFOX_TEST_VERSION --force-browser-download --avoid-stats --output json | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $result.result.code -ne 0) { throw 'Firefox download failed' }
+          "FIREFOX_BINARY=$($result.result.browser_path)" >> $env:GITHUB_ENV
+      - run: npm run test:firefox
+      - name: Check action popup layouts
+        run: npm run test:firefox:popup
+      - name: Install final unsigned package
+        run: npm run test:firefox:package

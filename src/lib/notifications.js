@@ -1,3 +1,4 @@
+import { extensionApi, isFirefox } from "./browser-api.js";
 import { storeOf, storeUrl, safeStoreUrl, STORE_NAMES } from "./stores.js";
 import {
   APP_NAME,
@@ -36,19 +37,42 @@ function steamRatingMessage(promotion, t) {
   });
 }
 
+export function firefoxNotificationOptions(options) {
+  return {
+    type: "basic",
+    iconUrl: options.iconUrl,
+    title: options.title,
+    message: [options.message, options.contextMessage].filter(Boolean).join("\n"),
+  };
+}
+
+let firefoxDelivery = Promise.resolve();
+let lastFirefoxDelivery = 0;
 async function createWithImageFallback(id, options) {
+  if (isFirefox()) {
+    // Firefox can drop rapidly submitted notifications, including successive tests.
+    const delivery = firefoxDelivery.then(async () => {
+      const delay = 1000 - (Date.now() - lastFirefoxDelivery);
+      if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+      const result = await extensionApi().notifications.create(id, firefoxNotificationOptions(options));
+      lastFirefoxDelivery = Date.now();
+      return result;
+    });
+    firefoxDelivery = delivery.catch(() => undefined);
+    return delivery;
+  }
   try {
-    return await chrome.notifications.create(id, options);
+    return await extensionApi().notifications.create(id, options);
   } catch (error) {
     if (!options.imageUrl) throw error;
     const basic = { ...options, type: "basic" };
     delete basic.imageUrl;
-    return chrome.notifications.create(id, basic);
+    return extensionApi().notifications.create(id, basic);
   }
 }
 
 function getNotificationIconUrl() {
-  return chrome.runtime.getURL("resources/icons/icon128.png");
+  return extensionApi().runtime.getURL("resources/icons/icon128.png");
 }
 
 function sanitizeNotificationLinks(raw = {}) {
@@ -60,9 +84,9 @@ function sanitizeNotificationLinks(raw = {}) {
     }
     result[key] = {
       url:
-        value.url === chrome.runtime.getURL("src/ui/history.html")
+        value.url === extensionApi().runtime.getURL("src/ui/history.html")
           ? value.url
-          : safeStoreUrl(value.url) || chrome.runtime.getURL("src/ui/history.html"),
+          : safeStoreUrl(value.url) || extensionApi().runtime.getURL("src/ui/history.html"),
       createdAt: Number(value.createdAt) || 0,
     };
   }
@@ -129,20 +153,30 @@ export async function createPromotionNotifications(promotions, config = {}) {
           count: new Intl.NumberFormat(t.locale).format(gogRatingCount),
         });
     }
+    const previousLink = links[notificationId];
+    let displayed = false;
     try {
-      await createWithImageFallback(notificationId, options);
       links[notificationId] = {
         url: summary
-          ? chrome.runtime.getURL("src/ui/history.html")
+          ? extensionApi().runtime.getURL("src/ui/history.html")
           : storeUrl({ ...promotion, url: promotion.claimUrl || promotion.url }),
         createdAt: nowTs,
       };
       await writeLocal({
         [STORAGE_KEYS.notificationLinks]: pruneNotificationLinks(links, nowTs),
       });
+      // Persist before display: a fast click must already have its destination.
+      await createWithImageFallback(notificationId, options);
+      displayed = true;
       createdIds.push(notificationId);
       await config.onDelivered?.(group);
     } catch (error) {
+      // A bookkeeping failure after display must not break the visible alert's link.
+      if (!displayed) {
+        if (previousLink) links[notificationId] = previousLink;
+        else delete links[notificationId];
+        await writeLocal({ [STORAGE_KEYS.notificationLinks]: pruneNotificationLinks(links, nowTs) });
+      }
       if (config.onError) config.onError(error);
       else throw error;
     }
@@ -152,13 +186,13 @@ export async function createPromotionNotifications(promotions, config = {}) {
 
 export async function openNotificationTarget(notificationId) {
   if (notificationId.startsWith(TEST_NOTIFICATION_PREFIX)) {
-    await chrome.tabs.create({ url: chrome.runtime.getURL("src/ui/options.html#notifications") });
+    await extensionApi().tabs.create({ url: extensionApi().runtime.getURL("src/ui/options.html#notifications") });
     return;
   }
   const links = await getNotificationLinks();
   const target = links[notificationId];
   const url = target?.url || "https://store.steampowered.com/";
-  await chrome.tabs.create({ url });
+  await extensionApi().tabs.create({ url });
 }
 
 export async function clearNotificationTarget(notificationId) {
@@ -171,7 +205,11 @@ export async function clearNotificationTarget(notificationId) {
 }
 
 export async function sendTestNotification(settings = {}) {
-  if (await chrome.notifications.getPermissionLevel() !== "granted")
+  const api = extensionApi();
+  const allowed = api.notifications.getPermissionLevel
+    ? await api.notifications.getPermissionLevel() === "granted"
+    : await api.permissions.contains({ permissions: ["notifications"] });
+  if (!allowed)
     throw new Error("notificationsBlocked");
   const t = await getTranslator(settings.language);
   // A user-requested test is a new event each time, unlike deduplicated giveaways.
@@ -179,7 +217,7 @@ export async function sendTestNotification(settings = {}) {
   return createWithImageFallback(`${TEST_NOTIFICATION_PREFIX}${crypto.randomUUID()}`, {
     type: "image",
     iconUrl: getNotificationIconUrl(),
-    imageUrl: chrome.runtime.getURL("src/ui/assets/notification-demo.png"),
+    imageUrl: extensionApi().runtime.getURL("src/ui/assets/notification-demo.png"),
     title: t("notificationTestTitle"),
     message: `${discountMessage(Date.now() + 24 * 60 * 60 * 1000, t)}\n$19.99 → $0`,
     contextMessage: steamRatingMessage({ reviewPercent: 94, reviewTotal: 12345 }, t),

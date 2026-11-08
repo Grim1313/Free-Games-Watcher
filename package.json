@@ -2,7 +2,7 @@
   "name": "free-games-watcher",
   "private": true,
   "type": "module",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "engines": {
     "node": ">=24"
   },
@@ -15,6 +15,19 @@
     "test:backup": "node scripts/check-backup-ui.mjs",
     "audit:sources": "node scripts/audit-sources.mjs",
     "audit:sources:browser": "node scripts/audit-sources-browser.mjs",
-    "pack": "pwsh -File scripts/build-release.ps1"
+    "pack": "pwsh -File scripts/build-release.ps1",
+    "pack:firefox": "pwsh -File scripts/build-release.ps1 -Browser firefox",
+    "lint:firefox": "web-ext lint --source-dir dist/Free-Games-Watcher-Firefox --warnings-as-errors",
+    "start:firefox": "web-ext run --source-dir dist/Free-Games-Watcher-Firefox",
+    "test:firefox": "node scripts/firefox-smoke.mjs",
+    "test:firefox:live": "node scripts/firefox-smoke.mjs --live",
+    "test:firefox:popup": "node scripts/firefox-popup-checks.mjs",
+    "test:firefox:package": "node scripts/firefox-package-check.mjs",
+    "test:backup:cross-browser": "node scripts/check-backup-cross-browser.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.65.0",
+    "selenium-webdriver": "4.51.0",
+    "web-ext": "10.8.0"
   }
 }

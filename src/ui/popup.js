@@ -1,3 +1,4 @@
+import { extensionApi, isFirefox } from "../lib/browser-api.js";
 import { enabledStores } from "../lib/stores.js";
 import {
   t,
@@ -20,6 +21,16 @@ import {
   preserveListInteraction,
 } from "./common.js";
 const $ = (selector) => document.querySelector(selector);
+if (isFirefox()) {
+  const fitPopup = () => {
+    // Firefox initially creates a tiny measurement viewport. Preserve the
+    // intrinsic width until its real panel opens, then respect constrained panels.
+    if (innerWidth >= 200)
+      document.documentElement.style.width = `${Math.min(410, innerWidth)}px`;
+  };
+  addEventListener("resize", fitPopup);
+  fitPopup();
+}
 const ACTION_ICONS = {
   snooze: ["M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0", "M12 7v5l3 2"],
   hide: ["m3 3 18 18", "M10.6 10.6a2 2 0 0 0 2.8 2.8", "M9.9 5.2A10 10 0 0 1 12 5c6 0 10 7 10 7a19 19 0 0 1-3 3.8", "M6.2 6.2A21 21 0 0 0 2 12s4 7 10 7a10 10 0 0 0 5-1.4"],
@@ -56,7 +67,7 @@ async function refresh() {
   const state = data.runtimeState;
   const paused = !data.settings.trackFreeToKeep || !enabledStores(data.settings).length;
   $("#app-version").textContent = t("version", {
-    value: chrome.runtime.getManifest().version,
+    value: extensionApi().runtime.getManifest().version,
   });
   $("#check-now").disabled =
     state.checkInProgress || paused;

@@ -655,5 +655,11 @@
   },
   "backupCancel": {
     "message": "Cancel"
+  },
+  "missingHostPermissions": {
+    "message": "Access to some store sites has been revoked. Restore access to check these sources."
+  },
+  "restoreHostPermissions": {
+    "message": "Restore site access"
   }
 }

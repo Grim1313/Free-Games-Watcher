@@ -256,9 +256,15 @@ try {
     await open("options.html#backup");
     const beforeFiles=new Set(await readdir(join(out,"downloads")));
     await click("#export-backup");
-    let file;
-    await driver.wait(async()=>{file=(await readdir(join(out,"downloads"))).find(n=>!beforeFiles.has(n)&&n.endsWith(".json"));return !!file;},15000);
-    const full=JSON.parse(await readFile(join(out,"downloads",file),"utf8"));
+    let full;
+    await driver.wait(async()=>{
+      const names=await readdir(join(out,"downloads"));
+      const file=names.find(n=>!beforeFiles.has(n)&&n.endsWith(".json"));
+      // Firefox can reserve an empty final filename before finishing the download.
+      if(!file || names.includes(file+".part"))return false;
+      try { full=JSON.parse(await readFile(join(out,"downloads",file),"utf8"));return true; }
+      catch(error){if(error instanceof SyntaxError || ["ENOENT","EBUSY"].includes(error.code))return false;throw error;}
+    },15000,"Firefox backup download did not finish");
     assert.equal(full.version,3); assert.equal(full.history.length,14);
     record("actual JSON download includes version-3 history backup");
     const backupPath=join(out,"import.json");

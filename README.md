@@ -2,7 +2,7 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/Grim1313/Free-Games-Watcher) ![GitHub Release Date](https://img.shields.io/github/release-date/Grim1313/Free-Games-Watcher) ![GitHub Downloads](https://img.shields.io/github/downloads/Grim1313/Free-Games-Watcher/total)
 
-A lightweight Chrome / Edge / Firefox extension that finds limited-time **Free to Keep** giveaways in Steam, Epic Games Store and GOG and notifies you about new offers. No account connection or API key is required for discovery. Settings, history and personal marks stay in your browser.
+A lightweight Chrome / Edge / Firefox extension that traks limited-time **100% discounts** in Steam, Epic Games Store and GOG and notifies you about new offers. No account connection or API key is required for discovery. Settings, history and personal marks stay in your browser.
 
 Separate **Chrome / Edge 120+** and **Firefox Desktop 142+** packages are available in GitHub Releases. The Firefox package is unsigned and supports temporary installation; see [Firefox installation and details](docs/FIREFOX.md).
 

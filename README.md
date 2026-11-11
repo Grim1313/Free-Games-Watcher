@@ -6,7 +6,7 @@ A lightweight Chrome / Edge / Firefox extension that tracks limited-time **100% 
 
 Separate **Chrome / Edge 120+** and **Firefox Desktop 142+** packages are available in GitHub Releases. The Firefox package is unsigned and supports temporary installation; see [Firefox installation and details](docs/FIREFOX.md).
 
-[![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png)](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji)
+[![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png)](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji)   [![Available in the Firefox Browser Add-ons](https://extensionworkshop.com/assets/img/documentation/publish/get-the-addon-178x60px.dad84b42.png)](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/)
 
 ![Chrome Web Store Rating](https://img.shields.io/chrome-web-store/rating/aahjgnocdbhipkfcmhkhlkneonhkafji) ![Chrome Web Store Rating Count](https://img.shields.io/chrome-web-store/rating-count/aahjgnocdbhipkfcmhkhlkneonhkafji)
 
@@ -43,11 +43,11 @@ Only limited-time **Free to Keep** offers are tracked. Permanently free games, *
 
 Choose the archive for your browser. Chrome / Edge requires version 120+; Firefox Desktop requires version 142+.
 
-### Chrome Web Store
+### <img width="20" height="20" alt="Free Games Watcher Chrome" src="https://github.com/user-attachments/assets/fb1dbf6e-6bf7-4815-baca-f5035c6bce02" /> Chrome Web Store
 
-Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**. Chrome Web Store updates are published separately. The GitHub release provides version 2.2.1.
+Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji) and choose **Add to Chrome**.
 
-### Chrome / Edge: manual installation from GitHub
+### <img width="20" height="20" alt="Free Games Watcher Chrome" src="https://github.com/user-attachments/assets/fb1dbf6e-6bf7-4815-baca-f5035c6bce02" /> Chrome / Edge: manual installation from GitHub
 
 1. Open [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
 2. Download **Free-Games-Watcher-Chrome-2.2.1.zip** (or the corresponding ZIP for a newer release).
@@ -58,7 +58,12 @@ Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.
 
 Use the named release ZIP, rather than GitHub's **Source code (zip)** or **Source code (tar.gz)** downloads. Keep the extracted folder in place while the extension is installed.
 
-### Firefox: temporary installation from GitHub
+
+
+### <img width="20" height="20" alt="Free Games Watcher Firefox" src="https://github.com/user-attachments/assets/d31c95f3-c1d7-4acc-af91-5fd18d82e1d4" />  Firefox Browser Add-ons
+Open [Free Games Watcher in the Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/) and choose **Add to Firefox**.
+
+### <img width="20" height="20" alt="Free Games Watcher Firefox" src="https://github.com/user-attachments/assets/d31c95f3-c1d7-4acc-af91-5fd18d82e1d4" /> Firefox: temporary manual installation from GitHub
 
 1. Download **Free-Games-Watcher-Firefox-2.2.1.zip** from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
 2. Open `about:debugging#/runtime/this-firefox`.

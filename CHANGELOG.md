@@ -6,7 +6,7 @@
 
 - Firefox support with the same Steam, Epic Games Store and GOG giveaways, ratings, filters, history and backup transfer.
 - All three stores enabled by default, including when restoring incomplete settings. Existing saved store selections are preserved.
-- Separate, clearly named Chrome and Firefox ZIP downloads.
+- Separate, clearly named Chrome ZIP and Mozilla-signed Firefox XPI downloads.
 - Store-access diagnostics with a button to restore missing permissions.
 
 ### Fixes
@@ -17,7 +17,8 @@
 ### Installation
 
 - **Free-Games-Watcher-Chrome-2.2.1.zip**: Chrome / Edge 120+, extract and load unpacked.
-- **Free-Games-Watcher-Firefox-2.2.1.zip**: Firefox Desktop 142+, load temporarily through `about:debugging`. The Firefox package is unsigned and is removed when Firefox closes; permanent installation requires Mozilla signing.
+- **Free-Games-Watcher-Firefox-2.2.1.xpi**: Firefox Desktop 142+, open `about:addons` → gear menu → **Install Add-on From File…**, select the XPI and confirm installation. This Mozilla-signed package stays installed after browser restarts. Do not extract it.
+- Firefox users can also install from [Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/). Both installation methods receive newer approved versions from AMO when automatic updates are enabled.
 
 ## 2.2.0
 

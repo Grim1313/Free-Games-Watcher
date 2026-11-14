@@ -4,7 +4,7 @@
 
 A lightweight Chrome / Edge / Firefox extension that tracks limited-time **100% discounts** in Steam, Epic Games Store and GOG and notifies you about new offers. No account connection or API key is required for discovery. Settings, history and personal marks stay in your browser.
 
-Separate **Chrome / Edge 120+** and **Firefox Desktop 142+** packages are available in GitHub Releases. The Firefox package is unsigned and supports temporary installation; see [Firefox installation and details](docs/FIREFOX.md).
+Separate **Chrome / Edge 120+ ZIP** and **Firefox Desktop 142+ signed XPI** packages are available in GitHub Releases. The Firefox XPI is the unchanged file signed by Mozilla and supports permanent installation; see [Firefox installation and details](docs/FIREFOX.md).
 
 [![Available in the Chrome Web Store](https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png)](https://chromewebstore.google.com/detail/free-games-watcher-steam/aahjgnocdbhipkfcmhkhlkneonhkafji)   [![Available in the Firefox Browser Add-ons](https://extensionworkshop.com/assets/img/documentation/publish/get-the-addon-178x60px.dad84b42.png)](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/)
 
@@ -41,7 +41,7 @@ Only limited-time **Free to Keep** offers are tracked. Permanently free games, *
 
 ## Installation
 
-Choose the archive for your browser. Chrome / Edge requires version 120+; Firefox Desktop requires version 142+.
+Choose the download for your browser: ZIP for Chrome / Edge 120+, or signed XPI for Firefox Desktop 142+.
 
 ### <img width="20" height="20" alt="Free Games Watcher Chrome" src="https://github.com/user-attachments/assets/fb1dbf6e-6bf7-4815-baca-f5035c6bce02" /> Chrome Web Store
 
@@ -63,13 +63,15 @@ Use the named release ZIP, rather than GitHub's **Source code (zip)** or **Sourc
 ### <img width="20" height="20" alt="Free Games Watcher Firefox" src="https://github.com/user-attachments/assets/d31c95f3-c1d7-4acc-af91-5fd18d82e1d4" />  Firefox Browser Add-ons
 Open [Free Games Watcher in the Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/) and choose **Add to Firefox**.
 
-### <img width="20" height="20" alt="Free Games Watcher Firefox" src="https://github.com/user-attachments/assets/d31c95f3-c1d7-4acc-af91-5fd18d82e1d4" /> Firefox: temporary manual installation from GitHub
+### <img width="20" height="20" alt="Free Games Watcher Firefox" src="https://github.com/user-attachments/assets/d31c95f3-c1d7-4acc-af91-5fd18d82e1d4" /> Firefox: permanent installation from GitHub
 
-1. Download **Free-Games-Watcher-Firefox-2.2.1.zip** from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
-2. Open `about:debugging#/runtime/this-firefox`.
-3. Choose **Load Temporary Add-on** and select the Firefox ZIP, or extract it and select its `manifest.json`.
+1. Download **Free-Games-Watcher-Firefox-2.2.1.xpi** (or the corresponding XPI for a newer release) from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest). Keep the file intact; do not extract it.
+2. In Firefox, open `about:addons` → the gear menu → **Install Add-on From File…**.
+3. Select the downloaded XPI and confirm **Add** and the requested permissions.
 
-Firefox removes temporary add-ons when the browser closes. Export a backup before removing the test installation. Permanent installation in ordinary Firefox requires Mozilla signing; this release is not signed or listed on AMO. Firefox notifications retain the message and rating but do not show large artwork.
+The extension remains installed after Firefox restarts. The XPI is the same signed version published on [Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/). With automatic updates enabled, Firefox receives newer approved versions from AMO, including when first installed from GitHub. You can also install a newer signed XPI over the existing extension without uninstalling it.
+
+If switching from a temporary development installation, first export a backup in **Settings → Data transfer**, remove the temporary copy, install the signed version and import the backup. Firefox notifications retain the message and rating but do not show large artwork.
 
 ## Updating a manual Chrome / Edge installation
 
@@ -90,7 +92,7 @@ In **Settings → Data transfer**, export one backup file containing saved setti
 5. Use the **clock**, **crossed-out eye** and **muted bell** buttons to snooze an offer for 24 hours, hide its current giveaway, or ignore the game until restored. Hover or focus a button for its label. Click **New** to mark that offer as read, or use **Mark all as read** for the whole list.
 6. Open **History** to search and filter records. Settings also provides personal marks, backup import/export and source diagnostics.
 
-Reminders are enabled by default three hours before a known end time. Quiet hours and personal marks also apply to reminders. **Versions on GitHub** opens the latest release page; manually installed copies need to be updated using the steps above.
+Reminders are enabled by default three hours before a known end time. Quiet hours and personal marks also apply to reminders. **Versions on GitHub** opens the latest release page. Unpacked Chrome / Edge copies require manual updates; the signed Firefox version can update automatically through AMO.
 
 ## Privacy and permissions
 
@@ -119,6 +121,10 @@ npm run pack
 
 For Firefox development, run `npm ci`, `npm run pack:firefox`, `npm run lint:firefox` and `npm run test:firefox`. The Firefox ZIP and unpacked directory are written separately under `dist/`. Load its generated `manifest.json` using `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on**. Temporary installation ends when Firefox closes; export a backup before removing it. Permanent installation requires Mozilla signing, which is not part of the local build.
 
-For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. Both browser ZIPs are written to `dist/`, which is excluded from Git. On GitHub, pushing a version tag such as **v2.2.1** runs the release workflow: it checks the version, runs tests, builds both browser ZIPs, validates the Firefox package, and creates or updates the GitHub release with both assets. An existing draft remains unpublished so its owner can verify the asset and publish it under their own account. The release description is extracted from the matching section of **CHANGELOG.md**. Committing alone does not generate a changelog or publish a release.
+For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. Build outputs go to `dist/`, which is excluded from Git. The unsigned Firefox ZIP is used for development and AMO submission; GitHub Releases distribute the signed XPI instead.
+
+For each future release, submit the Firefox build from the release commit to AMO and wait for that exact version to become public. Create a GitHub draft as **Grim1313**, then push the matching version tag. The release workflow tests and builds the packages, lints Firefox, downloads the matching XPI from AMO, checks its hash, extension ID and contents against the local build, and uploads **Chrome ZIP + Firefox XPI**. If AMO has not approved the version or the files differ, it stops before changing the GitHub release. After AMO approval, rerun the workflow for the same tag.
+
+The workflow requires a maintainer-authored release or draft and leaves drafts unpublished for final verification and publication by their owner. Notes come from the matching **CHANGELOG.md** section. See the [release procedure](TECHNICAL.md#release-procedure) for commands and verification details.
 
 See [TECHNICAL.md](TECHNICAL.md) for architecture, browser checks, troubleshooting and release maintenance.

@@ -2,7 +2,15 @@
 
 This is the Firefox port of Free Games Watcher 2.2.1. The Chromium and Firefox packages share all provider, filtering, history, backup and interface code. Firefox uses an MV3 module event page instead of a service worker. It shares the product version with Chrome; storage schema and backup format remain compatible.
 
-## Build and temporary installation
+## Permanent installation
+
+Install from [Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/), or download **Free-Games-Watcher-Firefox-2.2.1.xpi** from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest). In Firefox Desktop 142+, open `about:addons` → gear menu → **Install Add-on From File…**, select the XPI and confirm installation. Do not extract or modify the XPI. It remains installed after browser restarts.
+
+GitHub distributes the unchanged Mozilla-signed file from AMO. Its stable extension ID is `free-games-watcher@grim1313`; no custom `update_url` is set. Firefox therefore checks AMO for newer listed versions and installs them when automatic updates are enabled. You can also install a newer signed XPI over an existing permanent installation without removing it or its data.
+
+To migrate from a temporary installation, export **Settings → Data transfer** first, remove the temporary copy, install the signed extension and import your backup.
+
+## Development build and temporary installation
 
 Requirements for development: Node.js 24, PowerShell 7, and Firefox Desktop 142 or later.
 
@@ -22,7 +30,18 @@ Outputs:
 
 In Firefox, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select the generated manifest (or the Firefox ZIP). Alternatively, `npm run start:firefox` starts an isolated development profile. The extension ID is `free-games-watcher@grim1313`; keep it for future signed builds and updates.
 
-Temporary add-ons are removed at browser shutdown. Export settings, marks and history before removing a test installation; use the same loaded directory and **Reload** while developing. An unsigned ZIP/XPI cannot be permanently installed in ordinary release Firefox. Mozilla signing and AMO submission have deliberately not been run. No signature/security preferences need to be changed for temporary installation.
+Temporary add-ons are removed at browser shutdown. Export settings, marks and history before removing a test installation; use the same loaded directory and **Reload** while developing. The local build is unsigned and cannot be permanently installed in ordinary release Firefox. Use its ZIP for AMO submission and development; only the signed AMO XPI is attached to GitHub Releases. No signature/security preferences need to be changed.
+
+## Preparing a signed GitHub download
+
+Follow the [release procedure](../TECHNICAL.md#release-procedure). Once the exact version is public on AMO, run from the clean release checkout:
+
+```powershell
+npm run pack:firefox
+pwsh -File scripts/get-signed-firefox.ps1 -Version 2.2.1 -UnsignedArchivePath dist/Free-Games-Watcher-Firefox-2.2.1.zip
+```
+
+Use the intended version in both arguments. The script writes `dist/Free-Games-Watcher-Firefox-2.2.1.xpi` only after checking the AMO file status, size, SHA-256, signature entries, version, extension ID and all production files against the unsigned build. Manifest formatting/key order may differ; other production bytes must match. Signature entries are checked structurally; authenticity comes from the hash retrieved over HTTPS from AMO, and Firefox validates the actual signature on installation. The XPI is never repacked. The script can find older public versions through AMO's version list and fails if the requested version is unavailable. It does not submit files to AMO or require AMO credentials.
 
 ## Functional scope and differences
 
@@ -90,7 +109,7 @@ Live results are a dated snapshot, not a guarantee of complete store coverage: S
 
 The native Firefox notification API accepted a real preview. The Windows banner itself remains **visually unverified**: Computer Use stopped because URL-policy enforcement is unsupported for this Windows browser. No alternate OS automation was used to bypass that restriction. Notification formatting, queuing, denial, failure/retry, deduplication and click/close ordering were verified separately; OS banner visibility still needs a manual check.
 
-The verification above was performed before GitHub publication. Mozilla signing and AMO submission are separate and were not performed.
+The verification above was performed before GitHub publication. Version 2.2.1 has since been published and signed on AMO. On 14 November 2026, the signed XPI was installed permanently in an isolated Firefox 160.0 profile with signature checking enabled. After a full browser restart it remained active, with `temporarilyInstalled: false` and `signedState: 2`. The file's SHA-256 is `fb0b0e2429585224c9b6ca34fa3729919e3d36ddb0802022e5a5db5e6aa1aff4`.
 
 ## Reference documentation
 
@@ -99,3 +118,5 @@ The verification above was performed before GitHub publication. Mozilla signing 
 - [Host permissions](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/host_permissions)
 - [Built-in data consent](https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/)
 - [Signing and distribution](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/)
+- [Installing a signed XPI from a file](https://extensionworkshop.com/documentation/publish/install-self-distributed/)
+- [AMO updates for self-distributed extensions](https://extensionworkshop.com/documentation/publish/self-distribution/)

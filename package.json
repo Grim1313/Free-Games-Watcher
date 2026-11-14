@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.js",
+    "test:release": "pwsh -File tests/signed-firefox.test.ps1",
     "test:browser": "node scripts/browser-smoke.mjs",
     "test:cards": "node scripts/check-card-layout.mjs",
     "test:multistore:live": "node scripts/check-multistore-live.mjs",

@@ -14,6 +14,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: windows-latest
@@ -42,8 +46,23 @@ jobs:
       - name: Install development tools
         run: npm ci
 
+      - name: Require a maintainer-authored release or draft
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          RELEASE_OWNER: ${{ github.repository_owner }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $author = gh release view $env:RELEASE_TAG --json author --jq '.author.login'
+          if ($LASTEXITCODE -ne 0) { throw 'Create a draft release as the repository owner before running Release.' }
+          if ($author -ne $env:RELEASE_OWNER) { throw 'Release author must be the repository owner.' }
+
       - name: Run tests
-        run: npm test
+        run: |
+          npm test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run test:release
 
       - name: Build browser archives
         id: build
@@ -60,6 +79,17 @@ jobs:
       - name: Validate Firefox package
         run: npm run lint:firefox
 
+      - name: Download and verify the signed Firefox XPI from AMO
+        id: signed
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          FIREFOX_ARCHIVE: ${{ steps.build.outputs.firefox_path }}
+        run: |
+          $version = $env:RELEASE_TAG -replace '^v', ''
+          $xpiPath = & ./scripts/get-signed-firefox.ps1 -Version $version -UnsignedArchivePath $env:FIREFOX_ARCHIVE
+          "xpi_path=$xpiPath" >> $env:GITHUB_OUTPUT
+
       - name: Build release notes
         id: notes
         shell: pwsh
@@ -71,7 +101,7 @@ jobs:
           & ./scripts/get-release-notes.ps1 -Version $version -OutputPath $notesPath
           "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
 
-      - name: Create or update GitHub release
+      - name: Update the maintainer's GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
@@ -82,26 +112,23 @@ jobs:
 
           $tag = $env:RELEASE_TAG
           $chromePath = "${{ steps.build.outputs.chrome_path }}"
-          $firefoxPath = "${{ steps.build.outputs.firefox_path }}"
+          $firefoxPath = "${{ steps.signed.outputs.xpi_path }}"
           $notesPath = "${{ steps.notes.outputs.notes_path }}"
 
-          $PSNativeCommandUseErrorActionPreference = $false
-          gh release view $tag *> $null
-          $releaseViewExitCode = $LASTEXITCODE
           $PSNativeCommandUseErrorActionPreference = $true
-
-          if ($releaseViewExitCode -eq 0) {
-            gh release upload $tag $chromePath $firefoxPath --clobber
-            $isDraft = gh release view $tag --json isDraft --jq '.isDraft'
-            if ($LASTEXITCODE -ne 0) { throw "Could not inspect release draft state" }
-            if ($isDraft -eq 'true') {
-              # Preserve the maintainer-created draft and author until validation completes.
-              gh release edit $tag --title "Free Games Watcher $tag" --notes-file $notesPath
-            } else {
-              gh release edit $tag --title "Free Games Watcher $tag" --notes-file $notesPath --latest
-            }
-          } elseif ($releaseViewExitCode -eq 1) {
-            gh release create $tag $chromePath $firefoxPath --title "Free Games Watcher $tag" --notes-file $notesPath --latest --verify-tag
+          gh release upload $tag $chromePath $firefoxPath --clobber
+          $release = gh release view $tag --json assets,isDraft | ConvertFrom-Json
+          foreach ($path in @($chromePath, $firefoxPath)) {
+            $name = Split-Path -Leaf $path
+            $asset = $release.assets | Where-Object { $_.name -ceq $name }
+            $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+            if (-not $asset -or $asset.digest -cne "sha256:$hash") { throw "Uploaded asset hash differs: $name" }
+          }
+          # Remove the old unsigned download only after both replacements are verified.
+          $oldName = "Free-Games-Watcher-Firefox-$($tag -replace '^v', '').zip"
+          if ($release.assets.name -ccontains $oldName) { gh release delete-asset $tag $oldName --yes }
+          if ($release.isDraft) {
+            gh release edit $tag --title "Free Games Watcher $tag" --notes-file $notesPath
           } else {
-            throw "gh release view failed with exit code $releaseViewExitCode"
+            gh release edit $tag --title "Free Games Watcher $tag" --notes-file $notesPath --latest
           }

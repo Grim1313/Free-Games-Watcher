@@ -1,8 +1,10 @@
-# Free Games Watcher — technical details, 2.2.1
+# Free Games Watcher — technical documentation
+
+This document describes the implementation and development checks for contributors. See the [README](README.md) for installation and usage, and the [maintainer release guide](docs/RELEASING.md) for official publication.
 
 ## Runtime and architecture
 
-Manifest V3, Chrome/Edge 120+, ES modules, no runtime/npm dependencies. Development uses Node.js 24 LTS and PowerShell 7; neither is required by extension users.
+Manifest V3, Chrome/Edge 120+, ES modules, no runtime/npm dependencies. Development targets Node.js 24 and PowerShell 7; neither is required by extension users.
 
 The Firefox Desktop 142+ target uses the same modules in a nonpersistent background event page. `scripts/firefox-manifest.mjs` derives its manifest from the Chromium manifest; `build-release.ps1 -Browser firefox` produces a separate unsigned package. `browser-api.js` selects the native Promise namespace. Firefox notification payloads use basic notifications, append ratings to the body, and serialize delivery with a minimum one-second gap. Closed notification targets remain bounded/TTL-pruned on Firefox to handle close-before-click ordering. The preview checks `permissions.contains` because Firefox does not implement `notifications.getPermissionLevel`. See [Firefox development and verification](docs/FIREFOX.md).
 
@@ -31,9 +33,9 @@ The weekly feed remains independent and authoritative when the same offer is fou
 
 The initial [source audit](docs/SOURCE_AUDIT.ru.md) and [implementation report](docs/MULTISTORE_IMPLEMENTATION.ru.md) preserve dated evidence. Microsoft Store/Xbox, itch.io, IndieGala and Ubisoft remain future work.
 
-## Rename, identity and compatibility
+## Identity and compatibility
 
-Product name: **Free Games Watcher**. Repository: `Grim1313/Free-Games-Watcher`. The npm package uses lowercase `free-games-watcher`; release archives use `Free-Games-Watcher-<version>.zip`.
+Product name: **Free Games Watcher**. Repository: `Grim1313/Free-Games-Watcher`. The npm package uses lowercase `free-games-watcher`; local build archives use `Free-Games-Watcher-Chrome-<version>.zip` and `Free-Games-Watcher-Firefox-<version>.zip`. Published Firefox downloads use `Free-Games-Watcher-Firefox-<version>.xpi`.
 
 Store IDs remain `app:<id>` / `sub:<id>` for Steam, `epic:<namespace>:<offerId>` for Epic, and `gog:<productId>` for GOG. Campaign identity is independent of HTML, provider metadata and artwork. A new cycle needs a previously confirmed end or elapsed known deadline.
 
@@ -55,7 +57,7 @@ Steam review summaries prefer fresh appreviews data, with a fallback to the Engl
 
 Steam ratings and review-count filters apply only to Steam. Genres match English names case-insensitively; GOG's `Role-playing` and Steam/Epic's `RPG` are treated as the same genre in both directions, preserving original metadata and saved filters. Any selected genre/platform may match within its group; both groups must pass when set. Unknown metadata does not pass an explicitly selected filter. Empty lists disable these filters. Steam uses official appdetails genres, not community tags; platform flags must be enabled. GOG maps `osx` to `mac`.
 
-Steam/GOG filtering was checked on 27 October 2026 using live metadata for Portal 2 and The Witcher 3 (Steam), Stardew Valley and The Witcher 3 (GOG). Reduced responses in `tests/fixtures/steam-gog-filter-metadata.json` exercise discovery, normalization, storage, Steam cache reuse, combined filters, counts and notification gating. A separate live Steam Stardew Valley enrichment check confirmed RPG filtering with each of Windows, Mac and Linux. Giveaway terms in these tests are synthetic: GOG's live homepage still had no active giveaway section, so this verifies metadata/filtering, not a live GOG claim or positive giveaway schema.
+Reduced store responses in `tests/fixtures/steam-gog-filter-metadata.json` cover metadata normalization, cache reuse, combined filters, counts and notification gating. Giveaway terms in these fixtures are synthetic.
 
 Claimed/ignored marks last until restored; hiding applies only to the current campaign. Snooze requests a fresh alert after checking availability again. Notifications respect filters, personal marks and quiet hours. Individual alerts and reminders include Steam review percentages or GOG ratings out of five plus their counts in `contextMessage`, localized to the selected language. Unknown ratings and batch summaries omit this field; image-to-basic fallback preserves it. Up to three individual alerts plus one summary are issued per batch. Delivery is persisted per successful group; OS errors do not erase a valid scan. Deterministic notification IDs reduce interruption duplicates; image failures fall back to basic notifications. Browser acceptance does not prove native OS display.
 
@@ -69,81 +71,56 @@ Settings sections share one form to preserve drafts. Validation reveals the inva
 
 Popup cards show the store link, claim button and three SVG action buttons in one row. Localized tooltips appear on hover and keyboard focus. The New badge is a native button that marks the offer read. Stable focus keys preserve the selected action when that badge disappears; activating the badge returns focus to the card title. History retains its existing action menus.
 
+Cards use a one-line title (full title on hover), a fixed 56 px cover/information block, and one action row. The information block reserves rows for the deadline, rating, and store/type/original-price metadata. Epic uses a short label with its full name in a tooltip. Original prices are struck through, with their meaning in a tooltip. A stale availability indicator shares the rating row, so missing metadata or stale state cannot add a row. Compact view hides artwork and uses a 38 px information block. `scripts/check-card-layout.mjs` checks native popup geometry at 100% and 125%, both languages/themes and both density modes.
+
 ## Development checks
+
+Run commands from the repository root. Node.js 24 and PowerShell 7 are the development baseline. Module tests and packaging require no npm dependency installation:
 
 ```powershell
 npm test
 npm run pack
-pwsh -File scripts/get-release-notes.ps1
+npm run pack:firefox
+npm run test:release
 ```
 
-Packaging copies only manifest, source, locales, license and icons into `dist/Free-Games-Watcher`, then builds `dist/Free-Games-Watcher-Chrome-2.2.1.zip`. The Firefox target uses `dist/Free-Games-Watcher-Firefox` and creates `dist/Free-Games-Watcher-Firefox-2.2.1.zip`. It validates required archive entries and version and restricts cleanup to resolved build outputs inside `dist`.
+Packaging copies only production files into `dist/Free-Games-Watcher` or `dist/Free-Games-Watcher-Firefox` and creates a versioned ZIP for the selected browser. It validates required archive entries and the manifest version, and restricts cleanup to resolved build outputs inside `dist`. Firefox ZIPs are unsigned. `test:release` checks signed-download validation and failure handling using offline fixtures; it does not publish anything.
 
-The module tests and PowerShell packaging still need no npm installation. Browser tests and Firefox linting use the pinned development tools from `npm ci`: web-ext 10.8.0, selenium-webdriver 4.51.0 and Playwright 1.65.0. Selenium 4.52.0 requires a newer Node patch than the local 24.14.1, so 4.51.0 is the latest compatible release used here. No development dependencies are shipped. Firefox test profiles and injected fixtures are isolated under `dist`; store discovery uses shared fixtures with the Chromium suite. CI checks the Firefox minimum major, ESR and stable and never signs or submits this target.
+### Browser checks
 
-Browser checks use a separately installed Playwright/Chromium. Set `PLAYWRIGHT_MODULE` to an existing `playwright/index.mjs` and `PLAYWRIGHT_BROWSERS_PATH` to the matching browser directory:
+Install the pinned development dependencies from `package-lock.json` with `npm ci`. Their versions are declared in `package.json`; no development dependencies are shipped in the extension. Chromium checks also need a matching Playwright browser:
 
 ```powershell
+npm ci
+npx playwright install chromium
 npm run test:browser
 npm run test:backup
+npm run test:notifications
+npm run test:cards
 node scripts/browser-smoke.mjs --popup-scales
+```
+
+To reuse a separate Playwright installation, set `PLAYWRIGHT_MODULE` to its `playwright/index.mjs` and `PLAYWRIGHT_BROWSERS_PATH` to the matching browser directory. Card layout checks open an isolated browser window and require a desktop session.
+
+The fixture suites use isolated extensions and profiles under `dist`. They cover UI actions, backup import/export, both locales and themes, source failures, notification delivery and popup geometry. Test bootstrap files and fixtures are never shipped. Reports and screenshots are local outputs under `dist`, excluded from Git.
+
+Firefox setup, browser selection and runtime scenarios are documented in [Firefox development and verification](docs/FIREFOX.md). The [Tests workflow](.github/workflows/test.yml) runs module and release-script tests, packages both targets, lints Firefox, validates changelog extraction and checks Firefox's minimum supported major, ESR and stable channels. CI does not sign or submit browser-store packages.
+
+### Optional live and native checks
+
+```powershell
 npm run test:multistore:live
 npm run audit:sources
 npm run audit:sources:browser
+node scripts/check-test-notification.mjs --native
+node scripts/check-gog-native-notification.mjs
+node scripts/check-gog-native-notification.mjs --steam
 ```
 
-The fixture browser suite stages an isolated extension/profile in `dist/browser-check`. It covers UI/actions, backup export/import, both locales/themes, source failures and native popup geometry. Test bootstrap files are never shipped. Live tools perform anonymous requests and are optional, not CI dependencies; production-worker live checks disable OS notifications. Reports/screenshots are saved under `dist`.
+Live tools query store services and are optional, not CI dependencies. Production-worker live checks disable OS notifications. Store responses vary with time and region; passing fixture tests does not establish current giveaway availability. Recorded positive GOG discovery evidence is documented in [GOG live validation](docs/GOG_LIVE_VALIDATION.ru.md).
 
-The focused notification check uses an isolated profile, blocks external requests and tests repeated clicks, pending requests, permission denial, failure/retry, artwork decoding and feedback layout. `node scripts/check-test-notification.mjs --native` enables an optional headed OS check; it accepts `send`, `status` and `close` on stdin and clears its own test notifications on exit. On 31 October 2026, real Windows banners from two successive button clicks were visually verified with the fictional artwork, title, complete rating/count, discount deadline and sample price. Evidence: `dist/test-notification-check/verified-windows-demo.png` and `native-result.json`.
+Native notification checks use isolated profiles and synthetic or recorded offers. They accept interactive commands on stdin: `send`, `status` and `close`; the GOG/Steam check also accepts `reminder`, and its Steam mode supports `large`. These checks clear their own notifications on exit. Inspect the actual OS banner separately: browser API acceptance does not prove that the operating system displayed it.
 
-## Release procedure
+## Release documentation
 
-1. Update manifest/package version, localized branding and the matching `CHANGELOG.md` section. Installation notes must name **Chrome ZIP + Firefox XPI**. Run unit/browser/package checks and `npm run test:release` (offline checks of signed-download validation and failure handling).
-2. Commit with **Grim1313** as the configured Git identity, push the branch and wait for `Tests`. Build the unsigned Firefox ZIP from a clean checkout of that commit with `npm run pack:firefox`. Keep the LF endings specified in `.gitattributes`; the signed production files must match the release build byte for byte.
-3. Submit that Firefox ZIP as a new listed version of the existing AMO add-on. Include reviewer source/build instructions when requested. Wait for Mozilla approval and for the exact version to be public in the AMO API. If production files change during review, commit the changes and obtain a matching approved AMO build before tagging.
-4. While authenticated as **Grim1313**, create a **draft release** for the intended tag before pushing it. For example, generate notes with `pwsh -File scripts/get-release-notes.ps1 -Version 2.2.2 -OutputPath dist/release-notes.md`, then run `gh release create v2.2.2 --draft --target main --title "Free Games Watcher v2.2.2" --notes-file dist/release-notes.md`. Substitute the actual version and ensure the draft targets the intended commit. This preserves human authorship without storing a personal access token in Actions.
-5. Push the version tag pointing at the reviewed commit. `Release` requires an existing release/draft authored by the repository owner, checks tag/version, runs tests, builds both local ZIPs and lints Firefox. It then downloads **the exact version's signed XPI from AMO**, checks its public status, size and SHA-256, verifies signature entries, extension ID, version and absence of a custom update URL, and compares all production files against the locally built Firefox ZIP. Only manifest JSON formatting/key order may differ. No AMO credentials or signing secrets are needed.
-6. If AMO is not ready or contents differ, the job stops before changing release assets or notes. After approval, rerun `Release` for the same tag (or dispatch it with that tag); never substitute another version or an unsigned ZIP. Investigate file mismatches instead of bypassing the checks. Published tags remain immutable.
-7. The workflow uploads **Free-Games-Watcher-Chrome-VERSION.zip** and **Free-Games-Watcher-Firefox-VERSION.xpi**, checks their GitHub SHA-256 digests, and only then removes any legacy Firefox ZIP for that version. Drafts remain unpublished and keep their author; Actions uploads are attributed to the Actions bot. Verify the files and workflows, install the signed XPI in an isolated Firefox profile and confirm it survives a restart, then publish the draft as **Grim1313** and mark it latest. For uploads also attributed to Grim1313, use the authenticated maintainer's CLI with these same verified files.
-
-The workflows use `actions/checkout@v7`, `actions/setup-node@v7`, Node 24 and `windows-latest`. A branch push runs validation, not publication. Manual dispatch takes an existing tag containing the signed-release scripts; this process applies to future tags. The historical `v2.2.1` tag retains its original workflow and must not be rerun to update assets; its ZIP-to-XPI migration is done through the maintainer's CLI. Reruns can replace existing assets, so inspect the selected revision first. Chrome Web Store publication and AMO submission are separate manual steps.
-
-`scripts/get-signed-firefox.ps1` downloads an unchanged file from the public AMO API and calls `scripts/verify-firefox-xpi.ps1`. It falls back to the public version list when the requested release is older than the current AMO version. A failed download/validation leaves any previously verified output intact. Local unsigned ZIPs remain available for development and Mozilla submission but are not user-facing GitHub assets. The signed XPI uses the same extension ID as the AMO listing and no `update_url`, so Firefox can update GitHub installations from AMO when automatic updates are enabled; see [Mozilla's distribution documentation](https://extensionworkshop.com/documentation/publish/self-distribution/).
-
-## GOG live validation, 31 October 2026
-
-A New Beginning: Final Cut (`gog:1207659150`) was discovered anonymously in both US/RU by the production MV3 worker. Popup/history presence, loaded artwork, the homepage claim destination and the exact deadline (2 November 2026, 14:00:59 UTC) were verified. Both scans completed successfully. The reduced real response in `tests/fixtures/gog-a-new-beginning.json` covers parsing, expiration at the deadline, storage and duplicate-notification prevention. GOG requires its own account/consent flow to claim; no game was claimed during verification. Details: [GOG live validation](docs/GOG_LIVE_VALIDATION.ru.md).
-
-## Version 2.2.1 behavior
-
-`DEFAULT_SETTINGS`, normalization of missing store lists and provider selection default to all three `STORE_IDS`. An explicit saved list, including an empty list, is preserved. Schema migration no longer inserts Steam-only settings when settings are absent. Reset selects all three stores; older backups without a store list use the new default. No storage schema or backup format change is required.
-
-The release adds the Firefox target described in [FIREFOX.md](docs/FIREFOX.md). GitHub publication does not sign the Firefox extension or publish to browser stores. Both packages contain only production files.
-
-## Validation record
-
-Version 2.2.1: 168 module tests passed, and Mozilla lint reported zero errors, notices and warnings. The production Firefox ZIP was installed without test injection; fresh settings selected Steam, Epic and GOG in the actual settings UI. Both browser archives contain 51 production files and report version 2.2.1. The Firefox compatibility matrix and runtime scenarios are documented in [FIREFOX.md](docs/FIREFOX.md).
-
-Version 2.2.0 consolidates store-specific ratings, compact card geometry, themed store labels, complete offline notification previews, and optional history transfer with backup format 3. Storage schema, existing extension identity and permissions are unchanged. Imported campaign guards preserve historical discovery/delivery dates and prevent automatic duplicate alerts until a confirmed new giveaway cycle.
-
-Release validation passed: 160 module tests, 162 general browser checks, 11 backup UI checks, 12 notification checks, and 16 native popup layout scenarios at 100% and 125% scale. The packaged ZIP contains 50 files, including the offline notification artwork, and its manifest reports version 2.2.0.
-
-Backup/history transfer, 31 October 2026: 160 module tests passed, including v1/v2 compatibility, optional history, canonical deduplication, local-record precedence, malformed/oversized input with atomic rejection, safe URL normalization and real scanner suppression followed by new-campaign notification eligibility. `node scripts/check-backup-ui.mjs` passed 11 end-to-end scenarios using actual settings controls and downloaded files: export choices, preview/cancel, unchecked history, merge/reimport, legacy import and invalid-file recovery. Eight screenshots cover EN/RU, light/dark and 1100/360 px widths under `dist/backup-ui-check`. No release was published.
-
-Native Windows Steam banners, 31 October 2026: visually verified individual alerts and reminders in an isolated headed Chrome for Testing 151 profile. The original verbose header clipped the review count. The compact header now shows `Steam: 86% · 49 353 отзывов` in full; counts below 100,000 retain all digits, while larger counts use localized compact notation. A stress case (`Steam: 100% · 12,3 млн отзывов`) also fits. These are synthetic notification fixtures using Graveyard Keeper artwork, not live rating or giveaway claims. Full popup/history tooltips are unchanged. Run `node scripts/check-gog-native-notification.mjs --steam`; stdin commands are `send`, `reminder`, `large`, `status` and `close`. Screenshots and native API records are in `dist/steam-native-notification`. All 152 module tests passed, including English/Russian formatting, reminders, missing counts, summaries and image-to-basic fallback. Test notifications were cleared and the isolated browser closed; no Windows settings were changed and no release was published.
-
-Native Windows GOG banners, 31 October 2026: visually verified both an individual alert and a reminder from production notification code in an isolated headed Chrome for Testing 151 profile. Windows truncated the original verbose context header; a dedicated compact translation (`GOG: 3,6/5 · 649 оценок`) now fits with rating and count visible. The title, deadline, extension icon and game artwork also rendered. The fixture is the recorded A New Beginning response, not a new claim or live count check. `scripts/check-gog-native-notification.mjs` accepts `send`, `reminder`, `status` and `close`; it disables automatic discovery and clears only its own notifications on exit. Screenshots and API records are in `dist/gog-native-notification`. No Windows notification settings were changed.
-
-Local changes after 2.1.1, 31 October 2026: 147 module tests and 162 browser checks passed. Live US/RU scans recovered Steam ratings (Hexologic 96%, Asleep: Act 1 91%) and GOG A New Beginning 3.6/5 through the production worker. Native popup card checks cover 16 combinations of 100%/125% display scale, English/Russian, light/dark and normal/compact views, including long titles/prices, missing ratings and stale availability. No release or deployment was performed. Reports: `dist/rating-live-check`, `dist/card-layout-check`, `dist/rating-card-audit`.
-
-Version 2.1.1, 30 October 2026: 139 module tests and 162 browser checks passed. Regression tests cover current/upcoming permanently free Epic entries, mixed and all-free feeds, invalid/missing prices, and successful scan status without extra notifications. Live US/RU feed checks skipped Idle Champions of the Forgotten Realms without warnings. A clean Chromium profile running the production worker completed all three store checks successfully in both regions, still found Mafia Hotel, and displayed the popup without the incomplete-check warning. Local release packaging passed validation.
-
-Version 2.1.0, 27 October 2026: 136 module tests, 162 general browser checks and 12 focused notification-button checks passed. Local packaging validates the release manifest, required files and exclusion of development fixtures. The real Mafia Hotel response is covered by reduced Epic and EGData fixtures, including prices, deadlines, deduplication, source recovery, pagination, country restrictions and rejection of mobile/test/conditional offers. A clean Chromium profile running the production MV3 worker found five current Epic games in both US and RU: Mafia Hotel, GetHigh.EXE, Terraspace, Home and Sker Ritual. Mafia Hotel's original price was $1.99 / RUB 60.00 and its deadline was 1 November 2026 at 17:02 UTC. Popup/history presence and loaded artwork were checked. Run `node scripts/check-multistore-live.mjs --expect-epic-slug=mafia-hotel-eaea4c` while this giveaway remains active; reports and screenshots are in `dist/multistore-live`.
-
-The exact filtered Epic GraphQL query returned five offers in the existing Chrome session, but direct anonymous Node and clean-extension requests returned HTTP 403. The authorized EGData fallback returned HTTP 200 without account credentials and supplied the three additional games. This is an Epic storefront access limitation, not a reason to disable certificate/network protections. Environment security settings were not changed. EGData request/price semantics are documented at [Find games](https://docs.egdata.app/docs/offer-search) and [Prices](https://docs.egdata.app/docs/price-availability).
-
-Version 2.0.0: 106 module tests and 157 browser checks passed, and the release ZIP passed packaging validation. Before renaming, 40 additional display-scale checks passed at 100–200%. Live US/RU checks returned successful responses for all three stores, two current Epic games and one Steam DLC hidden by default; GOG returned an empty result. At that release, positive GOG giveaway validation was still pending; it was completed on 31 October 2026 (see the GOG validation record below). Native Windows notification visibility and older browser versions remain unverified. Current release-validation outputs are kept under `dist/release-2.0.0-*`.
-
-### Compact popup cards
-
-Cards use a one-line title (full title on hover), a fixed 56 px cover/information block, and one action row. The information block reserves rows for the deadline, rating, and store/type/original-price metadata. Epic uses a short label with its full name in a tooltip. Original prices are struck through, with their meaning in a tooltip. A stale availability indicator shares the rating row, so missing metadata or stale state cannot add a row. Compact view hides artwork and uses a 38 px information block. `scripts/check-card-layout.mjs` checks native popup geometry at 100% and 125%, both languages/themes and both density modes.
+The [maintainer release guide](docs/RELEASING.md) describes version preparation, AMO review, signed-file verification and GitHub publication. User-facing changes are recorded in [CHANGELOG.md](CHANGELOG.md).

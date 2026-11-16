@@ -110,21 +110,17 @@ After updating a locally loaded extension, reload it on `chrome://extensions` (o
 
 Microsoft Store / Xbox, itch.io, IndieGala and Ubisoft remain future work; they are not queried by this build.
 
-## Development and releases
+## Development
 
-Development checks use Node.js 24 LTS; packaging uses PowerShell 7. The extension has no runtime package dependencies, and users do not need Node.js or PowerShell to install it.
+Development checks use Node.js 24 and PowerShell 7. The extension has no runtime package dependencies; users do not need these tools to install it.
 
 ```powershell
 npm test
 npm run pack
 ```
 
-For Firefox development, run `npm ci`, `npm run pack:firefox`, `npm run lint:firefox` and `npm run test:firefox`. The Firefox ZIP and unpacked directory are written separately under `dist/`. Load its generated `manifest.json` using `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on**. Temporary installation ends when Firefox closes; export a backup before removing it. Permanent installation requires Mozilla signing, which is not part of the local build.
+For local Chrome / Edge testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. Build outputs go to `dist/`, which is excluded from Git.
 
-For local testing, load the project root or `dist/Free-Games-Watcher` as an unpacked extension. Build outputs go to `dist/`, which is excluded from Git. The unsigned Firefox ZIP is used for development and AMO submission; GitHub Releases distribute the signed XPI instead.
+For Firefox development, run `npm ci`, `npm run pack:firefox`, `npm run lint:firefox` and `npm run test:firefox`. Load `dist/Free-Games-Watcher-Firefox/manifest.json` using `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on**. Temporary installation ends when Firefox closes; export a backup before removing it. Local Firefox builds are unsigned; GitHub Releases distribute the signed XPI from AMO.
 
-For each future release, submit the Firefox build from the release commit to AMO and wait for that exact version to become public. Create a GitHub draft as **Grim1313**, then push the matching version tag. The release workflow tests and builds the packages, lints Firefox, downloads the matching XPI from AMO, checks its hash, extension ID and contents against the local build, and uploads **Chrome ZIP + Firefox XPI**. If AMO has not approved the version or the files differ, it stops before changing the GitHub release. After AMO approval, rerun the workflow for the same tag.
-
-The workflow requires a maintainer-authored release or draft and leaves drafts unpublished for final verification and publication by their owner. Notes come from the matching **CHANGELOG.md** section. See the [release procedure](TECHNICAL.md#release-procedure) for commands and verification details.
-
-See [TECHNICAL.md](TECHNICAL.md) for architecture, browser checks, troubleshooting and release maintenance.
+See [technical documentation](TECHNICAL.md) for architecture, compatibility and development checks, and [Firefox development](docs/FIREFOX.md) for browser-specific setup. The [release guide for maintainers](docs/RELEASING.md) covers publishing official builds.

@@ -34,7 +34,7 @@ Temporary add-ons are removed at browser shutdown. Export settings, marks and hi
 
 ## Preparing a signed GitHub download
 
-Follow the [release procedure](../TECHNICAL.md#release-procedure). Once the exact version is public on AMO, run from the clean release checkout:
+Follow the [maintainer release guide](RELEASING.md). Once the exact version is public on AMO, run from the clean release checkout:
 
 ```powershell
 npm run pack:firefox

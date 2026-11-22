@@ -24,6 +24,7 @@ export async function checkMultistore({ worker, page, options, history, out }) {
     await page.locator("#upcoming-section summary").click();
     assert.equal(await page.locator("#upcoming-list li").count(), 1);
     assert.equal(await page.locator("#upcoming-list button").count(), 0);
+    assert.equal(await page.locator("#upcoming-list .rating-summary").textContent(), "★ 4.2/5");
     await page.locator("#upcoming-section summary").click();
     checks += 2;
     for (const lang of ["en", "ru"]) {
@@ -52,6 +53,7 @@ export async function checkMultistore({ worker, page, options, history, out }) {
     await history.locator("#status-filter").selectOption("claimed");
     await history.locator("#store-filter").selectOption("epic");
     await history.waitForFunction(() => document.querySelectorAll("#history-body tr").length === 1);
+    assert.equal(await history.locator("#history-body .rating-summary").getAttribute("aria-label"), "Epic player rating: 4.2 out of 5");
     await history.getByRole("button", { name: "Restore", exact: true }).click();
     await history.waitForFunction(() => document.querySelectorAll("#history-body tr").length === 0);
     checks++;

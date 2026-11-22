@@ -13,6 +13,7 @@ import {
   createHash,
   getPromotionImageUrl,
   sanitizeGogRating,
+  sanitizeEpicRating,
 } from "./utils.js";
 import { getTranslator } from "./i18n.js";
 
@@ -145,6 +146,10 @@ export async function createPromotionNotifications(promotions, config = {}) {
     if (imageUrl) options.imageUrl = imageUrl;
     if (!summary && storeOf(promotion) === "steam" && promotion.reviewTotal)
       options.contextMessage = steamRatingMessage(promotion, t);
+    if (!summary && storeOf(promotion) === "epic" && sanitizeEpicRating(promotion.epicRating))
+      options.contextMessage = t("epicRatingSummary", {
+        rating: new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(promotion.epicRating),
+      });
     if (!summary && storeOf(promotion) === "gog") {
       const { gogRating, gogRatingCount } = sanitizeGogRating(promotion);
       if (gogRating)

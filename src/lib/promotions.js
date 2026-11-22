@@ -120,8 +120,11 @@ async function performPromotionCheck(trigger) {
     }),
   );
   try {
-    const known = await getLatestPromotionEntries();
-    const result = await fetchPromotionsFromProviders(settings, known);
+    const [known, upcoming] = await Promise.all([
+      getLatestPromotionEntries(),
+      readKey(STORAGE_KEYS.upcomingPromotions, []),
+    ]);
+    const result = await fetchPromotionsFromProviders(settings, [...upcoming.filter(p => storeOf(p) === "epic"), ...known]);
 
     return await mutate(async () => {
       const currentSettings = await getSettings();

@@ -111,7 +111,7 @@ test("fallback is used only after a catalog failure and recovery does not duplic
   const item = currentItem();
   globalThis.fetch = async (url, options) => {
     if (url.includes("freeGamesPromotions")) return response(epicFeed());
-    if (url.includes("api.egdata.app")) { fallbackCalls++; return response(page([item])); }
+    if (url.includes("api.egdata.app/search/")) { fallbackCalls++; return response(page([item])); }
     if (!directWorks) throw new Error("HTTP 403");
     const direct = { ...item, categories: item.categories.map((path) => ({ path })),
       price: { totalPrice: { ...item.price.price, fmtPrice: { originalPrice: "$1.99" } }, lineOffers: [{ appliedRules: item.price.appliedRules }] } };

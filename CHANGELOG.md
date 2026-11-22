@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.2
+
+- Epic Games Store player ratings now appear on current and upcoming giveaway cards, in history, and in individual notifications and reminders.
+- The extension shows Epic's five-point score when available and checks EGData if the product page supplies no score. Games without a known rating still appear in the giveaway list.
+
 ## 2.2.1
 
 ### New features

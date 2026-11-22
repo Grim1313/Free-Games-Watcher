@@ -17,6 +17,7 @@ import {
   safeNumber,
   sanitizeSteamReviewSummary,
   sanitizeGogRating,
+  sanitizeEpicRating,
 } from "./utils.js";
 
 function getPromotionMatchKey(promotion) {
@@ -74,6 +75,10 @@ export function sanitizePromotionEntry(raw = {}) {
     screenshotFull: storeAsset(source.screenshotFull, source),
     ...reviewSummary,
     ...sanitizeGogRating(storeOf(source) === "gog" ? source : {}),
+    ...(storeOf(source) === "epic" && {
+      epicRating: sanitizeEpicRating(source.epicRating),
+      epicRatingCheckedAt: safeNumber(source.epicRatingCheckedAt, 0),
+    }),
     sourceId: typeof source.sourceId === "string" ? source.sourceId : "",
     sourceFingerprint:
       typeof source.sourceFingerprint === "string"

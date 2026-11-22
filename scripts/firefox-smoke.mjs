@@ -135,6 +135,7 @@ try {
     let all = await data();
     assert.equal(all.visiblePromotions.length, 14);
     assert.equal(all.upcomingPromotions.length, 1);
+    assert.equal(all.latestPromotions.find(p => p.store === "epic").epicRating, 4.2);
     assert.equal(all.latestPromotions.find(p => p.store === "gog").gogRating, 4.5);
     record("all three stores, independent identities, GOG rating and upcoming Epic");
     await open("popup.html");

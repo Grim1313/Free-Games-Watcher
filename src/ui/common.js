@@ -163,6 +163,10 @@ export function ratingSummary(entry) {
       percent: entry.reviewPercent,
       count: new Intl.NumberFormat(t.locale).format(entry.reviewTotal),
     });
+  } else if (store === "epic" && entry.epicRating > 0) {
+    const rating = new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(entry.epicRating);
+    node.textContent = `★ ${rating}/5`;
+    node.title = t("epicRatingSummary", { rating });
   } else if (store === "gog" && entry.gogRating > 0 && entry.gogRatingCount > 0) {
     const rating = new Intl.NumberFormat(t.locale, { maximumFractionDigits: 1 }).format(entry.gogRating);
     node.textContent = `★ ${rating}/5`;

@@ -53,7 +53,7 @@ test("import merges all stores, canonicalizes duplicate IDs, and preserves local
   const input = backup([
     entry({ id: "different-provider-id", title: "Stale imported title" }),
     entry({ stableId: "gog:321", campaignId: "gog:321|free-to-keep", gogRating: 4.5, gogRatingCount: 80 }),
-    entry({ stableId: "epic:ns:offer", campaignId: "epic:ns:offer|free-to-keep" }),
+    entry({ stableId: "epic:ns:offer", campaignId: "epic:ns:offer|free-to-keep", epicRating: 3.64 }),
   ]);
   await importBackup(input);
   assert.equal(data.history.length, 3);
@@ -63,6 +63,7 @@ test("import merges all stores, canonicalizes duplicate IDs, and preserves local
   assert.equal(steam.importedAt, 0);
   const gog = data.history.find(e => e.stableId === "gog:321");
   assert.equal(gog.gogRating, 4.5);
+  assert.equal(data.history.find(e => e.store === "epic").epicRating, 3.64);
   assert.equal(gog.unread, false);
   assert.equal(gog.stale, true);
   assert.ok(gog.importedAt > 0);

@@ -125,6 +125,9 @@
   "steamNotificationRatingSummary": {
     "message": "Steam: {percent}% · {count} reviews"
   },
+  "epicRatingSummary": {
+    "message": "Epic player rating: {rating} out of 5"
+  },
   "gogRatingSummary": {
     "message": "GOG rating: {rating} out of 5 · {count} ratings"
   },
@@ -231,7 +234,7 @@
     "message": "Filters"
   },
   "filterNote": {
-    "message": "Filters apply to the list and notifications. Rating, review count and unrated policy apply only to Steam; Epic and GOG have no comparable review data. Genre/platform filters exclude unknown metadata."
+    "message": "Filters apply to the list and notifications. The positive review percentage, review count and unrated rules apply only to Steam. Epic and GOG use a five-star scale. Genre/platform filters exclude unknown metadata."
   },
   "ignoreDlc": {
     "message": "Hide DLC"

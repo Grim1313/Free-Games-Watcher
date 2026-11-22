@@ -125,7 +125,9 @@ test("disabled stores are not fetched or notified; selected stores changing mid-
   globalThis.fetch = sources(Date.now(), "", calls);
   env.data.settings.enabledStores = ["epic"];
   await runPromotionCheck();
-  assert.equal(calls.length, 2);
+  assert.deepEqual(new Set(calls.map(url => new URL(url).hostname)), new Set([
+    "store-site-backend-static.ak.epicgames.com", "store.epicgames.com", "api.egdata.app",
+  ]));
   assert.equal(env.notifications.length, 1);
   globalThis.fetch = async () => { env.data.settings.enabledStores = ["gog"]; return response(epicFeed()); };
   assert.equal((await runPromotionCheck()).discarded, true);

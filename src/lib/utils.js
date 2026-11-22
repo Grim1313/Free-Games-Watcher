@@ -287,6 +287,10 @@ export function sanitizeGogRating(raw = {}) {
   return { gogRating: valid ? Math.round(rating * 10) / 10 : 0, gogRatingCount: valid ? count : 0 };
 }
 
+export function sanitizeEpicRating(value) {
+  return Number.isFinite(value) && value >= 1 && value <= 5 ? value : 0;
+}
+
 export function getSteamReviewTone(raw = {}) {
   const { reviewPercent, reviewTotal } = sanitizeSteamReviewSummary(raw);
   if (reviewTotal <= 0) {

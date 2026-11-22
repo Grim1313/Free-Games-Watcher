@@ -13,7 +13,7 @@ const common={endsAt:Date.now()+36*3600000,unread:true,status:'active',contentTy
 const entries=[
  {...common,stableId:'app:100',title:'A long game title that should be truncated without hiding the New button',reviewTotal:694,reviewPercent:96},
  {...common,stableId:'gog:100',title:'GOG game',gogRating:3.6,gogRatingCount:649,stale:true},
- {...common,stableId:'epic:test:100',title:'Epic game'},
+ {...common,stableId:'epic:test:100',title:'Epic game',epicRating:3.64},
  {...common,stableId:'app:101',title:'No rating, no price, unknown deadline',reviewTotal:0,endsAt:0,basePriceFormatted:'',unread:false},
  {...common,stableId:'app:102',title:'Long price and unavailable data',stale:true,contentType:'soundtrack',basePriceFormatted:'123 456 789,00 KZT',reviewTotal:10,reviewPercent:0},
 ].map((p,i)=>sanitizePromotionEntry({...p,id:String(i)}));
@@ -46,7 +46,9 @@ for(const scale of [1,1.25]){
    for(const c of g.cards){assert.ok(c.height<=130);assert.equal(c.titleHint,c.title);assert.ok(c.titleHeight<20);assert.ok(c.within);assert.ok(Math.max(...c.tagY)-Math.min(...c.tagY)<0.1);if(c.price)assert.ok(c.priceHint.includes(c.price));}
    assert.match(g.cards[0].rating,/96%/);assert.ok(g.cards[0].ratingHint.includes('694'));assert.equal(g.cards[0].ratingHint,g.cards[0].aria);
    assert.match(g.cards[1].rating,/3[.,]6\/5/);assert.ok(g.cards[1].ratingHint.includes('649'));assert.ok(g.cards[1].stale);
-   assert.equal(g.cards.find(c=>c.title==='Epic game').rating,'');assert.equal(g.cards.find(c=>c.title.startsWith('No rating')).rating,'');assert.match(g.cards.find(c=>c.title.startsWith('Long price')).rating,/0%/);
+   const epic=g.cards.find(c=>c.title==='Epic game');
+   assert.equal(epic.rating,language==='ru'?'★ 3,6/5':'★ 3.6/5');assert.match(epic.ratingHint,/Epic/);assert.equal(epic.aria,epic.ratingHint);
+   assert.equal(g.cards.find(c=>c.title.startsWith('No rating')).rating,'');assert.match(g.cards.find(c=>c.title.startsWith('Long price')).rating,/0%/);
    await evaluate(`globalThis.previousRating=document.querySelector('.rating-summary[tabindex]');previousRating.focus();document.dispatchEvent(new Event('data-refresh'));`);
    await until(()=>evaluate(`document.activeElement!==globalThis.previousRating&&document.activeElement?.dataset.focusKey==='rating'`));
    await writeFile(join(out,`cards-${scale}-${language}-${compact?'compact':'normal'}-${theme}.png`),Buffer.from((await send('Page.captureScreenshot',{format:'png'})).data,'base64'));

@@ -16,12 +16,10 @@ Separate **Chrome / Edge 120+ ZIP** and **Firefox Desktop 142+ signed XPI** pack
 <img width="30%" alt="free games watcher steam epic and gog 02 preferences" src="https://github.com/user-attachments/assets/b212bd40-8146-493d-abdf-18987e386147" />
 <img width="30%" alt="free games watcher steam epic and gog 03 history" src="https://github.com/user-attachments/assets/b806e1cf-fbc8-4d2d-9cda-b15c0394c2f0" />
 
-## What's new in 2.2.1
+## What's new in 2.2.2
 
-- **Firefox support** with the same stores, filters, ratings, history and backup transfer.
-- **All three stores enabled by default**: Steam, Epic Games Store and GOG. Your saved store selection is preserved.
-- Clearly named **Chrome** and **Firefox** downloads in each release.
-- Store-access diagnostics with a button to restore missing permissions.
+- Epic Games Store player ratings now appear in giveaway cards, upcoming offers, history, individual notifications and reminders.
+- Scores use Epic's five-point scale. If Epic's product page is unavailable, the extension checks EGData for a published player rating.
 
 Free Games Watcher was formerly Steam Promo Watch. Settings, personal marks and backups remain compatible across versions. You can select each store independently or pause tracking by turning all stores off.
 
@@ -30,7 +28,7 @@ Free Games Watcher was formerly Steam Promo Watch. Settings, personal marks and 
 - Automatic background checks and an on-demand **Check now** action.
 - Store filters in popup/history, independent source diagnostics and a separate list of upcoming Epic giveaways.
 - Browser notifications, quiet hours and a toolbar badge for active offers.
-- Giveaway deadlines, original prices, Steam positive-review percentages and GOG ratings out of five when available. Hover over a rating for its count and explanation.
+- Giveaway deadlines, original prices, Steam positive-review percentages, and Epic and GOG player ratings out of five when available. A rating's tooltip shows its source and, for Steam and GOG, the number of reviews or ratings.
 - Light and dark themes that follow your system, plus an optional compact view.
 - Sorting by ending time, discovery date, rating or title.
 - Content filters for DLC, soundtracks, demos, tools and packages; exclusions by title or Steam ID.
@@ -50,7 +48,7 @@ Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.
 ### <img width="20" height="20" alt="Free Games Watcher Chrome" src="https://github.com/user-attachments/assets/fb1dbf6e-6bf7-4815-baca-f5035c6bce02" /> Chrome / Edge: manual installation from GitHub
 
 1. Open [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
-2. Download **Free-Games-Watcher-Chrome-2.2.1.zip** (or the corresponding ZIP for a newer release).
+2. Download **Free-Games-Watcher-Chrome-2.2.2.zip** (or the corresponding ZIP for a newer release).
 3. Extract it to a permanent local folder.
 4. Open `chrome://extensions/` or `edge://extensions/`.
 5. Enable **Developer mode**, select **Load unpacked**, and choose the extracted folder containing `manifest.json`.
@@ -96,7 +94,7 @@ Reminders are enabled by default three hours before a known end time. Quiet hour
 
 ## Privacy and permissions
 
-The extension contacts the selected stores to discover offers and retrieve details and images. When Epic's direct catalog fails or returns incomplete results, it also contacts `api.egdata.app`, a third-party catalog service, sending the selected country, language and public search filters. EGData receives ordinary network request information, including your IP address; no account cookies, library, history or personal marks are sent. Its indexed data may lag behind Epic. The extension has no separate backend and does not connect to your game libraries. Its permissions support scheduled checks, notifications and local storage, with network access limited to the API and image domains listed in the manifest. Epic, EGData and GOG discovery requests omit account credentials.
+The extension contacts the selected stores to discover offers and retrieve details and images. For Epic games it checks the public product page for the player rating. If the page supplies no usable score, it requests the public offer ID's poll data from `api.egdata.app`. This third-party service also receives the selected country, language and public search filters when Epic's direct catalog fails or returns incomplete results. EGData receives ordinary network request information, including your IP address; no account cookies, library, history or personal marks are sent. Its indexed data may lag behind Epic. The extension has no separate backend and does not connect to your game libraries. Its permissions support scheduled checks, notifications and local storage, with network access limited to the API and image domains listed in the manifest. Epic, EGData and GOG discovery requests omit account credentials.
 
 After updating a locally loaded extension, reload it on `chrome://extensions` (or `edge://extensions`) and run **Check now**. Version 2.1.0 adds access to `store.epicgames.com` and `api.egdata.app`; Chrome may request approval for the new sites.
 

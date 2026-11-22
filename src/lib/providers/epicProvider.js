@@ -1,6 +1,7 @@
 import { fetchJsonWithTimeout } from "../utils.js";
 import { storeUrl, storeAsset, validStableId } from "../stores.js";
 import { epicTagMetadata } from "./epicTags.js";
+import { enrichEpicRatings } from "./epicRatings.js";
 
 export const EPIC_SOURCE = "epic-promotions";
 export const EPIC_CATALOG_SOURCE = "epic-catalog";
@@ -237,7 +238,7 @@ export async function fetchEgdataCatalog(region) {
   return result;
 }
 
-export async function fetchEpicPromotions(settings) {
+export async function fetchEpicPromotions(settings, knownEntries = []) {
   const region = settings.region || "US";
   const results = await Promise.allSettled([fetchEpicFeed(region), fetchEpicCatalog(region)]);
   if (results[1].status !== "fulfilled" || !results[1].value.complete)
@@ -265,6 +266,7 @@ export async function fetchEpicPromotions(settings) {
   // Prefer the weekly feed's explicit start time when the catalog repeats the same offer.
   combined.promotions = unique(combined.promotions.reverse());
   combined.upcoming = unique(combined.upcoming);
+  await enrichEpicRatings([...combined.promotions, ...combined.upcoming], knownEntries);
   for (const p of combined.promotions) combined.confirmedEnded.delete(p.stableId);
   return combined;
 }

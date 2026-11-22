@@ -1,6 +1,6 @@
 # Firefox Desktop
 
-This is the Firefox port of Free Games Watcher 2.2.1. The Chromium and Firefox packages share all provider, filtering, history, backup and interface code. Firefox uses an MV3 module event page instead of a service worker. It shares the product version with Chrome; storage schema and backup format remain compatible.
+This is the Firefox port of Free Games Watcher 2.2.2. The Chromium and Firefox packages share all provider, filtering, history, backup and interface code. Firefox uses an MV3 module event page instead of a service worker. It shares the product version with Chrome; storage schema and backup format remain compatible.
 
 ## Permanent installation
 
@@ -25,8 +25,8 @@ npm run test:firefox
 Outputs:
 
 - `dist/Free-Games-Watcher-Firefox/manifest.json`: load this generated manifest, not the Chromium manifest at the repository root.
-- `dist/Free-Games-Watcher-Firefox-2.2.1.zip`: unsigned Firefox package, with manifest at archive root.
-- `dist/Free-Games-Watcher-Chrome-2.2.1.zip`: existing Chromium target from `npm run pack`.
+- `dist/Free-Games-Watcher-Firefox-2.2.2.zip`: unsigned Firefox package, with manifest at archive root.
+- `dist/Free-Games-Watcher-Chrome-2.2.2.zip`: existing Chromium target from `npm run pack`.
 
 In Firefox, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select the generated manifest (or the Firefox ZIP). Alternatively, `npm run start:firefox` starts an isolated development profile. The extension ID is `free-games-watcher@grim1313`; keep it for future signed builds and updates.
 
@@ -38,10 +38,10 @@ Follow the [maintainer release guide](RELEASING.md). Once the exact version is p
 
 ```powershell
 npm run pack:firefox
-pwsh -File scripts/get-signed-firefox.ps1 -Version 2.2.1 -UnsignedArchivePath dist/Free-Games-Watcher-Firefox-2.2.1.zip
+pwsh -File scripts/get-signed-firefox.ps1 -Version 2.2.2 -UnsignedArchivePath dist/Free-Games-Watcher-Firefox-2.2.2.zip
 ```
 
-Use the intended version in both arguments. The script writes `dist/Free-Games-Watcher-Firefox-2.2.1.xpi` only after checking the AMO file status, size, SHA-256, signature entries, version, extension ID and all production files against the unsigned build. Manifest formatting/key order may differ; other production bytes must match. Signature entries are checked structurally; authenticity comes from the hash retrieved over HTTPS from AMO, and Firefox validates the actual signature on installation. The XPI is never repacked. The script can find older public versions through AMO's version list and fails if the requested version is unavailable. It does not submit files to AMO or require AMO credentials.
+Use the intended version in both arguments. The script writes `dist/Free-Games-Watcher-Firefox-2.2.2.xpi` only after checking the AMO file status, size, SHA-256, signature entries, version, extension ID and all production files against the unsigned build. Manifest formatting/key order may differ; other production bytes must match. Signature entries are checked structurally; authenticity comes from the hash retrieved over HTTPS from AMO, and Firefox validates the actual signature on installation. The XPI is never repacked. The script can find older public versions through AMO's version list and fails if the requested version is unavailable. It does not submit files to AMO or require AMO credentials.
 
 ## Functional scope and differences
 
@@ -61,7 +61,7 @@ Use the intended version in both arguments. The script writes `dist/Free-Games-W
 | Request | Data used outside the browser |
 | --- | --- |
 | Store discovery and metadata | Selected store country, language/public catalog parameters and game identifiers; normal HTTPS request metadata such as IP address and user agent |
-| EGData fallback | Selected catalog country/language and public search/offer parameters; credentials omitted |
+| EGData fallback | Catalog requests send the selected country, language and public search filters. Player-rating requests send the public Epic offer ID. Both omit credentials. |
 | Artwork | Public image URL requested from permitted store/CDN hosts; ordinary network metadata |
 | Steam age-gate deadline fallback | The existing `credentials: include` request may send Steam's own cookies back to Steam; extension code does not read cookie values |
 | Store links clicked by the user | Open the store in a normal tab; the store handles its own login and claim process |

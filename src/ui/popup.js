@@ -115,6 +115,8 @@ async function refresh() {
   for (const p of upcoming.slice(0, 10)) {
     const row = el("li", "upcoming-item");
     row.append(storeLink(p, p.title), el("span", "meta-line", `${STORE_NAMES[storeOf(p)]} · ${t("startsAt", { value: date(p.startsAt) })}`));
+    const rating = ratingSummary(p);
+    if (rating.textContent) row.append(rating);
     if (p.stale) row.append(el("span", "meta-line", t("stale")));
     $("#upcoming-list").append(row);
   }

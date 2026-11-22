@@ -11,6 +11,7 @@ globalThis.fetch = async (url, options) => {
  url=String(url);
  let payload;
  if(url.includes('freeGamesPromotions')){if(globalThis.failEpic)throw new Error('Epic offline');payload=epicFixture();}
+ else if(url.includes('store.epicgames.com/en-US/p/'))return new Response('<h2>Epic Player Ratings</h2><p>Captured from players in the Epic Games ecosystem.</p><strong>4.2</strong>');
  else if(url.includes('store.epicgames.com/graphql')){if(globalThis.failEpic)throw new Error('Epic offline');payload={data:{Catalog:{searchStore:{elements:[],paging:{total:0}}}}};}
  else if(url.includes('api.egdata.app'))throw new Error('EGData offline in fixture');
  else if(url.includes('sections.gog.com'))payload=url.includes('/sections/')?gogGiveawayFixture():gogPageFixture();

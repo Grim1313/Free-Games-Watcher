@@ -185,7 +185,7 @@ async function refresh() {
     copy.append(tags);
     const actions = el("div", "card-actions");
     actions.append(
-      storeLink({ ...entry, url: entry.claimUrl || entry.url }, t("openStore"), "primary-button"),
+      storeLink(entry, t("openStore"), "primary-button"),
       button(t("claim"), () => action(entry, "claim")),
     );
     actions.children[0].dataset.focusKey = "store";

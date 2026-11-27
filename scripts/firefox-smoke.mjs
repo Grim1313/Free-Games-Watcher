@@ -145,9 +145,9 @@ try {
     }
     await set("#store-filter", "gog");
     await waitFor(driver, () => document.querySelector('.store-tag')?.textContent === "GOG");
-    assert.equal(await (await css("a.primary-button")).getAttribute("href"), "https://www.gog.com/en/");
+    assert.equal(await (await css("a.primary-button")).getAttribute("href"), "https://www.gog.com/en/game/test_game");
     assert.match(await text(".promotion-item"), /4[.,]5/);
-    record("popup store filters, GOG rating text and correct claim destination");
+    record("popup store filters, GOG rating text and link to the game page");
 
     await open("options.html#filters");
     for (const [genres, platforms, minRating, expected] of [

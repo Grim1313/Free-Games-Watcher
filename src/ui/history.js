@@ -106,7 +106,7 @@ function render() {
     if (personal) state.append(el("div", "tag", t(personal)));
     const actions = el("td", "actions-cell");
     const controls = el("div", "card-actions");
-    const store = storeLink({ ...entry, url: entry.claimUrl || entry.url }, `${storeOf(entry) === "epic" ? "Epic" : STORE_NAMES[storeOf(entry)]} ↗`, "header-link");
+    const store = storeLink(entry, `${storeOf(entry) === "epic" ? "Epic" : STORE_NAMES[storeOf(entry)]} ↗`, "header-link");
     store.setAttribute("aria-label", `${t("openStore")}: ${entry.title}`);
     controls.append(store);
     if (personal)

@@ -16,10 +16,9 @@ Separate **Chrome / Edge 120+ ZIP** and **Firefox Desktop 142+ signed XPI** pack
 <img width="30%" alt="free games watcher steam epic and gog 02 preferences" src="https://github.com/user-attachments/assets/b212bd40-8146-493d-abdf-18987e386147" />
 <img width="30%" alt="free games watcher steam epic and gog 03 history" src="https://github.com/user-attachments/assets/b806e1cf-fbc8-4d2d-9cda-b15c0394c2f0" />
 
-## What's new in 2.2.2
+## What's new in 2.2.3
 
-- Epic Games Store player ratings now appear in giveaway cards, upcoming offers, history, individual notifications and reminders.
-- Scores use Epic's five-point scale. If Epic's product page is unavailable, the extension checks EGData for a published player rating.
+- GOG giveaway cards and history now open the game’s store page.
 
 Free Games Watcher was formerly Steam Promo Watch. Settings, personal marks and backups remain compatible across versions. You can select each store independently or pause tracking by turning all stores off.
 
@@ -48,7 +47,7 @@ Open [Free Games Watcher in the Chrome Web Store](https://chromewebstore.google.
 ### <img width="20" height="20" alt="Free Games Watcher Chrome" src="https://github.com/user-attachments/assets/fb1dbf6e-6bf7-4815-baca-f5035c6bce02" /> Chrome / Edge: manual installation from GitHub
 
 1. Open [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest).
-2. Download **Free-Games-Watcher-Chrome-2.2.2.zip** (or the corresponding ZIP for a newer release).
+2. Download **Free-Games-Watcher-Chrome-VERSION.zip** for that release.
 3. Extract it to a permanent local folder.
 4. Open `chrome://extensions/` or `edge://extensions/`.
 5. Enable **Developer mode**, select **Load unpacked**, and choose the extracted folder containing `manifest.json`.
@@ -63,7 +62,7 @@ Open [Free Games Watcher in the Firefox Browser Add-ons](https://addons.mozilla.
 
 ### <img width="20" height="20" alt="Free Games Watcher Firefox" src="https://github.com/user-attachments/assets/d31c95f3-c1d7-4acc-af91-5fd18d82e1d4" /> Firefox: permanent installation from GitHub
 
-1. Download **Free-Games-Watcher-Firefox-2.2.1.xpi** (or the corresponding XPI for a newer release) from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest). Keep the file intact; do not extract it.
+1. Download **Free-Games-Watcher-Firefox-VERSION.xpi** from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest). Keep the file intact; do not extract it.
 2. In Firefox, open `about:addons` → the gear menu → **Install Add-on From File…**.
 3. Select the downloaded XPI and confirm **Add** and the requested permissions.
 

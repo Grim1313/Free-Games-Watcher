@@ -18,7 +18,7 @@ export async function checkMultistore({ worker, page, options, history, out }) {
     assert.deepEqual(await worker.evaluate(async () => (await chrome.storage.local.get("settings")).settings.enabledStores), ["epic", "gog"]);
     assert.equal(await page.locator('.store-tag[title="Epic Games Store"]').filter({ hasText: "Epic" }).count(), 1);
     assert.equal(await page.locator(".store-tag").filter({ hasText: "GOG" }).count(), 1);
-    assert.equal(await page.locator('a.primary-button[href="https://www.gog.com/en/"]').count(), 1);
+    assert.equal(await page.locator('a.primary-button[href="https://www.gog.com/en/game/test_game"]').count(), 1);
     assert.equal(await page.locator('a.promotion-title[href="https://www.gog.com/en/game/test_game"]').count(), 1);
     checks += 5;
     await page.locator("#upcoming-section summary").click();
@@ -82,10 +82,11 @@ export async function checkMultistore({ worker, page, options, history, out }) {
     await history.locator("#status-filter").selectOption("all");
     await history.locator("#search").fill("Test game");
     await history.waitForFunction(() => document.querySelectorAll("#history-body tr").length === 2);
+    assert.equal(await history.locator('#history-body a.header-link[href="https://www.gog.com/en/game/test_game"]').count(), 1);
     await history.setViewportSize({ width: 390, height: 800 });
     await history.screenshot({ path: join(out, "multistore-history-narrow.png"), fullPage: true });
     assert.equal(await history.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
-    checks++;
+    checks += 2;
     // Save actual form controls and verify both popup counts and rendered cards.
     // Fixture Steam games support Windows/Linux; GOG supports Windows; Epic metadata is unknown.
     await options.locator('[data-section="filters"]').click();

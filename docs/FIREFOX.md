@@ -1,10 +1,10 @@
 # Firefox Desktop
 
-This is the Firefox port of Free Games Watcher 2.2.2. The Chromium and Firefox packages share all provider, filtering, history, backup and interface code. Firefox uses an MV3 module event page instead of a service worker. It shares the product version with Chrome; storage schema and backup format remain compatible.
+This is the Firefox port of Free Games Watcher 2.2.3. The Chromium and Firefox packages share all provider, filtering, history, backup and interface code. Firefox uses an MV3 module event page instead of a service worker. It shares the product version with Chrome; storage schema and backup format remain compatible.
 
 ## Permanent installation
 
-Install from [Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/), or download **Free-Games-Watcher-Firefox-2.2.1.xpi** from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest). In Firefox Desktop 142+, open `about:addons` → gear menu → **Install Add-on From File…**, select the XPI and confirm installation. Do not extract or modify the XPI. It remains installed after browser restarts.
+Install from [Firefox Browser Add-ons](https://addons.mozilla.org/en-US/firefox/addon/free-games-watcher-steam-epic/), or download **Free-Games-Watcher-Firefox-VERSION.xpi** from [GitHub Releases](https://github.com/Grim1313/Free-Games-Watcher/releases/latest). In Firefox Desktop 142+, open `about:addons` → gear menu → **Install Add-on From File…**, select the XPI and confirm installation. Do not extract or modify the XPI. It remains installed after browser restarts.
 
 GitHub distributes the unchanged Mozilla-signed file from AMO. Its stable extension ID is `free-games-watcher@grim1313`; no custom `update_url` is set. Firefox therefore checks AMO for newer listed versions and installs them when automatic updates are enabled. You can also install a newer signed XPI over an existing permanent installation without removing it or its data.
 
@@ -25,8 +25,8 @@ npm run test:firefox
 Outputs:
 
 - `dist/Free-Games-Watcher-Firefox/manifest.json`: load this generated manifest, not the Chromium manifest at the repository root.
-- `dist/Free-Games-Watcher-Firefox-2.2.2.zip`: unsigned Firefox package, with manifest at archive root.
-- `dist/Free-Games-Watcher-Chrome-2.2.2.zip`: existing Chromium target from `npm run pack`.
+- `dist/Free-Games-Watcher-Firefox-2.2.3.zip`: unsigned Firefox package, with manifest at archive root.
+- `dist/Free-Games-Watcher-Chrome-2.2.3.zip`: existing Chromium target from `npm run pack`.
 
 In Firefox, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select the generated manifest (or the Firefox ZIP). Alternatively, `npm run start:firefox` starts an isolated development profile. The extension ID is `free-games-watcher@grim1313`; keep it for future signed builds and updates.
 
@@ -38,10 +38,10 @@ Follow the [maintainer release guide](RELEASING.md). Once the exact version is p
 
 ```powershell
 npm run pack:firefox
-pwsh -File scripts/get-signed-firefox.ps1 -Version 2.2.2 -UnsignedArchivePath dist/Free-Games-Watcher-Firefox-2.2.2.zip
+pwsh -File scripts/get-signed-firefox.ps1 -Version 2.2.3 -UnsignedArchivePath dist/Free-Games-Watcher-Firefox-2.2.3.zip
 ```
 
-Use the intended version in both arguments. The script writes `dist/Free-Games-Watcher-Firefox-2.2.2.xpi` only after checking the AMO file status, size, SHA-256, signature entries, version, extension ID and all production files against the unsigned build. Manifest formatting/key order may differ; other production bytes must match. Signature entries are checked structurally; authenticity comes from the hash retrieved over HTTPS from AMO, and Firefox validates the actual signature on installation. The XPI is never repacked. The script can find older public versions through AMO's version list and fails if the requested version is unavailable. It does not submit files to AMO or require AMO credentials.
+Use the intended version in both arguments. The script writes `dist/Free-Games-Watcher-Firefox-2.2.3.xpi` only after checking the AMO file status, size, SHA-256, signature entries, version, extension ID and all production files against the unsigned build. Manifest formatting/key order may differ; other production bytes must match. Signature entries are checked structurally; authenticity comes from the hash retrieved over HTTPS from AMO, and Firefox validates the actual signature on installation. The XPI is never repacked. The script can find older public versions through AMO's version list and fails if the requested version is unavailable. It does not submit files to AMO or require AMO credentials.
 
 ## Functional scope and differences
 

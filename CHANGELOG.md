@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.3
+
+- GOG giveaway cards and history now open the game’s store page.
+
 ## 2.2.2
 
 - Epic Games Store player ratings now appear on current and upcoming giveaway cards, in history, and in individual notifications and reminders.
